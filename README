@@ -1,10 +1,14 @@
 # User guide for pyicon
 
-Copy pyicon files:
+Get pyicon by copying all files on mistral from:
 
 ```bash
 cp -r /mnt/lustre01/pf/zmaw/m300602/pyicon /path/to/copy/to
 ```
+
+## Known bugs:
+
+* only first time step of each file is read
 
 ## Use pyicon with Jupyter
 
