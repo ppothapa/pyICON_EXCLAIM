@@ -12,9 +12,54 @@ from matplotlib import ticker
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import cmocean
+from ipdb import set_trace as mybreak  
 
-def icon2regular(data, clon, clat, lons, lats, distances=None, \
-                  inds=None, radius_of_influence=100000):
+"""
+pyicon
+  icon_to_regular_grid
+  calc_ckdtree
+  timing
+  conv_gname
+  identify_grid
+  load_tripolar_grid
+  crop_tripolar_grid
+  crop_regular_grid
+
+  ?load_data
+  ?load_grid
+
+  ?hplot
+  ?update_hplot
+  ?vplot
+  ?update_vplot
+
+  IconDataFile
+
+  IconData
+  IP_hor_sec_rect
+
+  QuickPlotWebsite
+
+  IDa: Icon data set (directory of files)
+    - info about tsteps
+    - info about vars
+    - info about grid
+    - IGr: Icon grid
+    - IVa: Icon variable if loaded
+  IIn: Icon interpolator class
+
+  IPl: Icon plot class
+
+IDa = pyic.IconData(fpath or path)
+IDa.load_grid()
+IDa.show()
+
+IPl = pyic.hplot(IDa, 'var', iz, tstep, IIn)
+
+"""
+
+def icon_to_regular_grid(data, clon, clat, lons, lats, distances=None, \
+                  inds=None, radius_of_influence=100e3):
   """
   * example usage:
 
@@ -74,6 +119,7 @@ def calc_ckdtree(lon_reg, lat_reg, res,
   tims = timing(tims, 'CKD: tree query')
 
   # --- save grid
+  print('Saving grid file: %s' % (fpath_grid_rectangular))
   np.savez(fpath_grid_rectangular,
             dckdtree=dckdtree,
             ickdtree=ickdtree,
@@ -122,6 +168,186 @@ def conv_gname(gname):
   lat_reg = [la1, la2]
   return ogrid, res, lon_reg, lat_reg
 
+def identify_grid(path_grid, fpath_data):
+  """ Identifies ICON grid in depending on clon.size in fpath_data.
+  
+  r2b4: 160km:    15117: OceanOnly_Icos_0158km_etopo40.nc
+  r2b6:  40km:   327680: OCEANINP_pre04_LndnoLak_039km_editSLOHH2017_G.nc
+  r2b8:  10km:  3729001: OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min.nc
+  r2b9:   5km: 14886338: OceanOnly_IcosSymmetric_4932m_rotatedZ37d_modified_srtm30_1min.nc
+  """
+  
+  Dgrid_list = dict()
+  
+  grid_name = 'r2b4'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '160km'
+  Dgrid_list[grid_name]['long_name'] = 'OceanOnly_Icos_0158km_etopo40'
+  Dgrid_list[grid_name]['size'] = 15117
+  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  
+  grid_name = 'r2b6'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '40km'
+  Dgrid_list[grid_name]['long_name'] = 'OCEANINP_pre04_LndnoLak_039km_editSLOHH2017_G'
+  Dgrid_list[grid_name]['size'] = 327680
+  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  
+  grid_name = 'r2b8'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '10km'
+  Dgrid_list[grid_name]['long_name'] = 'OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min'
+  Dgrid_list[grid_name]['size'] = 3729001
+  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  
+  grid_name = 'r2b9'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '5km'
+  Dgrid_list[grid_name]['long_name'] = 'OceanOnly_IcosSymmetric_4932m_rotatedZ37d_modified_srtm30_1min'
+  Dgrid_list[grid_name]['size'] = 14886338
+  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  
+  f = Dataset(fpath_data, 'r')
+  gsize = f.variables['clon'].size
+  f.close()
+  for grid_name in Dgrid_list.keys():
+    if gsize == Dgrid_list[grid_name]['size']:
+      Dgrid = Dgrid_list[grid_name]
+      break
+  fpath_grid = '/pool/data/ICON/oes/input/r0002/' + Dgrid['long_name'] +'/' + Dgrid['long_name'] + '.nc'
+  return Dgrid
+
+def load_tripolar_grid(fpath_grid):
+  """ Load longitude and latitude of cell centers, edges and vertices and vertex_of_cell and edge_of_cell from fpath_grid.'
+  """
+  f = Dataset(fpath_grid, 'r')
+  clon = f.variables['clon'][:] * 180./np.pi
+  clat = f.variables['clat'][:] * 180./np.pi
+  vlon = f.variables['vlon'][:] * 180./np.pi
+  vlat = f.variables['vlat'][:] * 180./np.pi
+  elon = f.variables['elon'][:] * 180./np.pi
+  elat = f.variables['elat'][:] * 180./np.pi
+  vertex_of_cell = f.variables['vertex_of_cell'][:]-1
+  vertex_of_cell = vertex_of_cell.transpose()
+  edge_of_cell = f.variables['edge_of_cell'][:]-1
+  edge_of_cell = edge_of_cell.transpose()
+  f.close()
+  return clon, clat, vlon, vlat, elon, elat, vertex_of_cell, edge_of_cell
+
+def crop_tripolar_grid(lon_reg, lat_reg,
+                       clon, clat, vertex_of_cell, edge_of_cell):
+  ind_reg = np.where(   (clon>lon_reg[0]) 
+                      & (clon<=lon_reg[1]) 
+                      & (clat>lat_reg[0]) 
+                      & (clat<=lat_reg[1]) )[0]
+  clon = clon[ind_reg]
+  clat = clat[ind_reg]
+  vertex_of_cell = vertex_of_cell[ind_reg,:]
+  edge_of_cell   = edge_of_cell[ind_reg,:]
+  ind_reg = ind_reg
+  return clon, clat, vertex_of_cell, edge_of_cell, ind_reg
+
+def crop_regular_grid(lon_reg, lat_reg, Lon, Lat):
+  ind_reg = np.where(   (Lon>lon_reg[0]) 
+                      & (Lon<=lon_reg[1]) 
+                      & (Lat>lat_reg[0]) 
+                      & (Lat<=lat_reg[1]) )[0]
+  Lon = Lon[ind_reg]
+  Lat = Lat[ind_reg]
+  lon = Lon[0,:] 
+  lat = Lat[:,0] 
+  ind_reg = ind_reg
+  return Lon, Lat, lon, lat, ind_reg
+
+#def nc_info(fpath):
+#  if not os.path.isfile(fpath):
+#    print("::: Error: file %s does not exist! :::" %(fpath))
+#    sys.exit()
+#  
+#  ##ds = xr.open_dataset(fpath)
+#  f = Dataset(fpath, 'r')
+#  header =  "{code:<5}: {name:<30}: {long_name:<30}: {units:<20}: {shape:<20}".format(code='code', name='name', long_name='long_name', units='units', shape='shape')
+#  print header
+#  print '-'*len(header)
+#  ##for var in ds.variables.keys():
+#  for var in f.variables.keys():
+#    ##name = ds[var].name
+#    nv = f.variables[var]
+#    name = "{:<30}: ".format(var[:29])
+#    try:
+#      ##lname = ds[var].long_name
+#      lname = nv.long_name
+#      lname = "{:<30}: ".format(lname[:29])
+#    except:
+#      lname = " "*30+": "
+#    try:
+#      units = nv.units
+#      units = "{:<20}: ".format(units[:19])
+#    except:
+#      units = " "*20+": "
+#    try:
+#      ##code = ds[var].code
+#      code = nv.code
+#      code = "% 5d: "%(code)
+#    except:
+#      code = "     : "
+#    ##shape = str(ds[var].shape)
+#    shape = str(nv.shape)
+#    shape = "{:<20}: ".format(shape[:19])
+#    print code+name+lname+units+shape
+#  f.close()
+#  return Dfinf
+
+# //////////////////////////////////////////////////////////////////////////////// 
+class IconDataFile(object):
+  def __init__(self, 
+               fpath_data,
+               path_grid='/pool/data/ICON/oes/input/r0002/',
+              ):
+    self.path_grid = path_grid
+    self.fpath_data = fpath_data
+    return
+
+
+  def identify_grid(self):
+    self.Dgrid = identify_grid(path_grid=self.path_grid, fpath_data=self.fpath_data)
+    return
+  
+  def load_tripolar_grid(self):
+    (self.clon, self.clat, self.vlon, self.vlat,
+     self.elon, self.elat, self.vertex_of_cell,
+     self.edge_of_cell ) = load_tripolar_grid(fpath_grid=self.Dgrid['fpath_grid'])
+    return
+  
+  def crop_grid(self, lon_reg, lat_reg, grid='orig'):
+    """ Crop all cell related variables (data, clon, clat, vertex_of_cell, edge_of_cell to regin defined by lon_reg and lat_reg.
+    """
+    if grid=='orig':
+      (self.clon, self.clat,
+       self.vertex_of_cell, self.edge_of_cell,
+       self.ind_reg ) = crop_tripolar_grid(lon_reg, lat_reg,
+                                           self.clon, self.clat, 
+                                           self.vertex_of_cell,
+                                           self.edge_of_cell)
+    else:
+      (self.Lon, self.Lat, self.lon, self.lat, 
+       self.ind_reg ) = crop_regular_grid(lon_reg, lat_reg, self.Lon, self.Lat)
+
+  def mask_big_triangles(self, do_mask_zeros=True):
+    mask_grid_c = (
+          (self.vlon[self.vertex_of_cell[:,0]] - self.vlon[self.vertex_of_cell[:,1]] )**2
+        + (self.vlon[self.vertex_of_cell[:,0]] - self.vlon[self.vertex_of_cell[:,2]] )**2 
+        + (self.vlat[self.vertex_of_cell[:,0]] - self.vlat[self.vertex_of_cell[:,1]] )**2
+        + (self.vlat[self.vertex_of_cell[:,0]] - self.vlat[self.vertex_of_cell[:,2]] )**2 
+                  ) > 2.*180./np.pi
+    #ipdb.set_trace()
+    if do_mask_zeros:
+      mask_grid_c += self.data==0
+    self.Tri.set_mask(mask_grid_c)
+    return
+
+# //////////////////////////////////////////////////////////////////////////////// 
+# ---- classes and methods necessary for Jupyter data viewer
 class IconData(object):
   def __init__(self, 
                fpath_grid_triangular="", 
@@ -153,7 +379,7 @@ class IconData(object):
     self.lat_reg = lat_reg
     self.use_tgrid = use_tgrid
 
-    self.load_grid()
+    self.load_tripolar_grid()
     self.get_timesteps(search_str)
     self.get_varnames(self.flist[0])
     return
@@ -254,7 +480,7 @@ class IconData(object):
       if self.use_tgrid:
         data = data[self.ind_reg] 
       else:
-        data = icon2regular(data, self.clon, self.clat, self.Lon, self.Lat, 
+        data = icon_to_regular_grid(data, self.clon, self.clat, self.Lon, self.Lat, 
                             distances=self.dckdtree, inds=self.ickdtree)
 
       # add data to IconData object
@@ -337,6 +563,257 @@ class IP_hor_sec_rect(object):
       self.htstr.set_text(IcD.times[IcD.step_snap])
     if depth_string!='none':
       self.hdstr.set_text('depth = %4.1fm'%(IcD.depth[IcD.iz]))
+    return
+
+# ================================================================================ 
+# ================================================================================ 
+
+# --------------------------------------------------------------------------------
+# Horizontal plots
+# --------------------------------------------------------------------------------
+def qp_hor_plot( fpath, var, IC='none', iz=0, it=0,
+              grid='orig', 
+              path_grid_rectangular="/mnt/lustre01/work/mh0033/m300602/icon/rect_grids/", 
+              clim='auto', cincr='auto', cmap='auto',
+              xlim=[-180,180], ylim=[-90,90], projection='none',
+              title='auto', xlabel='', ylabel='',
+              verbose=1,
+              ax='auto', cax=1,
+              ):
+
+
+  # --- load data
+  fi = Dataset(fpath, 'r')
+  data = fi.variables[var][it,iz,:]
+  long_name = fi.variables[var].long_name
+  units = fi.variables[var].units
+
+  if verbose>0:
+    print('Plotting variable: %s: %s' % (var, long_name)) 
+
+  # --- set-up grid and region if not given to function
+  if isinstance(IC,str) and clim=='none':
+    pass
+  else:
+    IC = IconDataFile(fpath, path_grid='/pool/data/ICON/oes/input/r0002/')
+    IC.identify_grid()
+    IC.load_tripolar_grid()
+    IC.data = data
+    if grid=='orig':
+      IC.crop_grid(lon_reg=xlim, lat_reg=ylim, grid=grid)
+      IC.Tri = matplotlib.tri.Triangulation(IC.vlon, IC.vlat, 
+                                            triangles=IC.vertex_of_cell)
+      IC.mask_big_triangles()
+    else: 
+      # --- rectangular grid
+      if not os.path.exists(path_grid_rectangular+grid):
+        raise ValueError('::: Error: Cannot find grid file %s! :::' % 
+          (path_grid_rectangular+grid))
+      ddnpz = np.load(path_grid_rectangular+grid)
+      IC.lon, IC.lat = ddnpz['lon'], ddnpz['lat']
+      IC.Lon, IC.Lat = np.meshgrid(IC.lon, IC.lat)
+      IC.data = icon_to_regular_grid(IC.data, IC.clon, IC.clat, IC.Lon, IC.Lat, 
+                          distances=ddnpz['dckdtree'], inds=ddnpz['ickdtree'])
+      IC.data[IC.data==0] = np.ma.masked
+      IC.crop_grid(lon_reg=xlim, lat_reg=ylim, grid=grid)
+  IC.data = IC.data[IC.ind_reg]
+      
+  # --- color limits and color map
+  if isinstance(clim,str) and clim=='auto':
+    clim = [IC.data.min(), IC.data.max()]
+
+  # --- annotations (title etc.) 
+  if title=='auto':
+    title = long_name+' ['+units+']'
+
+  # --- make axes and colorbar (taken from shade)
+  if ax == 'auto':
+    if projection=='none':
+      ccrs_proj = None
+    else:
+      ccrs_proj = getattr(ccrs, projection)()
+      #fig, ax = plt.subplots(subplot_kw={'projection': ccrs_proj}) 
+    hca, hcb = arrange_axes(1,1, plot_cb=True, sasp=0.7, fig_size_fac=2.,
+                                 projection=ccrs_proj,
+                                )
+    ax = hca[0]
+    cax = hcb[0]
+
+  # does not work like this with cartopy
+  #if ((cax is not None) and (cax!=0)): 
+  #  if cax == 1:
+  #    from mpl_toolkits.axes_grid1 import make_axes_locatable
+  #    div = make_axes_locatable(ax)
+  #    mybreak()
+  #    cax = div.append_axes("right", size="10%", pad=0.1)
+
+  # hack: let shade / trishade make the colorbar if cax is an axes
+  #       otherwise do colorbar after shade / trishade
+  if cax==1:
+    do_colorbar = True
+    cax = 0 # to assure that shade / trishade is not making a colorbar
+  else:
+    do_colorbar = False
+
+  # --- do plotting
+  if grid=='orig':
+    hm = trishade(IC.Tri, IC.data, 
+                      ax=ax, cax=cax, clim=clim, cmap=cmap,
+                      transform=ccrs_proj,
+                 )
+  else:
+    hm = shade(IC.lon, IC.lat, IC.data,
+                      ax=ax, cax=cax, clim=clim, cmap=cmap,
+                      transform=ccrs_proj,
+              )
+  if do_colorbar:
+    plt.colorbar(mappable=hm[0], ax=ax, extend='both')
+
+  # --- plot refinement
+  ax.set_title(title)
+  ax.set_xlabel(xlabel)
+  ax.set_ylabel(ylabel)
+  ax.set_xlim(xlim)
+  ax.set_ylim(ylim)
+
+  if projection!='none':
+    ax.coastlines()
+
+  fi.close()
+
+  # --- output
+  FigInf = dict()
+  FigInf['fpath'] = fpath
+  FigInf['long_name'] = long_name
+  FigInf['IC'] = IC
+  #ipdb.set_trace()
+  return FigInf
+
+# ================================================================================ 
+# ================================================================================ 
+class QuickPlotWebsite(object):
+  """ Creates a website where the quick plots can be shown.
+
+Minimal example:
+
+# --- setup
+qp = QuickPlotWebsite(
+  title='pyicon Quick Plot', 
+  author='Nils Brueggemann', 
+  date=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+  fpath_css='./mycss2.css'
+  )
+
+# --- content
+for i in range(1,11):
+  qp.add_section('Section %d' % i)
+  for j in range(1,4):
+    qp.add_subsection('Subsection %d.%d' % (i,j))
+    qp.add_paragraph(('').join(['asdf %d'%(i)]*10))
+    qp.add_fig('./pics/','fig_01.png')
+qp.write_to_file()
+  """
+
+  def __init__(self, title='Quick Plot', author='', date='', 
+               fpath_css='', fname_html='pyicon_qp.html'):
+    self.author = author 
+    self.title = title
+    self.date = date
+    self.fpath_css = fpath_css
+    self.fname_html = fname_html
+
+    self.first_add_section_call = True
+
+    self.main = ""
+    self.toc = ""
+
+    self.header = """
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pyicon" />
+  <meta name="author" content="{author}" />
+  <title>{title}</title>
+  <style type="text/css">code{{white-space: pre;}}</style>
+  <link rel="stylesheet" href="{fpath_css}" type="text/css" />
+</head>
+
+<body>
+
+<div id="header">
+<h1 class="title">{title}</h1>
+<h2 class="author">{author}</h2>
+<h3 class="date">{date}</h3>
+</div>
+
+""".format(author=self.author, title=self.title, date=self.date, fpath_css=self.fpath_css)
+
+    self.footer = """
+</body>
+</html>
+"""
+  
+  def add_section(self, title='Section'):
+    # --- add to main
+    href = title.replace(' ', '-')
+    self.main += '\n'
+    self.main += "<h1 id=\"{href}\">{title}</h1>\n".format(title=title, href=href)
+    # --- add to toc
+    if self.first_add_section_call:
+      self.first_add_section_call = False
+      self.toc += """
+<div id="TOC">
+<ul>
+"""
+    else:
+      self.toc += '</ul></li> \n'
+    self.toc += '<li><a href="#{href}">{title}</a><ul>\n'.format(title=title, href=href)
+    return
+
+  def add_subsection(self, title='Subsection'):
+    # --- add to main
+    href = title.replace(' ', '-')
+    #self.main += '\n'
+    self.main += "  <h2 id=\"{href}\">{title}</h2>\n".format(title=title, href=href)
+    # --- add to toc
+    self.toc += '<li><a href="#{href}">{title}</a></li>\n'.format(title=title, href=href)
+    return
+
+  def add_paragraph(self, text=''):
+    self.main += '    <p>'
+    self.main += text
+    self.main += '    </p>'
+    self.main += '\n'
+    return
+   
+  def add_fig(self, path_pics, fname, width="1000"):
+    self.main += '    <div class="figure"> <img src="{path_pics}/{fname}" width="{width}" /> </div>'.format(path_pics=path_pics, fname=fname, width=width)
+    self.main += '\n'
+    return
+  
+  def close_toc(self):
+    # --- close toc
+    self.toc += """</ul></li>
+</ul>
+</div>
+
+"""
+    return
+
+  def write_to_file(self):
+    # --- close toc
+    self.close_toc()
+
+    # --- write to output file
+    f = open(self.fname_html, 'w')
+    f.write(self.header)
+    f.write(self.toc)
+    f.write(self.main)
+    f.write(self.footer)
+    f.close()
     return
 
 # ================================================================================ 
