@@ -12,19 +12,28 @@ from matplotlib import ticker
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import cmocean
-from ipdb import set_trace as mybreak  
+#from ipdb import set_trace as mybreak  
 # test commit
 
 """
 pyicon
   icon_to_regular_grid
+  icon_to_section
+  apply_ckdtree
+  ckdtree_hgrid
+  ckdtree_section
   calc_ckdtree
+  haversine_dist
+  derive_section_points
   timing
   conv_gname
   identify_grid
   load_tripolar_grid
   crop_tripolar_grid
   crop_regular_grid
+  get_files_of_timeseries
+  get_varnames
+  get_timesteps
 
   ?load_data
   ?load_grid
@@ -59,23 +68,35 @@ IPl = pyic.hplot(IDa, 'var', iz, tstep, IIn)
 
 """
 
-def icon_to_regular_grid(data, clon, clat, lons, lats, distances=None, \
+def icon_to_regular_grid(data, shape, distances=None, \
                   inds=None, radius_of_influence=100e3):
   """
-  * example usage:
+  """
+  data_interpolated = apply_ckdtree(data, distances=distances, inds=inds, 
+                                    radius_of_influence=radius_of_influence)
+  data_interpolated = data_interpolated.reshape(shape)
+  return data_interpolated
 
+def icon_to_section(data, distances=None, \
+                  inds=None, radius_of_influence=100e3):
+  """
+  """
+  data_interpolated = apply_ckdtree(data, distances=distances, inds=inds, 
+                                    radius_of_influence=radius_of_influence)
+  return data_interpolated
+
+def apply_ckdtree(data, distances=None, inds=None, radius_of_influence=100e3):
+  """
   * credits
     function taken (and slightly modified) from pyfesom (Nikolay Koldunov)
   """
   if distances.ndim == 1:
       #distances_ma = np.ma.masked_greater(distances, radius_of_influence)
       data_interpolated = data[inds]
-
       data_interpolated[distances>=radius_of_influence] = np.nan
-      
-      data_interpolated = data_interpolated.reshape(lons.shape)
       data_interpolated = np.ma.masked_invalid(data_interpolated)
   else:
+      raise ValueError("::: distances.ndim>1 is not properly supported yet. :::")
       distances_ma = np.ma.masked_greater(distances, radius_of_influence)
       
       w = 1.0 / distances_ma**2
@@ -84,14 +105,11 @@ def icon_to_regular_grid(data, clon, clat, lons, lats, distances=None, \
       data_interpolated = np.ma.masked_invalid(data_interpolated)
   return data_interpolated
 
-def calc_ckdtree(lon_reg, lat_reg, res, 
+def ckdtree_hgrid(lon_reg, lat_reg, res, 
                  fpath_grid_triangular='', 
-                 fpath_grid_rectangular='',
+                 fpath_ckdtree='',
                  ):
   """
-  * example usage:
-    calc_ckdtree(path_grid='/mnt/lustre01/work/mh0033/m300602/icon/rect_grids/',
-                 fname_grid='ocean_r2b9.npz')
   """
   # --- load triangular grid
   f = Dataset(fpath_grid_triangular, 'r')
@@ -104,30 +122,91 @@ def calc_ckdtree(lon_reg, lat_reg, res,
   lat = np.arange(lat_reg[0],lat_reg[1],res)
   Lon, Lat = np.meshgrid(lon, lat)
 
-  # --- initialize timing
-  tims = np.array([0])
-  tims = timing(tims)
-
-  # --- do ckdtree
-  tims = timing(tims, 'CKD: define reg grid')
-  lzip = list(zip(clon, clat))
-  tims = timing(tims, 'CKD: zip orig grid')
-  tree = cKDTree(lzip)
-  tims = timing(tims, 'CKD: CKDgrid')
-  lzip_rg = list(zip(Lon.flatten(), Lat.flatten()))
-  tims = timing(tims, 'CKD: zip reg grid')
-  dckdtree, ickdtree = tree.query(lzip_rg , k=1, n_jobs=1)
-  tims = timing(tims, 'CKD: tree query')
+  dckdtree, ickdtree = calc_ckdtree(lon_i=clon, lat_i=clat,
+                                    lon_o=Lon.flatten(), lat_o = Lat.flatten())
 
   # --- save grid
-  print('Saving grid file: %s' % (fpath_grid_rectangular))
-  np.savez(fpath_grid_rectangular,
+  print('Saving grid file: %s' % (fpath_ckdtree))
+  np.savez(fpath_ckdtree,
             dckdtree=dckdtree,
             ickdtree=ickdtree,
             lon=lon,
             lat=lat,
            )
   return
+
+def ckdtree_section(p1, p2, npoints=101, 
+                 fpath_grid_triangular='', 
+                 fpath_ckdtree='',
+                 ):
+  """
+  """
+
+  # --- load triangular grid
+  f = Dataset(fpath_grid_triangular, 'r')
+  clon = f.variables['clon'][:] * 180./np.pi
+  clat = f.variables['clat'][:] * 180./np.pi
+  f.close()
+
+  # --- derive section points
+  lon_sec, lat_sec, dist_sec = derive_section_points(p1, p2, npoints)
+
+  dckdtree, ickdtree = calc_ckdtree(lon_i=clon, lat_i=clat,
+                                    lon_o=lon_sec, lat_o=lat_sec)
+
+  # --- save grid
+  print('Saving grid file: %s' % (fpath_ckdtree))
+  np.savez(fpath_ckdtree,
+            dckdtree=dckdtree,
+            ickdtree=ickdtree,
+            lon_sec=lon_sec,
+            lat_sec=lat_sec,
+            dist_sec=dist_sec,
+           )
+  return dckdtree, ickdtree, lon_sec, lat_sec, dist_sec
+
+def calc_ckdtree(lon_i, lat_i, lon_o, lat_o):
+  """
+  """
+  # --- initialize timing
+  tims = np.array([0])
+  tims = timing(tims)
+  # --- do ckdtree
+  tims = timing(tims, 'CKD: define reg grid')
+  lzip_i = list(zip(lon_i, lat_i))
+  tims = timing(tims, 'CKD: zip orig grid')
+  tree = cKDTree(lzip_i)
+  tims = timing(tims, 'CKD: CKDgrid')
+  lzip_o = list(zip(lon_o, lat_o))
+  tims = timing(tims, 'CKD: zip reg grid')
+  dckdtree, ickdtree = tree.query(lzip_o , k=1, n_jobs=1)
+  tims = timing(tims, 'CKD: tree query')
+  return dckdtree, ickdtree
+
+def haversine_dist(lon_ref, lat_ref, lon_pts, lat_pts, degree=True):
+  # for details see http://en.wikipedia.org/wiki/Haversine_formula
+  r = 6378.e3
+  if degree:
+    lon_ref = lon_ref * np.pi/180.
+    lat_ref = lat_ref * np.pi/180.
+    lon_pts = lon_pts * np.pi/180.
+    lat_pts = lat_pts * np.pi/180.
+  arg = np.sqrt(   np.sin(0.5*(lat_pts-lat_ref))**2 
+                 + np.sin(0.5*(lon_pts-lon_ref))**2
+                 * np.cos(lat_ref)*np.cos(lat_pts) )
+  dist = 2*r * np.arcsin(arg)
+  return dist
+
+def derive_section_points(p1, p2, npoints=101,):
+  # --- derive section points
+  if p1[0]==p2[0]:
+    lon_sec = p1[0]*np.ones((npoints)) 
+    lat_sec = np.linspace(p1[1],p2[1],npoints)
+  else:
+    lon_sec = np.linspace(p1[0],p2[0],npoints)
+    lat_sec = (p2[1]-p1[1])/(p2[0]-p1[0])*(xsec-p1[0])+p1[1]
+  dist_sec = haversine_dist(lon_sec[0], lat_sec[0], lon_sec, lat_sec)
+  return lon_sec, lat_sec, dist_sec
 
 def timing(ts, string=''):
   if ts[0]==0:
@@ -260,6 +339,42 @@ def crop_regular_grid(lon_reg, lat_reg, Lon, Lat):
   ind_reg = ind_reg
   return Lon, Lat, lon, lat, ind_reg
 
+def get_files_of_timeseries(path_data, search_str):
+  flist = np.array(glob.glob(path_data+search_str))
+  flist.sort()
+  
+  # FIXME: times should be obtained by loading time variable of nc file
+  times_flist = np.zeros(flist.size, dtype='datetime64[s]')
+  for l, fpath in enumerate(flist):
+    tstr = fpath.split('/')[-1].split('_')[-1][:-4]
+    times_flist[l] = '%s-%s-%sT%s:%s:%s' % ( (tstr[:4], tstr[4:6], tstr[6:8], 
+                                        tstr[9:11], tstr[11:13], tstr[13:15]))
+  return times_flist, flist
+
+def get_varnames(fpath, skip_vars=[]):
+  f = Dataset(fpath, 'r')
+  varnames = f.variables.keys()
+  f.close()
+  #varnames = [var for var in varnames if not var.startswith('clon')]
+  for skip_var in skip_vars:
+    varnames = [var for var in varnames if not var.startswith(skip_var)]
+  return varnames
+
+def get_timesteps(flist):
+  f = Dataset(flist[0], 'r')
+  nt = f.variables['time'].size 
+  f.close()
+  times = np.zeros((len(flist)*nt))
+  its = np.zeros((len(flist)*nt), dtype='int')
+  flist_ts = np.zeros((len(flist)*nt), dtype='|S125')
+  for nn, fpath in enumerate(flist):
+    f = Dataset(fpath, 'r')
+    times[nn*nt:(nn+1)*nt] = f.variables['time'][:] 
+    f.close()
+    flist_ts[nn*nt:(nn+1)*nt] = np.array([fpath]*nt)
+    its[nn*nt:(nn+1)*nt] = np.arange(nt)
+  return times, flist_ts, its
+
 #def nc_info(fpath):
 #  if not os.path.isfile(fpath):
 #    print("::: Error: file %s does not exist! :::" %(fpath))
@@ -379,36 +494,26 @@ class IconData(object):
     self.lon_reg = lon_reg
     self.lat_reg = lat_reg
     self.use_tgrid = use_tgrid
+    self.search_str = search_str
 
-    self.load_tripolar_grid()
-    self.get_timesteps(search_str)
+    self.load_grid()
+    self.get_files_of_timeseries()
     self.get_varnames(self.flist[0])
+    self.get_timesteps()
     return
 
-  def get_timesteps(self, search_str):
-    flist = np.array(glob.glob(self.path_data+search_str))
-    flist.sort()
-    
-    times = np.zeros(flist.size, dtype='datetime64[s]')
-    for l, fpath in enumerate(flist):
-      tstr = fpath.split('/')[-1].split('_')[-1][:-4]
-      times[l] = '%s-%s-%sT%s:%s:%s' % ( (tstr[:4], tstr[4:6], tstr[6:8], 
-                                          tstr[9:11], tstr[11:13], tstr[13:15]))
-    self.times=times
-    self.flist=flist
+  def get_files_of_timeseries(self):
+    self.times_flist, self.flist = get_files_of_timeseries(self.path_data, self.search_str)
     return 
+  
+  def get_timesteps(self):
+    self.times, self.flist_ts, self.its = get_timesteps(self.flist)
+    return
+  
 
-  def get_varnames(self, fpath):
-    f = Dataset(fpath, 'r')
-    varnames = f.variables.keys()
-    f.close()
-    varnames = [var for var in varnames if not var.startswith('clon')]
-    varnames = [var for var in varnames if not var.startswith('clat')]
-    varnames = [var for var in varnames if not var.startswith('elon')]
-    varnames = [var for var in varnames if not var.startswith('elat')]
-    varnames = [var for var in varnames if not var.startswith('time')]
-    varnames = [var for var in varnames if not var.startswith('depth')]
-    varnames = [var for var in varnames if not var.startswith('lev')]
+  def get_varnames(self, fpath, skip_vars=[]):
+    skip_vars = ['clon', 'clat', 'elon', 'elat', 'time', 'depth', 'lev']
+    varnames = get_varnames(fpath, skip_vars)
     self.varnames = varnames
     return
 
@@ -460,11 +565,12 @@ class IconData(object):
       self.Lon, self.Lat = np.meshgrid(self.lon, self.lat)
     return
 
-  def load_hsnap(self, varnames, step_snap=0, it=0, iz=0):
+  def load_hsnap(self, varnames, step_snap=0, iz=0):
     self.step_snap = step_snap
+    it = self.its[step_snap]
     self.it = it
     self.iz = iz
-    fpath = self.flist[step_snap]
+    fpath = self.flist_ts[step_snap]
     #print("Using data set %s" % fpath)
     f = Dataset(fpath, 'r')
     for var in varnames:
@@ -481,7 +587,7 @@ class IconData(object):
       if self.use_tgrid:
         data = data[self.ind_reg] 
       else:
-        data = icon_to_regular_grid(data, self.clon, self.clat, self.Lon, self.Lat, 
+        data = icon_to_regular_grid(data, self.Lon.shape, 
                             distances=self.dckdtree, inds=self.ickdtree)
 
       # add data to IconData object
@@ -613,7 +719,7 @@ def qp_hor_plot( fpath, var, IC='none', iz=0, it=0,
       ddnpz = np.load(path_grid_rectangular+grid)
       IC.lon, IC.lat = ddnpz['lon'], ddnpz['lat']
       IC.Lon, IC.Lat = np.meshgrid(IC.lon, IC.lat)
-      IC.data = icon_to_regular_grid(IC.data, IC.clon, IC.clat, IC.Lon, IC.Lat, 
+      IC.data = icon_to_regular_grid(IC.data, IC.Lon.shape, 
                           distances=ddnpz['dckdtree'], inds=ddnpz['ickdtree'])
       IC.data[IC.data==0] = np.ma.masked
       IC.crop_grid(lon_reg=xlim, lat_reg=ylim, grid=grid)
