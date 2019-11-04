@@ -85,7 +85,7 @@ def hplot(IcD, var='', clim=[-1,1], edgecolor='none'):
   ##  print 'final = ', bstop.value
 
   ##  #IcD.step_snap += 1
-  ##  #IcD.load_hsnap([IP.var], step_snap=IcD.step_snap, it=IcD.it, iz=IcD.iz)
+  ##  #IcD.load_hsnap([IP.var], step_snap=IcD.step_snap, iz=IcD.iz)
   ##  #IP.update(getattr(IcD, IP.var), IcD)
   ##  #IP.fig.canvas.draw()
   ##  #if IP.continue_anim==True:
@@ -97,7 +97,7 @@ def hplot(IcD, var='', clim=[-1,1], edgecolor='none'):
 
   def update_fig(var='', iz=0, step_snap=0):
     #print var, iz, step_snap
-    IcD.load_hsnap([var], step_snap=step_snap, it=0, iz=iz)
+    IcD.load_hsnap([var], step_snap=step_snap, iz=iz)
     IP.update(getattr(IcD, var), IcD, 
               title=IcD.long_name[var]+' ['+IcD.units[var]+']')
     IP.var = var
@@ -154,7 +154,7 @@ def hplot(IcD, var='', clim=[-1,1], edgecolor='none'):
 
   def initialize_plot(IcD, var='', clim=1.5):
     # --- load data
-    IcD.load_hsnap([var], step_snap=0, it=0, iz=0)
+    IcD.load_hsnap([var], step_snap=0, iz=0)
 
     # --- make initial plot
     hca, hcb = pyic.arrange_axes(1,1, plot_cb=True, sasp=0.543, fig_size_fac=2.5,
