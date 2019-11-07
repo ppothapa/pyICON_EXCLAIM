@@ -1,7 +1,7 @@
 import sys, glob, os
 import datetime
 import numpy as np
-from netCDF4 import Dataset
+from netCDF4 import Dataset, num2date
 from scipy import interpolate
 from scipy.spatial import cKDTree
 # --- plotting
@@ -12,8 +12,8 @@ from matplotlib import ticker
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import cmocean
-#from ipdb import set_trace as mybreak  
-# test commit
+from ipdb import set_trace as mybreak  
+from importlib import reload
 
 """
 pyicon
@@ -105,14 +105,36 @@ def apply_ckdtree(data, distances=None, inds=None, radius_of_influence=100e3):
       data_interpolated = np.ma.masked_invalid(data_interpolated)
   return data_interpolated
 
+def lonlat2str(lon, lat):
+  if lon<0:
+    lon_s = '%gW'%(-lon)
+  else:
+    lon_s = '%gE'%(lon)
+  if lat<0:
+    lat_s = '%gS'%(-lat)
+  else:
+    lat_s = '%gN'%(lat)
+  return lon_s, lat_s
+
 def ckdtree_hgrid(lon_reg, lat_reg, res, 
-                 fpath_grid_triangular='', 
-                 fpath_ckdtree='',
+                 #fpath_grid_triangular='', 
+                 fname_tgrid='',
+                 path_tgrid='',
+                 path_ckdtree='',
+                 sname='',
                  ):
   """
   """
+  Drgrid = identify_grid(path_tgrid, path_tgrid+fname_tgrid) 
+  tgname = Drgrid['name']
+  lon1str, lat1str = lonlat2str(lon_reg[0], lat_reg[0])
+  lon2str, lat2str = lonlat2str(lon_reg[1], lat_reg[1])
+
+  fname = '%s_res%3.2f_%s-%s_%s-%s.npz'%(tgname, res, lon1str, lon2str, lat1str, lat2str) 
+  fpath_ckdtree = path_ckdtree+fname
+
   # --- load triangular grid
-  f = Dataset(fpath_grid_triangular, 'r')
+  f = Dataset(path_tgrid+fname_tgrid, 'r')
   clon = f.variables['clon'][:] * 180./np.pi
   clat = f.variables['clat'][:] * 180./np.pi
   f.close()
@@ -132,21 +154,34 @@ def ckdtree_hgrid(lon_reg, lat_reg, res,
             ickdtree=ickdtree,
             lon=lon,
             lat=lat,
+            sname=sname,
            )
   return
 
 def ckdtree_section(p1, p2, npoints=101, 
-                 fpath_grid_triangular='', 
-                 fpath_ckdtree='',
+                 fname_tgrid='',
+                 path_tgrid='',
+                 path_ckdtree='',
+                 sname='auto',
                  ):
   """
   """
+  Drgrid = identify_grid(path_tgrid, path_tgrid+fname_tgrid) 
+  tgname = Drgrid['name']
+  lon1str, lat1str = lonlat2str(p1[0], p1[1])
+  lon2str, lat2str = lonlat2str(p2[0], p2[1])
+
+  fname = '%s_nps%d_%s%s_%s%s.npz'%(tgname, npoints, lon1str, lat1str, lon2str, lat2str) 
+  fpath_ckdtree = path_ckdtree+fname
 
   # --- load triangular grid
-  f = Dataset(fpath_grid_triangular, 'r')
+  f = Dataset(path_tgrid+fname_tgrid, 'r')
   clon = f.variables['clon'][:] * 180./np.pi
   clat = f.variables['clat'][:] * 180./np.pi
   f.close()
+
+  if sname=='auto':
+    sname = fpath_ckdtree.split('/')[-1][:-4]
 
   # --- derive section points
   lon_sec, lat_sec, dist_sec = derive_section_points(p1, p2, npoints)
@@ -162,6 +197,7 @@ def ckdtree_section(p1, p2, npoints=101,
             lon_sec=lon_sec,
             lat_sec=lat_sec,
             dist_sec=dist_sec,
+            sname=sname,
            )
   return dckdtree, ickdtree, lon_sec, lat_sec, dist_sec
 
@@ -328,9 +364,13 @@ def crop_tripolar_grid(lon_reg, lat_reg,
   return clon, clat, vertex_of_cell, edge_of_cell, ind_reg
 
 def crop_regular_grid(lon_reg, lat_reg, Lon, Lat):
-  ind_reg = np.where(   (Lon>lon_reg[0]) 
+  # this does not work since Lon[ind_reg].shape = (64800, 360)
+  # cropping needs probably done by each dimension
+  # in this case cropping function for data is used as well
+  print(Lon.shape)
+  ind_reg = np.where(   (Lon>=lon_reg[0]) 
                       & (Lon<=lon_reg[1]) 
-                      & (Lat>lat_reg[0]) 
+                      & (Lat>=lat_reg[0]) 
                       & (Lat<=lat_reg[1]) )[0]
   Lon = Lon[ind_reg]
   Lat = Lat[ind_reg]
@@ -343,7 +383,6 @@ def get_files_of_timeseries(path_data, search_str):
   flist = np.array(glob.glob(path_data+search_str))
   flist.sort()
   
-  # FIXME: times should be obtained by loading time variable of nc file
   times_flist = np.zeros(flist.size, dtype='datetime64[s]')
   for l, fpath in enumerate(flist):
     tstr = fpath.split('/')[-1].split('_')[-1][:-4]
@@ -364,16 +403,190 @@ def get_timesteps(flist):
   f = Dataset(flist[0], 'r')
   nt = f.variables['time'].size 
   f.close()
-  times = np.zeros((len(flist)*nt))
+  #times = np.zeros((len(flist)*nt))
+  times = np.array(['2010']*(len(flist)*nt), dtype='datetime64[s]')
   its = np.zeros((len(flist)*nt), dtype='int')
-  flist_ts = np.zeros((len(flist)*nt), dtype='|S125')
+  flist_ts = np.zeros((len(flist)*nt), dtype='<U200')
   for nn, fpath in enumerate(flist):
     f = Dataset(fpath, 'r')
-    times[nn*nt:(nn+1)*nt] = f.variables['time'][:] 
+    ncv = f.variables['time']
+    np_time = num2date(ncv[:], units=ncv.units, calendar=ncv.calendar
+                      ).astype("datetime64[s]")
+    times[nn*nt:(nn+1)*nt] = np_time
     f.close()
     flist_ts[nn*nt:(nn+1)*nt] = np.array([fpath]*nt)
     its[nn*nt:(nn+1)*nt] = np.arange(nt)
   return times, flist_ts, its
+
+def hplot_base(IcD, IaV, clim='auto', cmap='viridis', 
+               ax='auto', cax=0,
+               title='auto', xlabel='', ylabel='',
+               xlim='auto', ylim='auto',
+               projection='none', use_tgrid=True,
+               logplot=False,
+              ):
+  """
+  IaV variable needs the following attributes
+    * name
+    * long_name
+    * units
+    * data
+    if use_tgrid==True
+    * Tri
+    else 
+    * lon
+    * lat
+
+  returns:
+    * ax
+    * cax
+    * mappable
+  """
+  Dstr = dict()
+
+  # --- color limits and color map
+  if isinstance(clim,str) and clim=='auto':
+    clim = [IaV.data.min(), IaV.data.max()]
+
+  # --- annotations (title etc.) 
+  if title=='auto':
+    if not logplot:
+      title = IaV.long_name+' ['+IaV.units+']'
+    else:
+      title = 'log$_{10}$('+IaV.long_name+') ['+IaV.units+']'
+
+  # --- cartopy projection
+  if projection=='none':
+    ccrs_proj = None
+  else:
+    ccrs_proj = getattr(ccrs, projection)()
+
+  # --- make axes and colorbar (taken from shade)
+  if ax == 'auto':
+      #fig, ax = plt.subplots(subplot_kw={'projection': ccrs_proj}) 
+    hca, hcb = arrange_axes(1,1, plot_cb=True, sasp=0.7, fig_size_fac=2.,
+                                 projection=ccrs_proj,
+                                )
+    ax = hca[0]
+    cax = hcb[0]
+
+  # --- do plotting
+  if use_tgrid:
+    hm = trishade(IcD.Tri, IaV.data, 
+                      ax=ax, cax=cax, clim=clim, cmap=cmap,
+                      transform=ccrs_proj,
+                      logplot=logplot,
+                 )
+    if isinstance(xlim, str) and (xlim=='auto'):
+      xlim = [IcD.clon.min(), IcD.clon.max()]
+    if isinstance(ylim, str) and (ylim=='auto'):
+      ylim = [IcD.clat.min(), IcD.clat.max()]
+  else:
+    hm = shade(IcD.lon, IcD.lat, IaV.data,
+                      ax=ax, cax=cax, clim=clim, cmap=cmap,
+                      transform=ccrs_proj,
+                      logplot=logplot,
+              )
+    if isinstance(xlim, str) and (xlim=='auto'):
+      xlim = [IcD.lon.min(), IcD.lon.max()]
+    if isinstance(ylim, str) and (ylim=='auto'):
+      ylim = [IcD.lat.min(), IcD.lat.max()]
+
+  mappable = hm[0]
+
+  # --- plot refinement
+  ax.set_title(title)
+  ax.set_xlabel(xlabel)
+  ax.set_ylabel(ylabel)
+  ax.set_xlim(xlim)
+  ax.set_ylim(ylim)
+
+  if projection!='none':
+    ax.coastlines()
+  return ax, cax, mappable, Dstr
+
+def vplot_base(IcD, IaV, clim='auto', cmap='viridis', 
+               ax='auto', cax=0,
+               title='auto', xlabel='', ylabel='',
+               xlim='auto', ylim='auto',
+               log2vax=False,
+               logplot=False,
+              ):
+  """
+  IaV variable needs the following attributes
+    * name
+    * long_name
+    * units
+    * data
+    * lon_sec, lat_sec, dist_sec
+
+  returns:
+    * ax
+    * cax
+    * mappable
+  """
+  Dstr = dict()
+
+  # --- color limits and color map
+  if isinstance(clim,str) and clim=='auto':
+    clim = [IaV.data.min(), IaV.data.max()]
+
+  # --- annotations (title etc.) 
+  if title=='auto':
+    if not logplot:
+      title = IaV.long_name+' ['+IaV.units+']'
+    else:
+      title = 'log$_{10}$('+IaV.long_name+') ['+IaV.units+']'
+
+  # --- make axes and colorbar (taken from shade)
+  if ax == 'auto':
+      #fig, ax = plt.subplots(subplot_kw={'projection': ccrs_proj}) 
+    hca, hcb = arrange_axes(1,1, plot_cb=True, sasp=0.7, fig_size_fac=2.,
+                                 projection=ccrs_proj,
+                                )
+    ax = hca[0]
+    cax = hcb[0]
+
+  # --- do plotting
+  if False:
+    x = IaV.lon_sec
+    xstr = 'longitude'
+  elif True:
+    x = IaV.lat_sec
+    xstr = 'latitude'
+  elif False:
+    x = IaC.dist_sec/1e3
+    xstr = 'distance [km]'
+  if IaV.nz==IcD.depthc.size:
+    depth = IcD.depthc
+  else: 
+    depth = IcD.depthi
+  if log2vax:
+    depth = np.log(depth)/np.log(2) 
+  ylabel = 'depth [m]'
+
+  hm = shade(x, depth, IaV.data,
+                    ax=ax, cax=cax, clim=clim, cmap=cmap,
+                    logplot=logplot,
+            )
+  if isinstance(xlim, str) and (xlim=='auto'):
+    xlim = [x.min(), x.max()]
+  if isinstance(ylim, str) and (ylim=='auto'):
+    ylim = [depth.max(), depth.min()]
+
+  mappable = hm[0]
+
+  # --- plot refinement
+  ax.set_title(title)
+  ax.set_xlabel(xstr)
+  ax.set_ylabel(ylabel)
+  ax.set_xlim(xlim)
+  ax.set_ylim(ylim)
+  if log2vax:
+    ax.set_yticklabels(2**ax.get_yticks())
+
+  return ax, cax, mappable, Dstr
+
 
 #def nc_info(fpath):
 #  if not os.path.isfile(fpath):
@@ -415,77 +628,172 @@ def get_timesteps(flist):
 #  return Dfinf
 
 # //////////////////////////////////////////////////////////////////////////////// 
-class IconDataFile(object):
-  def __init__(self, 
-               fpath_data,
-               path_grid='/pool/data/ICON/oes/input/r0002/',
-              ):
-    self.path_grid = path_grid
-    self.fpath_data = fpath_data
+class IconVariable(object):
+  def __init__(self, name, units='', long_name='', is3d=None, isinterpolated=False):
+    self.name = name
+    self.units = units
+    self.long_name = long_name
+    self.is3d = is3d
+    self.isinterpolated = isinterpolated
     return
 
+  def load_hsnap(self, fpath, it=0, iz=0, step_snap=0):
+    self.step_snap = step_snap
+    self.it = it
+    self.iz = iz
+    self.fpath = fpath
 
-  def identify_grid(self):
-    self.Dgrid = identify_grid(path_grid=self.path_grid, fpath_data=self.fpath_data)
-    return
-  
-  def load_tripolar_grid(self):
-    (self.clon, self.clat, self.vlon, self.vlat,
-     self.elon, self.elat, self.vertex_of_cell,
-     self.edge_of_cell ) = load_tripolar_grid(fpath_grid=self.Dgrid['fpath_grid'])
-    return
-  
-  def crop_grid(self, lon_reg, lat_reg, grid='orig'):
-    """ Crop all cell related variables (data, clon, clat, vertex_of_cell, edge_of_cell to regin defined by lon_reg and lat_reg.
-    """
-    if grid=='orig':
-      (self.clon, self.clat,
-       self.vertex_of_cell, self.edge_of_cell,
-       self.ind_reg ) = crop_tripolar_grid(lon_reg, lat_reg,
-                                           self.clon, self.clat, 
-                                           self.vertex_of_cell,
-                                           self.edge_of_cell)
+    f = Dataset(fpath, 'r')
+    var = self.name
+    print("Loading %s from %s" % (var, fpath))
+    if f.variables[var].ndim==2:
+      data = f.variables[var][it,:]
     else:
-      (self.Lon, self.Lat, self.lon, self.lat, 
-       self.ind_reg ) = crop_regular_grid(lon_reg, lat_reg, self.Lon, self.Lat)
+      data = f.variables[var][it,iz,:]
+    #self.long_name = f.variables[var].long_name
+    #self.units = f.variables[var].units
+    f.close()
+    self.data = data
 
-  def mask_big_triangles(self, do_mask_zeros=True):
-    mask_grid_c = (
-          (self.vlon[self.vertex_of_cell[:,0]] - self.vlon[self.vertex_of_cell[:,1]] )**2
-        + (self.vlon[self.vertex_of_cell[:,0]] - self.vlon[self.vertex_of_cell[:,2]] )**2 
-        + (self.vlat[self.vertex_of_cell[:,0]] - self.vlat[self.vertex_of_cell[:,1]] )**2
-        + (self.vlat[self.vertex_of_cell[:,0]] - self.vlat[self.vertex_of_cell[:,2]] )**2 
-                  ) > 2.*180./np.pi
-    #ipdb.set_trace()
-    if do_mask_zeros:
-      mask_grid_c += self.data==0
-    self.Tri.set_mask(mask_grid_c)
+    self.mask = self.data==0.
+    self.data[self.mask] = np.ma.masked
+    self.isinterpolated=False
     return
+
+  def load_vsnap(self, fpath, fpath_ckdtree, it=0, step_snap=0):
+    self.step_snap = step_snap
+    self.it = it
+    self.fpath = fpath
+    # --- load ckdtree
+    ddnpz = np.load(fpath_ckdtree)
+    dckdtree = ddnpz['dckdtree']
+    ickdtree = ddnpz['ickdtree'] 
+    self.lon_sec = ddnpz['lon_sec'] 
+    self.lat_sec = ddnpz['lat_sec'] 
+    self.dist_sec  = ddnpz['dist_sec'] 
+
+    f = Dataset(fpath, 'r')
+    var = self.name
+    print("Loading %s from %s" % (var, fpath))
+    if f.variables[var].ndim==2:
+      raise ValueError('::: Warning: Cannot do section of 2D variable %s! :::'%var)
+    nz = f.variables[var].shape[1]
+    data = np.ma.zeros((nz,self.dist_sec.size))
+    for k in range(nz):
+      #print('k = %d/%d'%(k,nz))
+      data_hsec = f.variables[var][it,k,:]
+      data[k,:] = icon_to_section(data_hsec, distances=dckdtree, inds=ickdtree)
+    f.close()
+    self.data = data
+
+    self.mask = self.data==0.
+    self.data[self.mask] = np.ma.masked
+    self.nz = nz
+    return
+
+  def interp_to_rectgrid(self, fpath_ckdtree):
+    if self.isinterpolated:
+      raise ValueError('::: Variable %s is already interpolated. :::'%self.name)
+
+    ddnpz = np.load(fpath_ckdtree)
+    dckdtree = ddnpz['dckdtree']
+    ickdtree = ddnpz['ickdtree'] 
+    self.lon = ddnpz['lon'] 
+    self.lat = ddnpz['lat'] 
+    self.data = icon_to_regular_grid(self.data, 
+                            shape=[self.lat.size, self.lon.size], 
+                            distances=dckdtree, inds=ickdtree)
+    self.data[self.data==0.] = np.ma.masked
+    return
+
+#### //////////////////////////////////////////////////////////////////////////////// 
+###class IconDataFile(object):
+###  """
+###  Used by QuickPlots
+###
+###  To do:
+###    * similar to IconData see if we need both
+###  """
+###  def __init__(self, 
+###               fpath_data,
+###               path_grid='/pool/data/ICON/oes/input/r0002/',
+###              ):
+###    self.path_grid = path_grid
+###    self.fpath_data = fpath_data
+###    return
+###
+###
+###  def identify_grid(self):
+###    self.Dgrid = identify_grid(path_grid=self.path_grid, fpath_data=self.fpath_data)
+###    return
+###  
+###  def load_tripolar_grid(self):
+###    (self.clon, self.clat, self.vlon, self.vlat,
+###     self.elon, self.elat, self.vertex_of_cell,
+###     self.edge_of_cell ) = load_tripolar_grid(fpath_grid=self.Dgrid['fpath_grid'])
+###    return
+###  
+###  def crop_grid(self, lon_reg, lat_reg, grid='orig'):
+###    """ Crop all cell related variables (data, clon, clat, vertex_of_cell, edge_of_cell to regin defined by lon_reg and lat_reg.
+###    """
+###    if grid=='orig':
+###      (self.clon, self.clat,
+###       self.vertex_of_cell, self.edge_of_cell,
+###       self.ind_reg ) = crop_tripolar_grid(lon_reg, lat_reg,
+###                                           self.clon, self.clat, 
+###                                           self.vertex_of_cell,
+###                                           self.edge_of_cell)
+###    else:
+###      (self.Lon, self.Lat, self.lon, self.lat, 
+###       self.ind_reg ) = crop_regular_grid(lon_reg, lat_reg, self.Lon, self.Lat)
+###
+###  def mask_big_triangles(self, do_mask_zeros=True):
+###    mask_grid_c = (
+###          (self.vlon[self.vertex_of_cell[:,0]] - self.vlon[self.vertex_of_cell[:,1]] )**2
+###        + (self.vlon[self.vertex_of_cell[:,0]] - self.vlon[self.vertex_of_cell[:,2]] )**2 
+###        + (self.vlat[self.vertex_of_cell[:,0]] - self.vlat[self.vertex_of_cell[:,1]] )**2
+###        + (self.vlat[self.vertex_of_cell[:,0]] - self.vlat[self.vertex_of_cell[:,2]] )**2 
+###                  ) > 2.*180./np.pi
+###    #ipdb.set_trace()
+###    if do_mask_zeros:
+###      mask_grid_c += self.data==0
+###    self.Tri.set_mask(mask_grid_c)
+###    return
 
 # //////////////////////////////////////////////////////////////////////////////// 
 # ---- classes and methods necessary for Jupyter data viewer
 class IconData(object):
+  """
+  Used by Jupyter
+  """
   def __init__(self, 
-               fpath_grid_triangular="", 
-               path_grid_rectangular="/mnt/lustre01/work/mh0033/m300602/icon/rect_grids/", 
-               fname_rgrid="",
-               path_data="",
                search_str="",
-               region="global",
-               lon_reg=[-80, -75],
-               lat_reg=[16, 18],
+
+               path_data      = "",
+               path_ckdtree   = "",
+
+               rgrid_name     = "",
+
+               lon_reg=[-180, 180],
+               lat_reg=[-90, 90],
                use_tgrid=False,
+               do_triangulation=True,
               ):
-    self.Drgrids = dict()
-    self.Drgrids["global"]    = "r2b9ocean_r0.3_180w_180e_90s_90n.npz"
-    self.Drgrids["hurricane"] = "r2b9ocean_r0.05_100w_30w_2n_40n.npz"
-    self.fpath_grid_triangular = fpath_grid_triangular
-    self.path_grid_rectangular = path_grid_rectangular
-    if fname_rgrid=="":
-      self.fname_rgrid = self.Drgrids[region]
-    else:
-      self.fname_rgrid = fname_rgrid
-    self.path_data = path_data
+
+
+    # --- paths and file names
+    self.path_data     = path_data
+    self.path_ckdtree  = path_ckdtree
+    self.path_rgrid    = self.path_ckdtree + 'rectgrids/'
+    self.path_sections = self.path_ckdtree + 'rectgrids/'
+
+    self.run           = self.path_data.split('/')[-2]
+    self.fpath_fx      = self.path_data + self.run + '_fx.nc'
+    self.Dgrid = identify_grid(path_grid='', fpath_data=self.fpath_fx)
+    self.fpath_tgrid   = self.path_data + self.Dgrid['long_name'] + '.nc'
+    self.Dgrid['fpath_grid'] = self.fpath_tgrid
+
+    # --- global variables
     self.interpolate = True
     self.units=dict()
     self.long_name=dict()
@@ -496,9 +804,54 @@ class IconData(object):
     self.use_tgrid = use_tgrid
     self.search_str = search_str
 
+    # --- find ckdtrees fitting for this data set
+    sec_fpaths = np.array(glob.glob(path_ckdtree+'sections/'+'*.npz'))
+    sec_names = np.zeros(sec_fpaths.size, '<U200')
+    for nn, fpath_ckdtree in enumerate(sec_fpaths): 
+      #sec_names[nn] = fpath_ckdtree.split('/')[-1][:-4]
+      ddnpz = np.load(fpath_ckdtree)
+      sec_names[nn] = ddnpz['sname']
+    self.sec_fpaths = sec_fpaths
+    self.sec_names = sec_names
+
+    rgrid_fpaths = np.array(glob.glob(path_ckdtree+'rectgrids/'+'*.npz'))
+    rgrid_names = np.zeros(rgrid_fpaths.size, '<U200')
+    for nn, fpath_ckdtree in enumerate(rgrid_fpaths): 
+      #rgrid_names[nn] = fpath_ckdtree.split('/')[-1][:-4]
+      ddnpz = np.load(fpath_ckdtree)
+      rgrid_names[nn] = ddnpz['sname']
+    self.rgrid_fpaths = rgrid_fpaths
+    self.rgrid_names = rgrid_names
+
+    if rgrid_name=="":
+      # take first of list
+      self.rgrid_fpath = self.rgrid_fpaths[0]
+      self.rgrid_name  = self.rgrid_names[0]
+    else:
+      if rgrid_name in self.rgrid_names[0]:
+        self.rgrid_fpath = self.rgrid_fpaths[
+          np.where(self.rgrid_names==rgrid_name)[0][0] ]
+        self.rgrid_name  = rgrid_name
+      else: 
+        self.rgrid_fpath = self.rgrid_fpaths[0]
+        self.rgrid_name  = self.rgrid_names[0]
+        print('::: Warning %s could not be found. We proceed with %s. :::' 
+              % (rgrid_name, self.rgrid_name))
+
+    # --- enquire data set
+    # --- grid
     self.load_grid()
+    #self.crop_grid(lon_reg=self.lon_reg, lat_reg=self.lat_reg)
+
+    # --- make triangulation
+    if do_triangulation:
+      self.Tri = matplotlib.tri.Triangulation(self.vlon, self.vlat, 
+                                              triangles=self.vertex_of_cell)
+      self.mask_big_triangles()
+    # --- 
     self.get_files_of_timeseries()
     self.get_varnames(self.flist[0])
+    self.associate_variables(fpath_data=self.flist[0], skip_vars=[])
     self.get_timesteps()
     return
 
@@ -510,96 +863,199 @@ class IconData(object):
     self.times, self.flist_ts, self.its = get_timesteps(self.flist)
     return
   
-
   def get_varnames(self, fpath, skip_vars=[]):
     skip_vars = ['clon', 'clat', 'elon', 'elat', 'time', 'depth', 'lev']
     varnames = get_varnames(fpath, skip_vars)
     self.varnames = varnames
     return
 
+  def associate_variables(self, fpath_data, skip_vars=[]):
+    fi = Dataset(fpath_data, 'r')
+    self.vars = dict()
+    for var in self.varnames:
+      try:
+        units = fi.variables[var].units
+      except:
+        units = ''
+      try:
+        long_name = fi.variables[var].long_name
+      except:
+        long_name = ''
+      shape = fi.variables[var].shape
+      if (self.nz in shape) or ((self.nz+1) in shape):
+        is3d = True
+      else:
+        is3d = False 
+      #print(var, fi.variables[var].shape, is3d)
+      IV = IconVariable(var, units=units, long_name=long_name, is3d=is3d)
+      #print('%s: units = %s, long_name = %s'%(IV.name,IV.units,IV.long_name))
+      self.vars[var] = IV
+      #setattr(self, var, IV)
+    fi.close()
+    return
+
   def load_grid(self, lon_reg='all', lat_reg='all'):
-    # --- triangle grid
-    f = Dataset(self.fpath_grid_triangular, 'r')
-    self.clon = f.variables['clon'][:] * 180./np.pi
-    self.clat = f.variables['clat'][:] * 180./np.pi
-    self.depth = f.variables['depth'][:]
+    # --- vertical levels
+    f = Dataset(self.fpath_fx, 'r')
+    #self.clon = f.variables['clon'][:] * 180./np.pi
+    #self.clat = f.variables['clat'][:] * 180./np.pi
+    self.depthc = f.variables['depth'][:]
+    self.depthi = f.variables['depth_2'][:]
+    self.nz = self.depthc.size
     f.close()
-    
-    if self.use_tgrid:
-      # --- triangle grid
-      self.ind_reg = np.where( 
-          (self.clon >  self.lon_reg[0]) 
-        & (self.clon <= self.lon_reg[1]) 
-        & (self.clat >  self.lat_reg[0]) 
-        & (self.clat <= self.lat_reg[1]) )[0]
-      self.clon = self.clon[self.ind_reg]
-      self.clat = self.clat[self.ind_reg]
 
-      # triangulation
-      ntr = self.clon.size
-      f = Dataset(self.fpath_grid_triangular, 'r')
-      clon_bnds = f.variables['clon_bnds'][:] * 180./np.pi
-      clat_bnds = f.variables['clat_bnds'][:] * 180./np.pi
-      clon_bnds = clon_bnds[self.ind_reg,:]
-      clat_bnds = clat_bnds[self.ind_reg,:]
-      f.close()
+    # --- tripolar grid
+    self.load_tripolar_grid()
 
-      clon_bnds_rs = clon_bnds.reshape(ntr*3)
-      clat_bnds_rs = clat_bnds.reshape(ntr*3)
-      triangles = np.arange(ntr*3).reshape(ntr,3)
-      self.Tri = matplotlib.tri.Triangulation(
-        clon_bnds_rs, clat_bnds_rs, triangles=triangles)
+    # --- rectangular grid
+    ddnpz = np.load(self.rgrid_fpath)
+    self.dckdtree = ddnpz['dckdtree']
+    self.ickdtree = ddnpz['ickdtree']
+    self.lon = ddnpz['lon']
+    self.lat = ddnpz['lat']
+    self.Lon, self.Lat = np.meshgrid(self.lon, self.lat)
 
-      mask_grid = (   (clon_bnds[:,0]-clon_bnds[:,1])**2 
-                    + (clon_bnds[:,0]-clon_bnds[:,2])**2 
-                    + (clat_bnds[:,0]-clat_bnds[:,1])**2 
-                    + (clat_bnds[:,0]-clat_bnds[:,2])**2 
-                  ) > 2.*180./np.pi
-      self. maskTri = mask_grid
-      self.Tri.set_mask(self.maskTri)
-    else:
-      # --- rectangular grid
-      ddnpz = np.load(self.path_grid_rectangular+self.fname_rgrid)
-      for var in ddnpz.keys():
-        exec('self.%s = ddnpz[var]' % var)
-      self.Lon, self.Lat = np.meshgrid(self.lon, self.lat)
+      ## --- triangle grid
+      #self.ind_reg = np.where( 
+      #    (self.clon >  self.lon_reg[0]) 
+      #  & (self.clon <= self.lon_reg[1]) 
+      #  & (self.clat >  self.lat_reg[0]) 
+      #  & (self.clat <= self.lat_reg[1]) )[0]
+      #self.clon = self.clon[self.ind_reg]
+      #self.clat = self.clat[self.ind_reg]
+
+      ## triangulation
+      #ntr = self.clon.size
+      #f = Dataset(self.fpath_fx, 'r')
+      #clon_bnds = f.variables['clon_bnds'][:] * 180./np.pi
+      #clat_bnds = f.variables['clat_bnds'][:] * 180./np.pi
+      #clon_bnds = clon_bnds[self.ind_reg,:]
+      #clat_bnds = clat_bnds[self.ind_reg,:]
+      #f.close()
+
+      #clon_bnds_rs = clon_bnds.reshape(ntr*3)
+      #clat_bnds_rs = clat_bnds.reshape(ntr*3)
+      #triangles = np.arange(ntr*3).reshape(ntr,3)
+      #self.Tri = matplotlib.tri.Triangulation(
+      #  clon_bnds_rs, clat_bnds_rs, triangles=triangles)
+
+      #mask_grid = (   (clon_bnds[:,0]-clon_bnds[:,1])**2 
+      #              + (clon_bnds[:,0]-clon_bnds[:,2])**2 
+      #              + (clat_bnds[:,0]-clat_bnds[:,1])**2 
+      #              + (clat_bnds[:,0]-clat_bnds[:,2])**2 
+      #            ) > 2.*180./np.pi
+      #self. maskTri = mask_grid
+      #self.Tri.set_mask(self.maskTri)
     return
 
-  def load_hsnap(self, varnames, step_snap=0, iz=0):
-    self.step_snap = step_snap
-    it = self.its[step_snap]
-    self.it = it
-    self.iz = iz
-    fpath = self.flist_ts[step_snap]
-    #print("Using data set %s" % fpath)
-    f = Dataset(fpath, 'r')
-    for var in varnames:
-      print("Loading %s" % (var))
-      if f.variables[var].ndim==2:
-        data = f.variables[var][it,:]
-      else:
-        data = f.variables[var][it,iz,:]
-      self.long_name[var] = f.variables[var].long_name
-      self.units[var] = f.variables[var].units
-      self.data[var] = var
+#  def load_hsnap(self, varnames, step_snap=0, iz=0):
+#    self.step_snap = step_snap
+#    it = self.its[step_snap]
+#    self.it = it
+#    self.iz = iz
+#    fpath = self.flist_ts[step_snap]
+#    #print("Using data set %s" % fpath)
+#    f = Dataset(fpath, 'r')
+#    for var in varnames:
+#      print("Loading %s" % (var))
+#      if f.variables[var].ndim==2:
+#        data = f.variables[var][it,:]
+#      else:
+#        data = f.variables[var][it,iz,:]
+#      self.long_name[var] = f.variables[var].long_name
+#      self.units[var] = f.variables[var].units
+#      self.data[var] = var
+#
+#      #if self.interpolate:
+#      if self.use_tgrid:
+#        data = data[self.ind_reg] 
+#      else:
+#        data = icon_to_regular_grid(data, self.Lon.shape, 
+#                            distances=self.dckdtree, inds=self.ickdtree)
+#
+#      # add data to IconData object
+#      data[data==0.] = np.ma.masked
+#      setattr(self, var, data)
+#    f.close()
+#    return
 
-      #if self.interpolate:
-      if self.use_tgrid:
-        data = data[self.ind_reg] 
-      else:
-        data = icon_to_regular_grid(data, self.Lon.shape, 
-                            distances=self.dckdtree, inds=self.ickdtree)
+#  def load_vsnap(self, varnames, fpath_ckdtree, step_snap=0,):
+#    self.step_snap = step_snap
+#    it = self.its[step_snap]
+#    self.it = it
+#    #self.iz = iz
+#    fpath = self.flist_ts[step_snap]
+#    print("Using data set %s" % fpath)
+#
+#    ddnpz = np.load(fpath_ckdtree)
+#    dckdtree = ddnpz['dckdtree']
+#    ickdtree = ddnpz['ickdtree'] 
+#    self.lon_sec = ddnpz['lon_sec'] 
+#    self.lat_sec = ddnpz['lat_sec'] 
+#    self.dist_sec  = ddnpz['dist_sec'] 
+#
+#    f = Dataset(fpath, 'r')
+#    for var in varnames:
+#      print("Loading %s" % (var))
+#      if f.variables[var].ndim==2:
+#        print('::: Warning: Cannot do section of 2D variable %s! :::'%var)
+#      else:
+#        nz = f.variables[var].shape[1]
+#        data_sec = np.ma.zeros((nz,self.dist_sec.size))
+#        for k in range(nz):
+#          #print('k = %d/%d'%(k,nz))
+#          data = f.variables[var][it,k,:]
+#          data_sec[k,:] = icon_to_section(data, distances=dckdtree, inds=ickdtree)
+#
+#        self.long_name[var] = f.variables[var].long_name
+#        self.units[var] = f.variables[var].units
+#        self.data[var] = var
+#
+#        # add data to IconData object
+#        data_sec[data_sec==0.] = np.ma.masked
+#        setattr(self, var, data_sec)
+#    f.close()
+#    return
 
-      # add data to IconData object
-      setattr(self, var, data)
-    f.close()
+  def load_tripolar_grid(self):
+    (self.clon, self.clat, self.vlon, self.vlat,
+     self.elon, self.elat, self.vertex_of_cell,
+     self.edge_of_cell ) = load_tripolar_grid(self.fpath_tgrid)
+    return
+  
+  def crop_grid(self, lon_reg, lat_reg):
+    """ Crop all cell related variables (data, clon, clat, vertex_of_cell, edge_of_cell to regin defined by lon_reg and lat_reg.
+    """
+    # --- crop tripolar grid
+    (self.clon, self.clat,
+     self.vertex_of_cell, self.edge_of_cell,
+     self.ind_reg_tri ) = crop_tripolar_grid(lon_reg, lat_reg,
+                                         self.clon, self.clat, 
+                                         self.vertex_of_cell,
+                                         self.edge_of_cell)
+    # --- crop rectangular grid
+    (self.Lon, self.Lat, self.lon, self.lat, 
+     self.ind_reg_rec ) = crop_regular_grid(lon_reg, lat_reg, self.Lon, self.Lat)
     return
 
-  def load_sec(self, varnames, fpath, isec, ksec):
-    pass
+  def mask_big_triangles(self):
+    mask_bt = (
+      (self.vlon[self.vertex_of_cell[:,0]] - self.vlon[self.vertex_of_cell[:,1]])**2
+    + (self.vlon[self.vertex_of_cell[:,0]] - self.vlon[self.vertex_of_cell[:,2]])**2
+    + (self.vlat[self.vertex_of_cell[:,0]] - self.vlat[self.vertex_of_cell[:,1]])**2
+    + (self.vlat[self.vertex_of_cell[:,0]] - self.vlat[self.vertex_of_cell[:,2]])**2
+               ) > 2.*180./np.pi
+    self.Tri.set_mask(mask_bt)
+    self.maskTri = mask_bt
     return
 
 class IP_hor_sec_rect(object):
+  """
+  To do:
+  * similar to qp_hor_plot, see if we need both
+  * try to use hplot_base
+  """
+
   def __init__(self, 
                IcD, ax='', cax='',
                var='', clim='auto', nc=1, cmap='viridis',
@@ -672,7 +1128,60 @@ class IP_hor_sec_rect(object):
       self.hdstr.set_text('depth = %4.1fm'%(IcD.depth[IcD.iz]))
     return
 
+class IP_ver_sec(object):
+  def __init__(self, 
+               IcD, ax='', cax='',
+               var='', clim='auto', nc=1, cmap='viridis',
+               title='auto',
+               time_string='auto',
+               depth_string='auto',
+               edgecolor='none',
+               ):
+    self.ax=ax
+    self.cax=cax
+    self.var=var
+
+    data = getattr(IcD, var)
+    self.hpc = shade(IcD.dist_sec, IcD.depth,
+                         data, ax=ax, cax=cax, 
+                         clim=clim, cmap=cmap,
+                       ) 
+
+    ax.set_ylim(IcD.depth.max(),0)
+
+    if title=='auto':
+      self.htitle = ax.set_title(IcD.long_name[var]+' ['+IcD.units[var]+']')
+    else:
+      self.htitle = ax.set_title(title)
+
+    if time_string!='none':
+      self.htstr = ax.text(0.05, 0.025, IcD.times[IcD.step_snap], 
+                           transform=plt.gcf().transFigure)
+    #if depth_string!='none':
+    #  self.hdstr = ax.text(0.05, 0.08, 'depth = %4.1fm'%(IcD.depth[IcD.iz]), 
+    #                       transform=plt.gcf().transFigure)
+    return
+  
+  def update(self, data, IcD, title='none', 
+             time_string='auto', depth_string='auto'):
+    if IcD.use_tgrid:
+      data_nomasked_vals = data[IcD.maskTri==False]
+      #print self.hpc[0].get_array.shape()
+      self.hpc[0].set_array(data_nomasked_vals)
+      #print self.hpc[0].get_array.shape()
+      print('hello world')
+    else:
+      self.hpc[0].set_array(data[1:,1:].flatten())
+    if title!='none':
+      self.htitle.set_text(title) 
+    if time_string!='none':
+      self.htstr.set_text(IcD.times[IcD.step_snap])
+    if depth_string!='none':
+      self.hdstr.set_text('depth = %4.1fm'%(IcD.depth[IcD.iz]))
+    return
+
 # ================================================================================ 
+# Quick Plots
 # ================================================================================ 
 
 # --------------------------------------------------------------------------------
@@ -680,7 +1189,7 @@ class IP_hor_sec_rect(object):
 # --------------------------------------------------------------------------------
 def qp_hor_plot( fpath, var, IC='none', iz=0, it=0,
               grid='orig', 
-              path_grid_rectangular="/mnt/lustre01/work/mh0033/m300602/icon/rect_grids/", 
+              path_rgrid="/mnt/lustre01/work/mh0033/m300602/icon/rect_grids/", 
               clim='auto', cincr='auto', cmap='auto',
               xlim=[-180,180], ylim=[-90,90], projection='none',
               title='auto', xlabel='', ylabel='',
@@ -692,11 +1201,8 @@ def qp_hor_plot( fpath, var, IC='none', iz=0, it=0,
   # --- load data
   fi = Dataset(fpath, 'r')
   data = fi.variables[var][it,iz,:]
-  long_name = fi.variables[var].long_name
-  units = fi.variables[var].units
-
   if verbose>0:
-    print('Plotting variable: %s: %s' % (var, long_name)) 
+    print('Plotting variable: %s: %s' % (var, IC.long_name)) 
 
   # --- set-up grid and region if not given to function
   if isinstance(IC,str) and clim=='none':
@@ -711,80 +1217,28 @@ def qp_hor_plot( fpath, var, IC='none', iz=0, it=0,
       IC.Tri = matplotlib.tri.Triangulation(IC.vlon, IC.vlat, 
                                             triangles=IC.vertex_of_cell)
       IC.mask_big_triangles()
+      use_tgrid = True
     else: 
       # --- rectangular grid
-      if not os.path.exists(path_grid_rectangular+grid):
+      if not os.path.exists(path_rgrid+grid):
         raise ValueError('::: Error: Cannot find grid file %s! :::' % 
-          (path_grid_rectangular+grid))
-      ddnpz = np.load(path_grid_rectangular+grid)
+          (path_rgrid+grid))
+      ddnpz = np.load(path_rgrid+grid)
       IC.lon, IC.lat = ddnpz['lon'], ddnpz['lat']
       IC.Lon, IC.Lat = np.meshgrid(IC.lon, IC.lat)
       IC.data = icon_to_regular_grid(IC.data, IC.Lon.shape, 
                           distances=ddnpz['dckdtree'], inds=ddnpz['ickdtree'])
       IC.data[IC.data==0] = np.ma.masked
       IC.crop_grid(lon_reg=xlim, lat_reg=ylim, grid=grid)
+      use_tgrid = False
   IC.data = IC.data[IC.ind_reg]
-      
-  # --- color limits and color map
-  if isinstance(clim,str) and clim=='auto':
-    clim = [IC.data.min(), IC.data.max()]
 
-  # --- annotations (title etc.) 
-  if title=='auto':
-    title = long_name+' ['+units+']'
+  IC.long_name = fi.variables[var].long_name
+  IC.units = fi.variables[var].units
+  IC.name = var
 
-  # --- make axes and colorbar (taken from shade)
-  if ax == 'auto':
-    if projection=='none':
-      ccrs_proj = None
-    else:
-      ccrs_proj = getattr(ccrs, projection)()
-      #fig, ax = plt.subplots(subplot_kw={'projection': ccrs_proj}) 
-    hca, hcb = arrange_axes(1,1, plot_cb=True, sasp=0.7, fig_size_fac=2.,
-                                 projection=ccrs_proj,
-                                )
-    ax = hca[0]
-    cax = hcb[0]
-
-  # does not work like this with cartopy
-  #if ((cax is not None) and (cax!=0)): 
-  #  if cax == 1:
-  #    from mpl_toolkits.axes_grid1 import make_axes_locatable
-  #    div = make_axes_locatable(ax)
-  #    mybreak()
-  #    cax = div.append_axes("right", size="10%", pad=0.1)
-
-  # hack: let shade / trishade make the colorbar if cax is an axes
-  #       otherwise do colorbar after shade / trishade
-  if cax==1:
-    do_colorbar = True
-    cax = 0 # to assure that shade / trishade is not making a colorbar
-  else:
-    do_colorbar = False
-
-  # --- do plotting
-  if grid=='orig':
-    hm = trishade(IC.Tri, IC.data, 
-                      ax=ax, cax=cax, clim=clim, cmap=cmap,
-                      transform=ccrs_proj,
-                 )
-  else:
-    hm = shade(IC.lon, IC.lat, IC.data,
-                      ax=ax, cax=cax, clim=clim, cmap=cmap,
-                      transform=ccrs_proj,
-              )
-  if do_colorbar:
-    plt.colorbar(mappable=hm[0], ax=ax, extend='both')
-
-  # --- plot refinement
-  ax.set_title(title)
-  ax.set_xlabel(xlabel)
-  ax.set_ylabel(ylabel)
-  ax.set_xlim(xlim)
-  ax.set_ylim(ylim)
-
-  if projection!='none':
-    ax.coastlines()
+  ax, cax, mappable = hplot_base(IC, var, clim=clim, title=title, 
+    projection=projection, use_tgrid=use_tgrid)
 
   fi.close()
 
@@ -926,7 +1380,7 @@ qp.write_to_file()
 # ================================================================================ 
 # ================================================================================ 
 
-def shade(x, y, data,
+def shade(x, y, datai,
             ax='auto', cax=0,
             cmap='auto',
             rasterized=True,
@@ -955,6 +1409,7 @@ last change:
 2016-08-23
   """
   # mask 0 and negative values in case of log plot
+  data = 1.*datai
   if logplot and isinstance(data, np.ma.MaskedArray):
     data[data<=0.0] = np.ma.masked
     data = np.ma.log10(data) 
