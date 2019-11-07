@@ -7,6 +7,7 @@ import cmocean
 from netCDF4 import Dataset
 import datetime
 import time
+from importlib import reload
 
 import ipywidgets as widgets
 from ipywidgets import interact, interactive, HBox, VBox
@@ -14,6 +15,8 @@ from IPython.display import display
 
 import pyicon as pyic
 reload(pyic)
+
+from ipdb import set_trace as mybreak  
 
 #def my_slide(update_func, Dparas):
 def my_slide(name='slider:', bnds=[0,10]):
@@ -136,7 +139,7 @@ def hplot(IcD, var='', clim=[-1,1], edgecolor='none'):
     return
 
   def update_reg(w):
-    print w.owner.value
+    print(w.owner.value)
     print("Switching regions interactively is not yet supported!")
     #if reg=='global':
     #  IcD.fname_rgrid = 'r2b9ocean_r0.3_180w_180e_90s_90n.npz'
@@ -173,6 +176,7 @@ def hplot(IcD, var='', clim=[-1,1], edgecolor='none'):
     IP.fpath_save = './test.pdf'
     IP.continue_anim = True
     IP.fig = plt.gcf()
+    IP.ax = ax
     return IP, IcD
 
   def update_fpath_save(w):
@@ -305,6 +309,249 @@ def hplot(IcD, var='', clim=[-1,1], edgecolor='none'):
   #a = updater(update_fig, iz=w1, step_snap=w2)
   #a = interact(update_fig, IcD=IcD, IP=IP, iz=w1, step_snap=w2)
   a = interactive(update_fig, var=d2, iz=w1, step_snap=w2)
+  #b = interact(update_clim, climstr=t1)
+  #c = interact(update_cmap, cmap=d1)
+  #d = interact(update_reg, reg=d3)
+  return IcD, IP
+
+def vplot(IcD, var='', fpath_ckdtree='auto', path_sections='', clim=[-1,1], edgecolor='none'):
+
+  def update_vfig(var='', step_snap=0):
+    print('hello')
+    print(var, step_snap)
+    IcD.load_vsnap([var], fpath_ckdtree=fpath_ckdtree, step_snap=step_snap)
+    IP.update(getattr(IcD, var), IcD, 
+              title=IcD.long_name[var]+' ['+IcD.units[var]+']',
+              depth_string='none')
+    IP.var = var
+    display(ax.figure)
+    return
+
+  def update_clim(w):
+    climstr = w.owner.value
+    #print climstr
+    if climstr!='auto':
+      clim = np.array(climstr.split(',')).astype(float)  
+      if clim.size==1:
+        clim = np.array([-clim[0], clim[0]])
+    try:
+      #print clim
+      IP.hpc[0].set_clim(clim)
+    except:
+      print('Could not convert %s into clim.' % (climstr))
+    return 
+
+  def auto_clim(b1):
+    #print IP.var
+    min_val = getattr(IcD, IP.var).min()  
+    max_val = getattr(IcD, IP.var).max()  
+    climstr = '%.2g, %.2g' % (min_val, max_val)
+    t1.value = climstr
+    return
+
+  def update_cmap(w):
+    cmap = w.owner.value
+    if cmap.startswith('cmo'):
+      cmap = cmap.split('.')[-1]
+      cmap = getattr(cmocean.cm, cmap)
+      #exec('cmap = %s' % (cmap))
+    IP.hpc[0].set_cmap(cmap) 
+    return
+
+  def update_sec(w):
+    print(w.owner.value)
+    #if reg=='global':
+    #  IcD.fname_rgrid = 'r2b9ocean_r0.3_180w_180e_90s_90n.npz'
+    #elif reg=='hurricane':
+    #  IcD.fname_rgrid = 'r2b9ocean_r0.05_100w_30w_2n_40n.npz'
+    #else:
+    #  print('::: Region %s is not supported! Taking \'global\'. :::' %(reg)) 
+    #  IcD.fname_rgrid = 'r2b9ocean_r0.3_180w_180e_90s_90n.npz'
+
+    #IcD.load_grid()
+    #plt.close('all')
+    #IP, IcD = initialize_plot(IcD, var='to', clim=1.5) 
+    #return IP, IcD
+
+    print(IcD.var, IcD.clim)
+    IP, IcD = initialize_plot(IcD, var=IcD.var, clim=IcD.clim, 
+                              path_sections=path_secions,
+                              fpath_ckdtree=w.owner.value)
+    return
+
+  def initialize_plot(IcD, var='', path_sections='', fpath_ckdtree='', clim=1.5):
+
+    # !!! moved to IcD class, check if this is working
+    ## --- get infos about possible sections
+    #sec_fpaths = np.array(glob.glob(path_sections+'*.npz'))
+    #sec_names = np.zeros(sec_fpaths.size, '<U125')
+    #for nn, fpath_ckdtree in enumerate(sec_fpaths):
+    #  sec_names[nn] = fpath_ckdtree.split('/')[-1][:-4]
+    #IcD.sec_fpaths = sec_fpaths
+    #IcD.sec_names = sec_names
+
+    if fpath_ckdtree=='auto':
+      fpath_ckdtree = IcD.sec_fpaths[0]
+
+    # --- load data
+    IcD.load_vsnap([var], fpath_ckdtree=fpath_ckdtree, step_snap=0)
+
+    # --- make initial plot
+    hca, hcb = pyic.arrange_axes(1,1, plot_cb=True, sasp=0.543, fig_size_fac=2.5,
+                               sharex=False, sharey=False, xlabel="", ylabel="",
+                              )
+    ii=-1
+
+    ii+=1; ax=hca[ii]; cax=hcb[ii]
+    IP = pyic.IP_ver_sec(
+      IcD, ax=ax, cax=cax,
+      var=var, clim=clim, nc='auto', cmap='viridis',
+      edgecolor=edgecolor,
+      )
+    IP.fpath_save = './test.pdf'
+    IP.continue_anim = True
+    IP.fig = plt.gcf()
+    IP.ax = ax
+    IP.clim=clim
+    IcD.clim = clim
+    IcD.var = IP.var
+    return IP, IcD
+
+  def update_fpath_save(w):
+    IP.fpath_save = w.owner.value
+    return
+
+  def save_fig(w):
+    plt.savefig(IP.fpath_save)
+    print('Saving figure %s' % (IP.fpath_save))
+    return
+
+  # --- initialize plot
+  # FIXME
+  #IP, IcD = initialize_plot(IcD, var=IcD.varnames[0], clim=clim)
+  IP, IcD = initialize_plot(IcD, var=IcD.varnames[1], path_sections=path_sections, fpath_ckdtree=fpath_ckdtree, clim=1.5)
+
+  # --- make depth slider
+  b_dec, w1, b_inc = my_slide(name='depth:', bnds=[0,IcD.depth.size-1])
+  Box = HBox([b_dec, w1, b_inc])
+  display(Box)
+
+  # --- make time slider
+  b_dec, w2, b_inc = my_slide(name='time:', bnds=[0,IcD.times.size-1])
+  Box = HBox([b_dec, w2, b_inc])
+  display(Box)
+
+  ## --- play button
+  #bplay = widgets.Button(
+  #  description='play',
+  #  disabled=False,
+  #  button_style='', # 'success', 'info', 'warning', 'danger' or ''
+  #  tooltip='dec',
+  #  icon=''
+  #)
+  #bplay.iit = 0
+  #bplay.on_click(play_animation)
+
+  ## --- stop button
+  ##bstop = widgets.Button(
+  ##  description='stop',
+  ##  disabled=False,
+  ##  button_style='', # 'success', 'info', 'warning', 'danger' or ''
+  ##  tooltip='dec',
+  ##  iyicon=''
+  ##)
+  ##bstop.on_click(stop_animation)
+
+  #bstop = widgets.Checkbox(
+  #    value=False,
+  #    description='Stop',
+  #    disabled=False
+  #)
+
+  #Box = HBox([b_dec, w2, b_inc, bplay, bstop])
+  #display(Box)
+  
+  # --- make clim widget
+  t1 = widgets.Text(
+      value='-100, 100',
+      placeholder='-100, 100',
+      description='clim =',
+      disabled=False
+  )
+  t1.continuous_update=False
+  t1.observe(update_clim, names='value')
+
+  # --- clim auto button
+  b1 = widgets.Button(
+    description='auto',
+    disabled=False,
+    button_style='', # 'success', 'info', 'warning', 'danger' or ''
+    tooltip='dec',
+    icon=''
+  )
+  #b1.var = IP.var
+  b1.on_click(auto_clim)
+
+  # --- make cmap widget
+  d1 = widgets.Dropdown(
+    options=['viridis', 'plasma', 'RdBu_r', 'RdYlBu_r', 'cmo.thermal', 'cmo.haline', 'cmo.ice', 'cmo.dense', 'cmo.curl', 'cmo.delta'],
+    value='viridis',
+    description='cmap:',
+    disabled=False,
+              )
+  d1.observe(update_cmap, names='value')
+
+  # --- make varname widget
+  d2 = widgets.Dropdown(
+    options=IcD.varnames,
+    value=IcD.varnames[0],
+    description='var:',
+    disabled=False,
+              )
+
+  # --- make region widget
+  d3 = widgets.Dropdown(
+    options=IcD.sec_names,
+    value=IcD.sec_names[0],
+    description='section:',
+    disabled=False,
+              )
+  d3.observe(update_sec, names='value')
+
+  Box = HBox([d2, t1, b1, d1, d3])
+  display(Box)
+
+  # --- make save textbox
+  ts = widgets.Text(
+      value='./test.pdf',
+      placeholder='./test.pdf',
+      description='Name:',
+      disabled=False
+  )
+  ts.continuous_update=False
+  ts.observe(update_fpath_save, names='value')
+
+  # --- save button
+  bs = widgets.Button(
+    description='save',
+    disabled=False,
+    button_style='', # 'success', 'info', 'warning', 'danger' or ''
+    tooltip='dec',
+    icon=''
+  )
+  #b1.var = IP.var
+  bs.on_click(save_fig)
+
+  Box = HBox([ts, bs])
+  display(Box)
+
+  #print(type(w1))
+  #a = updater(update_fig, iz=w1, step_snap=w2)
+  #a = interact(update_fig, IcD=IcD, IP=IP, iz=w1, step_snap=w2)
+  print('hi there')
+  a = interactive(update_vfig, var=d2, step_snap=w2)
+  IP.w2 = w2
+  IP.a = a
   #b = interact(update_clim, climstr=t1)
   #c = interact(update_cmap, cmap=d1)
   #d = interact(update_reg, reg=d3)
