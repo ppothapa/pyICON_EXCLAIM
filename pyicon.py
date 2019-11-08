@@ -12,6 +12,7 @@ from matplotlib import ticker
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import cmocean
+import json
 from ipdb import set_trace as mybreak  
 from importlib import reload
 
@@ -67,6 +68,14 @@ IDa.show()
 IPl = pyic.hplot(IDa, 'var', iz, tstep, IIn)
 
 """
+
+class pyicon_configure(object):
+  def __init__(self, fpath_config):
+    with open(fpath_config) as file_json:
+      Dsettings = json.load(file_json)
+    for key in Dsettings.keys():
+      setattr(self, key, Dsettings[key])
+    return
 
 def icon_to_regular_grid(data, shape, distances=None, \
                   inds=None, radius_of_influence=100e3):
@@ -771,11 +780,16 @@ class IconData(object):
 
                path_data      = "",
                path_ckdtree   = "",
+               path_tgrid     = "auto",
+               path_rgrid     = "auto",
+               path_sections  = "auto",
 
                rgrid_name     = "",
+               run            = "auto",
 
                lon_reg=[-180, 180],
                lat_reg=[-90, 90],
+
                use_tgrid=False,
                do_triangulation=True,
               ):
@@ -784,13 +798,26 @@ class IconData(object):
     # --- paths and file names
     self.path_data     = path_data
     self.path_ckdtree  = path_ckdtree
-    self.path_rgrid    = self.path_ckdtree + 'rectgrids/'
-    self.path_sections = self.path_ckdtree + 'rectgrids/'
-
-    self.run           = self.path_data.split('/')[-2]
-    self.fpath_fx      = self.path_data + self.run + '_fx.nc'
+    if path_rgrid=="auto":
+      self.path_rgrid = self.path_ckdtree + 'rectgrids/'
+    else:
+      self.path_rgrid = path_rgrid
+    if path_sections=="auto":
+      self.path_sections = self.path_ckdtree + 'rectgrids/'
+    else:
+      self.path_sections = path_sections
+    if run=='auto':
+      self.run = self.path_data.split('/')[-2]
+    else: 
+      self.run = run
+    self.fpath_fx = self.path_data + self.run + '_fx.nc'
     self.Dgrid = identify_grid(path_grid='', fpath_data=self.fpath_fx)
-    self.fpath_tgrid   = self.path_data + self.Dgrid['long_name'] + '.nc'
+    if path_tgrid=='auto':
+      self.path_tgrid    = path_data
+      self.fpath_tgrid   = self.path_data + self.Dgrid['long_name'] + '.nc'
+    else:
+      self.path_tgrid    = path_tgrid
+      self.fpath_tgrid   = self.path_tgrid + self.run
     self.Dgrid['fpath_grid'] = self.fpath_tgrid
 
     # --- global variables
@@ -1189,7 +1216,7 @@ class IP_ver_sec(object):
 # --------------------------------------------------------------------------------
 def qp_hor_plot( fpath, var, IC='none', iz=0, it=0,
               grid='orig', 
-              path_rgrid="/mnt/lustre01/work/mh0033/m300602/icon/rect_grids/", 
+              path_rgrid="",
               clim='auto', cincr='auto', cmap='auto',
               xlim=[-180,180], ylim=[-90,90], projection='none',
               title='auto', xlabel='', ylabel='',
