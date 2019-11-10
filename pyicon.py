@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib import ticker
 #import my_toolbox as my
+import cartopy
 import cartopy.crs as ccrs
-import cartopy.feature as cfeature
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import cmocean
 import json
 from ipdb import set_trace as mybreak  
@@ -44,7 +45,7 @@ pyicon
   ?vplot
   ?update_vplot
 
-  IconDataFile
+  #IconDataFile
 
   IconData
   IP_hor_sec_rect
@@ -113,6 +114,61 @@ def apply_ckdtree(data, distances=None, inds=None, radius_of_influence=100e3):
       data_interpolated.shape = lons.shape
       data_interpolated = np.ma.masked_invalid(data_interpolated)
   return data_interpolated
+
+def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdtree=''):
+
+  for fp in [fpath_data, fpath_fx, fpath_ckdtree]:
+    if not os.path.exists(fp):
+      raise ValueError('::: Error: Cannot find file %s! :::' % (fp))
+
+  f = Dataset(fpath_fx, 'r')
+  basin_c = f.variables['basin_c'][:]
+  mask_basin = np.zeros(basin_c.shape, dtype=bool)
+  if basin.lower()=='atlantic' or basin=='atl':
+    mask_basin[basin_c==1] = True 
+  elif basin.lower()=='pacific' or basin=='pac':
+    mask_basin[basin_c==3] = True 
+  elif basin.lower()=='southern ocean' or basin=='soc' or basin=='so':
+    mask_basin[basin_c==6] = True 
+  elif basin.lower()=='indian ocean' or basin=='ind' or basin=='io':
+    mask_basin[basin_c==7] = True 
+  elif basin.lower()=='global' or basin=='glob' or basin=='glo':
+    mask_basin[basin_c!=0] = True 
+  elif basin.lower()=='indopacific' or basin=='indopac':
+    mask_basin[(basin_c==3) | (basin_c==7)] = True 
+  f.close()
+  
+  ddnpz = np.load(fpath_ckdtree)
+  dckdtree = ddnpz['dckdtree']
+  ickdtree = ddnpz['ickdtree'] 
+  lon = ddnpz['lon'] 
+  lat = ddnpz['lat'] 
+  shape = [lat.size, lon.size]
+  lat_sec = lat
+  
+  f = Dataset(fpath_data, 'r')
+  nz = f.variables[var].shape[1]
+  data_zave = np.ma.zeros((nz,lat_sec.size))
+  for k in range(nz):
+  #for k in [0]:
+    print('k = %d/%d'%(k,nz))
+    # --- load data
+    data = f.variables[var][it,k,:]
+    # --- mask land points
+    data[data==0] = np.ma.masked
+    # --- mask not-this-basin points
+    data[mask_basin==False] = np.ma.masked
+    # --- go to normal np.array (not np.ma object)
+    data = data.filled(0.)
+    # --- interpolate to rectangular grid
+    datai = icon_to_regular_grid(data, shape=shape, 
+                                      distances=dckdtree, inds=ickdtree) 
+    # --- go back to masked array
+    datai = np.ma.array(datai, mask=datai==0.)
+    # --- do zonal average
+    data_zave[k,:] = datai.mean(axis=1)
+  f.close()
+  return lat_sec, data_zave
 
 def lonlat2str(lon, lat):
   if lon<0:
@@ -391,12 +447,11 @@ def crop_regular_grid(lon_reg, lat_reg, Lon, Lat):
 def get_files_of_timeseries(path_data, search_str):
   flist = np.array(glob.glob(path_data+search_str))
   flist.sort()
-  
   times_flist = np.zeros(flist.size, dtype='datetime64[s]')
-  for l, fpath in enumerate(flist):
-    tstr = fpath.split('/')[-1].split('_')[-1][:-4]
-    times_flist[l] = '%s-%s-%sT%s:%s:%s' % ( (tstr[:4], tstr[4:6], tstr[6:8], 
-                                        tstr[9:11], tstr[11:13], tstr[13:15]))
+  #for l, fpath in enumerate(flist):
+  #  tstr = fpath.split('/')[-1].split('_')[-1][:-4]
+  #  times_flist[l] = '%s-%s-%sT%s:%s:%s' % ( (tstr[:4], tstr[4:6], tstr[6:8], 
+  #                                      tstr[9:11], tstr[11:13], tstr[13:15]))
   return times_flist, flist
 
 def get_varnames(fpath, skip_vars=[]):
@@ -427,12 +482,14 @@ def get_timesteps(flist):
     its[nn*nt:(nn+1)*nt] = np.arange(nt)
   return times, flist_ts, its
 
-def hplot_base(IcD, IaV, clim='auto', cmap='viridis', 
+def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                ax='auto', cax=0,
                title='auto', xlabel='', ylabel='',
                xlim='auto', ylim='auto',
                projection='none', use_tgrid=True,
                logplot=False,
+               sasp=0.7,
+               fig_size_fac=2.,
               ):
   """
   IaV variable needs the following attributes
@@ -457,6 +514,13 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis',
   if isinstance(clim,str) and clim=='auto':
     clim = [IaV.data.min(), IaV.data.max()]
 
+  # --- colormaps 
+  if cmap.startswith('cmo'):
+    cmap = cmap.split('.')[-1]
+    cmap = getattr(cmocean.cm, cmap)
+  else:
+    cmap = getattr(plt.cm, cmap)
+
   # --- annotations (title etc.) 
   if title=='auto':
     if not logplot:
@@ -473,7 +537,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis',
   # --- make axes and colorbar (taken from shade)
   if ax == 'auto':
       #fig, ax = plt.subplots(subplot_kw={'projection': ccrs_proj}) 
-    hca, hcb = arrange_axes(1,1, plot_cb=True, sasp=0.7, fig_size_fac=2.,
+    hca, hcb = arrange_axes(1,1, plot_cb=True, sasp=sasp, fig_size_fac=fig_size_fac,
                                  projection=ccrs_proj,
                                 )
     ax = hca[0]
@@ -482,7 +546,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis',
   # --- do plotting
   if use_tgrid:
     hm = trishade(IcD.Tri, IaV.data, 
-                      ax=ax, cax=cax, clim=clim, cmap=cmap,
+                      ax=ax, cax=cax, clim=clim, cincr=cincr, cmap=cmap,
                       transform=ccrs_proj,
                       logplot=logplot,
                  )
@@ -492,7 +556,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis',
       ylim = [IcD.clat.min(), IcD.clat.max()]
   else:
     hm = shade(IcD.lon, IcD.lat, IaV.data,
-                      ax=ax, cax=cax, clim=clim, cmap=cmap,
+                      ax=ax, cax=cax, clim=clim, cincr=cincr, cmap=cmap,
                       transform=ccrs_proj,
                       logplot=logplot,
               )
@@ -512,14 +576,26 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis',
 
   if projection!='none':
     ax.coastlines()
+    ax.add_feature(cartopy.feature.LAND, zorder=0, facecolor='0.9')
+    ax.set_xticks(np.linspace(np.round(xlim[0]),np.round(xlim[1]),7), crs=ccrs_proj)
+    ax.set_yticks(np.linspace(np.round(ylim[0]),np.round(ylim[1]),7), crs=ccrs_proj)
+    lon_formatter = LongitudeFormatter()
+    lat_formatter = LatitudeFormatter()
+    ax.xaxis.set_major_formatter(lon_formatter)
+    ax.yaxis.set_major_formatter(lat_formatter)
+    #ax.stock_img()
+  ax.xaxis.set_ticks_position('both')
+  ax.yaxis.set_ticks_position('both')
   return ax, cax, mappable, Dstr
 
-def vplot_base(IcD, IaV, clim='auto', cmap='viridis', 
+def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                ax='auto', cax=0,
                title='auto', xlabel='', ylabel='',
                xlim='auto', ylim='auto',
                log2vax=False,
                logplot=False,
+               sasp=0.5,
+               fig_size_fac=2.0,
               ):
   """
   IaV variable needs the following attributes
@@ -540,6 +616,13 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis',
   if isinstance(clim,str) and clim=='auto':
     clim = [IaV.data.min(), IaV.data.max()]
 
+  # --- colormaps 
+  if cmap.startswith('cmo'):
+    cmap = cmap.split('.')[-1]
+    cmap = getattr(cmocean.cm, cmap)
+  else:
+    cmap = getattr(plt.cm, cmap)
+
   # --- annotations (title etc.) 
   if title=='auto':
     if not logplot:
@@ -549,10 +632,8 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis',
 
   # --- make axes and colorbar (taken from shade)
   if ax == 'auto':
-      #fig, ax = plt.subplots(subplot_kw={'projection': ccrs_proj}) 
-    hca, hcb = arrange_axes(1,1, plot_cb=True, sasp=0.7, fig_size_fac=2.,
-                                 projection=ccrs_proj,
-                                )
+    hca, hcb = arrange_axes(1,1, plot_cb=True, sasp=sasp, fig_size_fac=fig_size_fac,
+                           )
     ax = hca[0]
     cax = hcb[0]
 
@@ -575,7 +656,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis',
   ylabel = 'depth [m]'
 
   hm = shade(x, depth, IaV.data,
-                    ax=ax, cax=cax, clim=clim, cmap=cmap,
+                    ax=ax, cax=cax, clim=clim, cmap=cmap, cincr=cincr,
                     logplot=logplot,
             )
   if isinstance(xlim, str) and (xlim=='auto'):
@@ -593,6 +674,11 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis',
   ax.set_ylim(ylim)
   if log2vax:
     ax.set_yticklabels(2**ax.get_yticks())
+  ax.set_facecolor('0.9')
+  ax.set_xticks(np.linspace(np.round(xlim[0]),np.round(xlim[1]),7))
+  ax.set_yticks(np.arange(0,5000,1000.))
+  ax.xaxis.set_ticks_position('both')
+  ax.yaxis.set_ticks_position('both')
 
   return ax, cax, mappable, Dstr
 
@@ -700,6 +786,25 @@ class IconVariable(object):
     self.nz = nz
     return
 
+  def load_moc(self, fpath, it=0, step_snap=0):
+    self.step_snap = step_snap
+    self.it = it
+    self.fpath = fpath
+
+    var = self.name
+    print("Loading %s from %s" % (var, fpath))
+
+    f = Dataset(fpath, 'r')
+    self.nz = f.variables[var].shape[1]
+    self.data = f.variables[var][it,:,:,0]
+    self.lat_sec = f.variables['lat'][:]
+    self.depth = f.variables['depth'][:]
+    f.close()
+
+    self.mask = self.data==0.
+    self.data[self.mask] = np.ma.masked
+    return
+
   def interp_to_rectgrid(self, fpath_ckdtree):
     if self.isinterpolated:
       raise ValueError('::: Variable %s is already interpolated. :::'%self.name)
@@ -790,10 +895,15 @@ class IconData(object):
                lon_reg=[-180, 180],
                lat_reg=[-90, 90],
 
-               use_tgrid=False,
                do_triangulation=True,
               ):
 
+
+    if rgrid_name=='orig':
+      use_tgrid = True
+      rgrid_name = ""
+    else:
+      use_tgrid = False
 
     # --- paths and file names
     self.path_data     = path_data
@@ -819,6 +929,11 @@ class IconData(object):
       self.path_tgrid    = path_tgrid
       self.fpath_tgrid   = self.path_tgrid + self.run
     self.Dgrid['fpath_grid'] = self.fpath_tgrid
+
+    for fp in [self.path_data, self.path_ckdtree, 
+               self.fpath_tgrid, self.fpath_fx]:
+      if not os.path.exists(fp):
+        raise ValueError('::: Error: Cannot find file %s! :::' % (fp))
 
     # --- global variables
     self.interpolate = True
@@ -850,6 +965,9 @@ class IconData(object):
     self.rgrid_fpaths = rgrid_fpaths
     self.rgrid_names = rgrid_names
 
+    if rgrid_names.size==0:
+      raise ValueError('::: Error: Could not find any rgrid-npz-file in %s. :::' 
+                        % (path_ckdtree+'rectgrids/'))
     if rgrid_name=="":
       # take first of list
       self.rgrid_fpath = self.rgrid_fpaths[0]
@@ -864,6 +982,8 @@ class IconData(object):
         self.rgrid_name  = self.rgrid_names[0]
         print('::: Warning %s could not be found. We proceed with %s. :::' 
               % (rgrid_name, self.rgrid_name))
+        print('You could have chosen one from:')
+        print(self.rgrid_names)
 
     # --- enquire data set
     # --- grid
@@ -1076,6 +1196,7 @@ class IconData(object):
     self.maskTri = mask_bt
     return
 
+# ////////////////////////////////////////
 class IP_hor_sec_rect(object):
   """
   To do:
@@ -1155,57 +1276,57 @@ class IP_hor_sec_rect(object):
       self.hdstr.set_text('depth = %4.1fm'%(IcD.depth[IcD.iz]))
     return
 
-class IP_ver_sec(object):
-  def __init__(self, 
-               IcD, ax='', cax='',
-               var='', clim='auto', nc=1, cmap='viridis',
-               title='auto',
-               time_string='auto',
-               depth_string='auto',
-               edgecolor='none',
-               ):
-    self.ax=ax
-    self.cax=cax
-    self.var=var
-
-    data = getattr(IcD, var)
-    self.hpc = shade(IcD.dist_sec, IcD.depth,
-                         data, ax=ax, cax=cax, 
-                         clim=clim, cmap=cmap,
-                       ) 
-
-    ax.set_ylim(IcD.depth.max(),0)
-
-    if title=='auto':
-      self.htitle = ax.set_title(IcD.long_name[var]+' ['+IcD.units[var]+']')
-    else:
-      self.htitle = ax.set_title(title)
-
-    if time_string!='none':
-      self.htstr = ax.text(0.05, 0.025, IcD.times[IcD.step_snap], 
-                           transform=plt.gcf().transFigure)
-    #if depth_string!='none':
-    #  self.hdstr = ax.text(0.05, 0.08, 'depth = %4.1fm'%(IcD.depth[IcD.iz]), 
-    #                       transform=plt.gcf().transFigure)
-    return
-  
-  def update(self, data, IcD, title='none', 
-             time_string='auto', depth_string='auto'):
-    if IcD.use_tgrid:
-      data_nomasked_vals = data[IcD.maskTri==False]
-      #print self.hpc[0].get_array.shape()
-      self.hpc[0].set_array(data_nomasked_vals)
-      #print self.hpc[0].get_array.shape()
-      print('hello world')
-    else:
-      self.hpc[0].set_array(data[1:,1:].flatten())
-    if title!='none':
-      self.htitle.set_text(title) 
-    if time_string!='none':
-      self.htstr.set_text(IcD.times[IcD.step_snap])
-    if depth_string!='none':
-      self.hdstr.set_text('depth = %4.1fm'%(IcD.depth[IcD.iz]))
-    return
+##class IP_ver_sec(object):
+##  def __init__(self, 
+##               IcD, ax='', cax='',
+##               var='', clim='auto', nc=1, cmap='viridis',
+##               title='auto',
+##               time_string='auto',
+##               depth_string='auto',
+##               edgecolor='none',
+##               ):
+##    self.ax=ax
+##    self.cax=cax
+##    self.var=var
+##
+##    data = getattr(IcD, var)
+##    self.hpc = shade(IcD.dist_sec, IcD.depth,
+##                         data, ax=ax, cax=cax, 
+##                         clim=clim, cmap=cmap,
+##                       ) 
+##
+##    ax.set_ylim(IcD.depth.max(),0)
+##
+##    if title=='auto':
+##      self.htitle = ax.set_title(IcD.long_name[var]+' ['+IcD.units[var]+']')
+##    else:
+##      self.htitle = ax.set_title(title)
+##
+##    if time_string!='none':
+##      self.htstr = ax.text(0.05, 0.025, IcD.times[IcD.step_snap], 
+##                           transform=plt.gcf().transFigure)
+##    #if depth_string!='none':
+##    #  self.hdstr = ax.text(0.05, 0.08, 'depth = %4.1fm'%(IcD.depth[IcD.iz]), 
+##    #                       transform=plt.gcf().transFigure)
+##    return
+##  
+##  def update(self, data, IcD, title='none', 
+##             time_string='auto', depth_string='auto'):
+##    if IcD.use_tgrid:
+##      data_nomasked_vals = data[IcD.maskTri==False]
+##      #print self.hpc[0].get_array.shape()
+##      self.hpc[0].set_array(data_nomasked_vals)
+##      #print self.hpc[0].get_array.shape()
+##      print('hello world')
+##    else:
+##      self.hpc[0].set_array(data[1:,1:].flatten())
+##    if title!='none':
+##      self.htitle.set_text(title) 
+##    if time_string!='none':
+##      self.htstr.set_text(IcD.times[IcD.step_snap])
+##    if depth_string!='none':
+##      self.hdstr.set_text('depth = %4.1fm'%(IcD.depth[IcD.iz]))
+##    return
 
 # ================================================================================ 
 # Quick Plots
@@ -1214,68 +1335,234 @@ class IP_ver_sec(object):
 # --------------------------------------------------------------------------------
 # Horizontal plots
 # --------------------------------------------------------------------------------
-def qp_hor_plot( fpath, var, IC='none', iz=0, it=0,
-              grid='orig', 
-              path_rgrid="",
-              clim='auto', cincr='auto', cmap='auto',
+def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
+              rgrid_name="orig",
+              path_ckdtree="",
+              clim='auto', cincr=-1., cmap='auto',
               xlim=[-180,180], ylim=[-90,90], projection='none',
+              sasp=0.543,
               title='auto', xlabel='', ylabel='',
               verbose=1,
-              ax='auto', cax=1,
+              ax='auto', cax='auto',
+              logplot=False,
               ):
 
 
-  # --- load data
-  fi = Dataset(fpath, 'r')
-  data = fi.variables[var][it,iz,:]
-  if verbose>0:
-    print('Plotting variable: %s: %s' % (var, IC.long_name)) 
+  for fp in [fpath]:
+    if not os.path.exists(fp):
+      raise ValueError('::: Error: Cannot find file %s! :::' % (fp))
+
+  # get fname and path_data from fpath
+  fname = fpath.split('/')[-1]
+  path_data = ''
+  for el in fpath.split('/')[1:-1]:
+    path_data += '/'
+    path_data += el
+  path_data += '/'
 
   # --- set-up grid and region if not given to function
-  if isinstance(IC,str) and clim=='none':
+  if isinstance(IcD,str) and clim=='none':
     pass
   else:
-    IC = IconDataFile(fpath, path_grid='/pool/data/ICON/oes/input/r0002/')
-    IC.identify_grid()
-    IC.load_tripolar_grid()
-    IC.data = data
-    if grid=='orig':
-      IC.crop_grid(lon_reg=xlim, lat_reg=ylim, grid=grid)
-      IC.Tri = matplotlib.tri.Triangulation(IC.vlon, IC.vlat, 
-                                            triangles=IC.vertex_of_cell)
-      IC.mask_big_triangles()
-      use_tgrid = True
-    else: 
-      # --- rectangular grid
-      if not os.path.exists(path_rgrid+grid):
-        raise ValueError('::: Error: Cannot find grid file %s! :::' % 
-          (path_rgrid+grid))
-      ddnpz = np.load(path_rgrid+grid)
-      IC.lon, IC.lat = ddnpz['lon'], ddnpz['lat']
-      IC.Lon, IC.Lat = np.meshgrid(IC.lon, IC.lat)
-      IC.data = icon_to_regular_grid(IC.data, IC.Lon.shape, 
-                          distances=ddnpz['dckdtree'], inds=ddnpz['ickdtree'])
-      IC.data[IC.data==0] = np.ma.masked
-      IC.crop_grid(lon_reg=xlim, lat_reg=ylim, grid=grid)
-      use_tgrid = False
-  IC.data = IC.data[IC.ind_reg]
+    IcD = IconData(
+                   search_str   = fname,
+                   path_data    = path_data,
+                   path_ckdtree = path_ckdtree,
+                   rgrid_name   = rgrid_name
+                  )
 
-  IC.long_name = fi.variables[var].long_name
-  IC.units = fi.variables[var].units
-  IC.name = var
 
-  ax, cax, mappable = hplot_base(IC, var, clim=clim, title=title, 
-    projection=projection, use_tgrid=use_tgrid)
+  if depth!=-1e33:
+    iz = np.argmin((IcD.depthc-depth)**2)
+  IaV = IcD.vars[var]
+  step_snap = it
 
-  fi.close()
+  # synchronize with Jupyter update_fig
+  # --- load data 
+  IaV.load_hsnap(fpath=IcD.flist_ts[step_snap], 
+                      it=IcD.its[step_snap], 
+                      iz=iz,
+                      step_snap = step_snap
+                     ) 
+  # --- interpolate data 
+  if not IcD.use_tgrid:
+    IaV.interp_to_rectgrid(fpath_ckdtree=IcD.rgrid_fpath)
+  # --- crop data
+
+  # --- cartopy projection
+  if projection=='none':
+    ccrs_proj = None
+  else:
+    ccrs_proj = getattr(ccrs, projection)()
+
+  # --- do plotting
+  (ax, cax, 
+   mappable,
+   Dstr
+  ) = hplot_base(
+              IcD, IaV, 
+              ax=ax, cax=cax,
+              clim=clim, cmap=cmap, cincr=cincr,
+              xlim=xlim, ylim=ylim,
+              title='auto', 
+              projection=projection,
+              use_tgrid=IcD.use_tgrid,
+              logplot=logplot,
+              sasp=sasp,
+             )
+
 
   # --- output
   FigInf = dict()
   FigInf['fpath'] = fpath
-  FigInf['long_name'] = long_name
-  FigInf['IC'] = IC
-  #ipdb.set_trace()
+  FigInf['long_name'] = IaV.long_name
+  FigInf['IcD'] = IcD
   return FigInf
+
+def qp_vplot(fpath, var, IcD='none', it=0,
+              sec_name="specify_sec_name",
+              path_ckdtree="",
+              var_fac=1.,
+              clim='auto', cincr=-1., cmap='auto',
+              xlim=[-180,180], ylim=[-90,90], projection='none',
+              sasp=0.543,
+              title='auto', xlabel='', ylabel='',
+              verbose=1,
+              ax='auto', cax='auto',
+              logplot=False,
+              log2vax=False,
+              do_load_moc=False,
+              ):
+
+
+  for fp in [fpath]:
+    if not os.path.exists(fp):
+      raise ValueError('::: Error: Cannot find file %s! :::' % (fp))
+
+  # get fname and path_data from fpath
+  fname = fpath.split('/')[-1]
+  path_data = ''
+  for el in fpath.split('/')[1:-1]:
+    path_data += '/'
+    path_data += el
+  path_data += '/'
+
+  # --- load data set
+  if isinstance(IcD,str) and clim=='none':
+    pass
+  else:
+    IcD = IconData(
+                   search_str   = fname,
+                   path_data    = path_data,
+                   path_ckdtree = path_ckdtree,
+                   #rgrid_name   = rgrid_name
+                  )
+
+  IaV = IcD.vars[var]
+  step_snap = it
+
+  sec_fpath = IcD.sec_fpaths[np.where(IcD.sec_names==sec_name)[0][0] ]
+
+  # --- load data
+  if not do_load_moc:
+    IaV.load_vsnap(
+                   fpath=IcD.flist_ts[step_snap], 
+                   fpath_ckdtree=sec_fpath,
+                   it=IcD.its[step_snap], 
+                   step_snap = step_snap
+                  ) 
+  else:
+    IaV.load_moc(
+                   fpath=IcD.flist_ts[step_snap], 
+                   it=IcD.its[step_snap], 
+                   step_snap = step_snap
+                  ) 
+
+  IaV.data *= var_fac
+
+  # --- do plotting
+  (ax, cax, 
+   mappable,
+   Dstr
+  ) = vplot_base(
+                 IcD, IaV, 
+                 ax=ax, cax=cax,
+                 clim=clim, cmap=cmap, cincr=cincr,
+                 title='auto', 
+                 log2vax=log2vax,
+                 logplot=logplot,
+                )
+
+
+  # --- output
+  FigInf = dict()
+  FigInf['fpath'] = fpath
+  FigInf['long_name'] = IaV.long_name
+  FigInf['IcD'] = IcD
+  return FigInf
+
+##def qp_hor_plot(fpath, var, IC='none', iz=0, it=0,
+##              grid='orig', 
+##              path_rgrid="",
+##              clim='auto', cincr='auto', cmap='auto',
+##              xlim=[-180,180], ylim=[-90,90], projection='none',
+##              title='auto', xlabel='', ylabel='',
+##              verbose=1,
+##              ax='auto', cax=1,
+##              ):
+##
+##
+##  # --- load data
+##  fi = Dataset(fpath, 'r')
+##  data = fi.variables[var][it,iz,:]
+##  if verbose>0:
+##    print('Plotting variable: %s: %s' % (var, IC.long_name)) 
+##
+##  # --- set-up grid and region if not given to function
+##  if isinstance(IC,str) and clim=='none':
+##    pass
+##  else:
+##    IC = IconDataFile(fpath, path_grid='/pool/data/ICON/oes/input/r0002/')
+##    IC.identify_grid()
+##    IC.load_tripolar_grid()
+##    IC.data = data
+##    if grid=='orig':
+##      IC.crop_grid(lon_reg=xlim, lat_reg=ylim, grid=grid)
+##      IC.Tri = matplotlib.tri.Triangulation(IC.vlon, IC.vlat, 
+##                                            triangles=IC.vertex_of_cell)
+##      IC.mask_big_triangles()
+##      use_tgrid = True
+##    else: 
+##      # --- rectangular grid
+##      if not os.path.exists(path_rgrid+grid):
+##        raise ValueError('::: Error: Cannot find grid file %s! :::' % 
+##          (path_rgrid+grid))
+##      ddnpz = np.load(path_rgrid+grid)
+##      IC.lon, IC.lat = ddnpz['lon'], ddnpz['lat']
+##      IC.Lon, IC.Lat = np.meshgrid(IC.lon, IC.lat)
+##      IC.data = icon_to_regular_grid(IC.data, IC.Lon.shape, 
+##                          distances=ddnpz['dckdtree'], inds=ddnpz['ickdtree'])
+##      IC.data[IC.data==0] = np.ma.masked
+##      IC.crop_grid(lon_reg=xlim, lat_reg=ylim, grid=grid)
+##      use_tgrid = False
+##  IC.data = IC.data[IC.ind_reg]
+##
+##  IC.long_name = fi.variables[var].long_name
+##  IC.units = fi.variables[var].units
+##  IC.name = var
+##
+##  ax, cax, mappable = hplot_base(IC, var, clim=clim, title=title, 
+##    projection=projection, use_tgrid=use_tgrid)
+##
+##  fi.close()
+##
+##  # --- output
+##  FigInf = dict()
+##  FigInf['fpath'] = fpath
+##  FigInf['long_name'] = long_name
+##  FigInf['IC'] = IC
+##  #ipdb.set_trace()
+##  return FigInf
 
 # ================================================================================ 
 # ================================================================================ 
@@ -1377,8 +1664,8 @@ qp.write_to_file()
     self.main += '\n'
     return
    
-  def add_fig(self, path_pics, fname, width="1000"):
-    self.main += '    <div class="figure"> <img src="{path_pics}/{fname}" width="{width}" /> </div>'.format(path_pics=path_pics, fname=fname, width=width)
+  def add_fig(self, fpath, width="1000"):
+    self.main += '    <div class="figure"> <img src="{fpath}" width="{width}" /> </div>'.format(fpath=fpath, width=width)
     self.main += '\n'
     return
   
@@ -1410,6 +1697,8 @@ qp.write_to_file()
 def shade(x, y, datai,
             ax='auto', cax=0,
             cmap='auto',
+            cincr=-1.,
+            norm=None,
             rasterized=True,
             clim=[None, None],
             extend='both',
@@ -1462,6 +1751,14 @@ last change:
   elif cmap=='auto':
     #cmap = 'viridis'
     cmap = 'RdYlBu_r'
+  if isinstance(cmap, str):
+    cmap = getattr(plt.cm, cmap)
+
+  if cincr>0.:
+    levs = np.arange(clim[0], clim[1]+cincr, cincr)
+    norm = matplotlib.colors.BoundaryNorm(boundaries=levs, ncolors=cmap.N)
+  else:
+    norm = None
 
   # calculate contour x/y and contour levels if needed
   if conts is None:
@@ -1531,6 +1828,7 @@ last change:
     hm = ax.pcolormesh(x, y, data, 
                         vmin=clim[0], vmax=clim[1],
                         cmap=cmap, 
+                        norm=norm,
                         rasterized=rasterized,
                         edgecolor=edgecolor,
                         **ccrsdict
@@ -1541,6 +1839,7 @@ last change:
     hm = ax.contourf(xc, yc, data, contfs,
                         vmin=clim[0], vmax=clim[1],
                         cmap=cmap, 
+                        norm=norm,
                         extend='both',
                         **ccrsdict
                       )
@@ -1590,11 +1889,13 @@ last change:
       cb.locator = tick_locator
       cb.update_ticks()
     else:
+      if norm is not None:
+        cb.set_ticks(norm.boundaries[::2]) 
       cb.formatter.set_powerlimits((-1, 1))
       #cb.formatter.set_scientific(False)
       cb.update_ticks()
 
-    cax.set_title(cbtitle)
+  cax.set_title(cbtitle)
 
   # labels and ticks
   if adjust_axlims:
@@ -1607,6 +1908,8 @@ last change:
 def trishade(Tri, data,
             ax='auto', cax=0,
             cmap='auto',
+            cincr=-1.,
+            norm=None,
             rasterized=True,
             clim=[None, None],
             extend='both',
@@ -1656,6 +1959,14 @@ last change:
   elif cmap=='auto':
     #cmap = 'viridis'
     cmap = 'RdYlBu_r'
+  if isinstance(cmap, str):
+    cmap = getattr(plt.cm, cmap)
+
+  if cincr>0.:
+    levs = np.arange(clim[0], clim[1]+cincr, cincr)
+    norm = matplotlib.colors.BoundaryNorm(boundaries=levs, ncolors=cmap.N)
+  else:
+    norm = None
 
   # calculate contour x/y and contour levels if needed
   if conts is None:
@@ -1727,6 +2038,7 @@ last change:
                         edgecolor=edgecolor,
                         vmin=clim[0], vmax=clim[1],
                         cmap=cmap, 
+                        norm=norm,
                         rasterized=rasterized,
                         **ccrsdict
                       )
@@ -1736,6 +2048,7 @@ last change:
     hm = ax.contourf(xc, yc, data, contfs,
                         vmin=clim[0], vmax=clim[1],
                         cmap=cmap, 
+                        norm=norm,
                         extend='both',
                         **ccrsdict
                       )
@@ -1770,11 +2083,14 @@ last change:
     cb.solids.set_edgecolor("face")
     hs.append(cb)
 
-    # colobar ticks
-    cb.formatter.set_powerlimits((-3, 2))
-    tick_locator = ticker.MaxNLocator(nbins=8)
-    cb.locator = tick_locator
-    cb.update_ticks()
+    if norm is None:
+      # colobar ticks
+      cb.formatter.set_powerlimits((-3, 2))
+      tick_locator = ticker.MaxNLocator(nbins=8)
+      cb.locator = tick_locator
+      cb.update_ticks()
+    else:
+      cb.set_ticks(norm.boundaries[::2]) 
 
   # labels and ticks
   if adjust_axlims:
