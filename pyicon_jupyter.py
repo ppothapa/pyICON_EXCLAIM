@@ -234,20 +234,19 @@ class hplot(object):
       self.IaV.interp_to_rectgrid(fpath_ckdtree=self.rgrid_fpath)
     # --- crop data
 
-    # --- cartopy projection
-    if self.projection=='none':
-      ccrs_proj = None
-    else:
-      ccrs_proj = getattr(ccrs, self.projection)()
-
     # --- create axes
+    # FIXME: Do we need this or can this be done by hplot_base?
     if ax is None:
+      if self.projection=='none':
+        ccrs_proj = None
+      else:
+        ccrs_proj = getattr(ccrs, self.projection)()
+
       hca, hcb = pyic.arrange_axes(1,1, plot_cb=True, sasp=0.543, fig_size_fac=2.5,
                                  sharex=False, sharey=False, xlabel="", ylabel="",
                                  projection=ccrs_proj,
                                 )
       ii=-1
-
       ii+=1; ax=hca[ii]; cax=hcb[ii]
 
     # --- do plotting
@@ -553,19 +552,6 @@ class vplot(hplot):
       self.htstr.set_text(self.IcD.times[self.step_snap])
 
     self.fig = plt.gcf()
-
-    #IP = pyic.IP_ver_sec(
-    #  IcD, ax=ax, cax=cax,
-    #  var=var, clim=clim, nc='auto', cmap='viridis',
-    #  edgecolor=edgecolor,
-    #  )
-    #IP.fpath_save = './test.pdf'
-    #IP.continue_anim = True
-    #IP.fig = plt.gcf()
-    #IP.ax = ax
-    #IP.clim=clim
-    #IcD.clim = clim
-    #IcD.var = IP.var
     return
 
   def update_fig(self, var, step_snap, sec_name):
