@@ -150,8 +150,7 @@ def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdt
   nz = f.variables[var].shape[1]
   data_zave = np.ma.zeros((nz,lat_sec.size))
   for k in range(nz):
-  #for k in [0]:
-    print('k = %d/%d'%(k,nz))
+    #print('k = %d/%d'%(k,nz))
     # --- load data
     data = f.variables[var][it,k,:]
     # --- mask land points
@@ -168,6 +167,59 @@ def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdt
     # --- do zonal average
     data_zave[k,:] = datai.mean(axis=1)
   f.close()
+  return lat_sec, data_zave
+
+def zonal_average_3d_data(data3d, basin='global', it=0, fpath_fx='', fpath_ckdtree=''):
+  """ Like zonal_average but here data instead of path to data is given. This can only work if the whole data array fits into memory.
+  """
+
+  for fp in [fpath_fx, fpath_ckdtree]:
+    if not os.path.exists(fp):
+      raise ValueError('::: Error: Cannot find file %s! :::' % (fp))
+
+  f = Dataset(fpath_fx, 'r')
+  basin_c = f.variables['basin_c'][:]
+  mask_basin = np.zeros(basin_c.shape, dtype=bool)
+  if basin.lower()=='atlantic' or basin=='atl':
+    mask_basin[basin_c==1] = True 
+  elif basin.lower()=='pacific' or basin=='pac':
+    mask_basin[basin_c==3] = True 
+  elif basin.lower()=='southern ocean' or basin=='soc' or basin=='so':
+    mask_basin[basin_c==6] = True 
+  elif basin.lower()=='indian ocean' or basin=='ind' or basin=='io':
+    mask_basin[basin_c==7] = True 
+  elif basin.lower()=='global' or basin=='glob' or basin=='glo':
+    mask_basin[basin_c!=0] = True 
+  elif basin.lower()=='indopacific' or basin=='indopac':
+    mask_basin[(basin_c==3) | (basin_c==7)] = True 
+  f.close()
+  
+  ddnpz = np.load(fpath_ckdtree)
+  dckdtree = ddnpz['dckdtree']
+  ickdtree = ddnpz['ickdtree'] 
+  lon = ddnpz['lon'] 
+  lat = ddnpz['lat'] 
+  shape = [lat.size, lon.size]
+  lat_sec = lat
+  
+  nz = data3d.shape[0]
+  data_zave = np.ma.zeros((nz,lat_sec.size))
+  for k in range(nz):
+    data = data3d[k,:]
+    #print('k = %d/%d'%(k,nz))
+    # --- mask land points
+    data[data==0] = np.ma.masked
+    # --- mask not-this-basin points
+    data[mask_basin==False] = np.ma.masked
+    # --- go to normal np.array (not np.ma object)
+    data = data.filled(0.)
+    # --- interpolate to rectangular grid
+    datai = icon_to_regular_grid(data, shape=shape, 
+                                      distances=dckdtree, inds=ickdtree) 
+    # --- go back to masked array
+    datai = np.ma.array(datai, mask=datai==0.)
+    # --- do zonal average
+    data_zave[k,:] = datai.mean(axis=1)
   return lat_sec, data_zave
 
 def lonlat2str(lon, lat):
@@ -488,7 +540,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                xlim='auto', ylim='auto',
                projection='none', use_tgrid=True,
                logplot=False,
-               sasp=0.7,
+               sasp=0.5,
                fig_size_fac=2.,
               ):
   """
@@ -592,6 +644,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                ax='auto', cax=0,
                title='auto', xlabel='', ylabel='',
                xlim='auto', ylim='auto',
+               xvar='lat',
                log2vax=False,
                logplot=False,
                sasp=0.5,
@@ -637,17 +690,19 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     ax = hca[0]
     cax = hcb[0]
 
+  nz = IaV.data.shape[0]
+
   # --- do plotting
-  if False:
+  if xvar=='lon':
     x = IaV.lon_sec
     xstr = 'longitude'
-  elif True:
+  elif xvar=='lat':
     x = IaV.lat_sec
     xstr = 'latitude'
-  elif False:
+  elif xvar=='dist':
     x = IaC.dist_sec/1e3
     xstr = 'distance [km]'
-  if IaV.nz==IcD.depthc.size:
+  if nz==IcD.depthc.size:
     depth = IcD.depthc
   else: 
     depth = IcD.depthi
@@ -674,7 +729,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   ax.set_ylim(ylim)
   if log2vax:
     ax.set_yticklabels(2**ax.get_yticks())
-  ax.set_facecolor('0.9')
+  ax.set_facecolor('0.8')
   ax.set_xticks(np.linspace(np.round(xlim[0]),np.round(xlim[1]),7))
   ax.set_yticks(np.arange(0,5000,1000.))
   ax.xaxis.set_ticks_position('both')
@@ -755,6 +810,29 @@ class IconVariable(object):
     self.isinterpolated=False
     return
 
+def zonal_section_3d_data(data3d, fpath_ckdtree):
+  """
+  (
+   lon_sec, lat_sec, dist_sec, data_sec 
+  ) = pyic.zonal_section_3d_data(tbias, 
+    fpath_ckdtree=path_ckdtree+'sections/r2b4_nps100_30W80S_30W80N.npz')
+  """
+  # --- load ckdtree
+  ddnpz = np.load(fpath_ckdtree)
+  dckdtree = ddnpz['dckdtree']
+  ickdtree = ddnpz['ickdtree'] 
+  lon_sec = ddnpz['lon_sec'] 
+  lat_sec = ddnpz['lat_sec'] 
+  dist_sec = ddnpz['dist_sec'] 
+
+  nz = data3d.shape[0]
+  data_sec = np.ma.zeros((nz,dist_sec.size))
+  for k in range(nz):
+    data_sec[k,:] = icon_to_section(data3d[k,:], distances=dckdtree, inds=ickdtree)
+  return lon_sec, lat_sec, dist_sec, data_sec
+  
+
+
   def load_vsnap(self, fpath, fpath_ckdtree, it=0, step_snap=0):
     self.step_snap = step_snap
     self.it = it
@@ -765,7 +843,7 @@ class IconVariable(object):
     ickdtree = ddnpz['ickdtree'] 
     self.lon_sec = ddnpz['lon_sec'] 
     self.lat_sec = ddnpz['lat_sec'] 
-    self.dist_sec  = ddnpz['dist_sec'] 
+    self.dist_sec = ddnpz['dist_sec'] 
 
     f = Dataset(fpath, 'r')
     var = self.name
@@ -1039,6 +1117,28 @@ class IconData(object):
       self.vars[var] = IV
       #setattr(self, var, IV)
     fi.close()
+    return
+  
+  def print_grid_info(self):
+    print('------------------------------------------------------------')
+    fpaths = glob.glob(self.path_rgrid+'*.npz')
+    print('regular grid files:')
+    print(self.path_rgrid)
+    for fp in fpaths:
+      ddnpz = np.load(fp)
+      info = ('{:40s} {:20s}').format(fp.split('/')[-1]+':', ddnpz['sname'])
+      print(info)
+    
+    print('------------------------------------------------------------')
+    fpaths = glob.glob(self.path_sections+'*.npz')
+    print('section files:')
+    print(self.path_sections)
+    for fp in fpaths:
+      ddnpz = np.load(fp)
+      info = ('{:40s} {:20s}').format(fp.split('/')[-1]+':', ddnpz['sname'])
+      print(info)
+    
+    print('------------------------------------------------------------') 
     return
 
   def load_grid(self, lon_reg='all', lat_reg='all'):
@@ -1416,7 +1516,7 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
   FigInf = dict()
   FigInf['fpath'] = fpath
   FigInf['long_name'] = IaV.long_name
-  FigInf['IcD'] = IcD
+  #FigInf['IcD'] = IcD
   return FigInf
 
 def qp_vplot(fpath, var, IcD='none', it=0,
@@ -1431,7 +1531,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
               ax='auto', cax='auto',
               logplot=False,
               log2vax=False,
-              do_load_moc=False,
+              mode_load='normal',
               ):
 
 
@@ -1461,19 +1561,29 @@ def qp_vplot(fpath, var, IcD='none', it=0,
   IaV = IcD.vars[var]
   step_snap = it
 
-  sec_fpath = IcD.sec_fpaths[np.where(IcD.sec_names==sec_name)[0][0] ]
-
   # --- load data
-  if not do_load_moc:
-    IaV.load_vsnap(
+  # FIXME: MOC and ZAVE cases could go into load_vsnap
+  if sec_name.endswith('moc'):
+    IaV.load_moc(
                    fpath=IcD.flist_ts[step_snap], 
-                   fpath_ckdtree=sec_fpath,
                    it=IcD.its[step_snap], 
                    step_snap = step_snap
                   ) 
+  elif sec_name.startswith('zave'):
+    basin      = sec_name.split(':')[1]
+    rgrid_name = sec_name.split(':')[2]
+    IaV.lat_sec, IaV.data = zonal_average(
+                                   fpath_data=IcD.flist_ts[step_snap], 
+                                   var=var, basin=basin, it=it,
+                                   fpath_fx=IcD.fpath_fx, 
+                                   fpath_ckdtree=IcD.rgrid_fpaths[
+                                     np.where(IcD.rgrid_names==rgrid_name)[0][0]]
+                                         )
   else:
-    IaV.load_moc(
+    sec_fpath = IcD.sec_fpaths[np.where(IcD.sec_names==sec_name)[0][0] ]
+    IaV.load_vsnap(
                    fpath=IcD.flist_ts[step_snap], 
+                   fpath_ckdtree=sec_fpath,
                    it=IcD.its[step_snap], 
                    step_snap = step_snap
                   ) 
@@ -1498,7 +1608,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
   FigInf = dict()
   FigInf['fpath'] = fpath
   FigInf['long_name'] = IaV.long_name
-  FigInf['IcD'] = IcD
+  #FigInf['IcD'] = IcD
   return FigInf
 
 ##def qp_hor_plot(fpath, var, IC='none', iz=0, it=0,
@@ -1590,10 +1700,13 @@ qp.write_to_file()
   """
 
   def __init__(self, title='Quick Plot', author='', date='', 
+               info='', path_data='',
                fpath_css='', fname_html='pyicon_qp.html'):
     self.author = author 
     self.title = title
     self.date = date
+    self.info = info
+    self.path_data = path_data
     self.fpath_css = fpath_css
     self.fname_html = fname_html
 
@@ -1620,11 +1733,22 @@ qp.write_to_file()
 
 <div id="header">
 <h1 class="title">{title}</h1>
-<h2 class="author">{author}</h2>
-<h3 class="date">{date}</h3>
+<p> {author} | {date} | {path_data} </p>
+<p> {info} </>
 </div>
 
-""".format(author=self.author, title=self.title, date=self.date, fpath_css=self.fpath_css)
+""".format(author=self.author, title=self.title, 
+           date=self.date, 
+           path_data=self.path_data,
+           info=self.info,
+           fpath_css=self.fpath_css, 
+          )
+
+#<div id="header">
+#<h1 class="title">{title}</h1>
+#<h2 class="author">{author}</h2>
+#<h3 class="date">{date}</h3>
+#</div>
 
     self.footer = """
 </body>
