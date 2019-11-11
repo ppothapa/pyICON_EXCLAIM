@@ -222,6 +222,27 @@ def zonal_average_3d_data(data3d, basin='global', it=0, fpath_fx='', fpath_ckdtr
     data_zave[k,:] = datai.mean(axis=1)
   return lat_sec, data_zave
 
+def zonal_section_3d_data(data3d, fpath_ckdtree):
+  """
+  (
+   lon_sec, lat_sec, dist_sec, data_sec 
+  ) = pyic.zonal_section_3d_data(tbias, 
+    fpath_ckdtree=path_ckdtree+'sections/r2b4_nps100_30W80S_30W80N.npz')
+  """
+  # --- load ckdtree
+  ddnpz = np.load(fpath_ckdtree)
+  dckdtree = ddnpz['dckdtree']
+  ickdtree = ddnpz['ickdtree'] 
+  lon_sec = ddnpz['lon_sec'] 
+  lat_sec = ddnpz['lat_sec'] 
+  dist_sec = ddnpz['dist_sec'] 
+
+  nz = data3d.shape[0]
+  data_sec = np.ma.zeros((nz,dist_sec.size))
+  for k in range(nz):
+    data_sec[k,:] = icon_to_section(data3d[k,:], distances=dckdtree, inds=ickdtree)
+  return lon_sec, lat_sec, dist_sec, data_sec
+
 def lonlat2str(lon, lat):
   if lon<0:
     lon_s = '%gW'%(-lon)
@@ -809,30 +830,7 @@ class IconVariable(object):
     self.data[self.mask] = np.ma.masked
     self.isinterpolated=False
     return
-
-def zonal_section_3d_data(data3d, fpath_ckdtree):
-  """
-  (
-   lon_sec, lat_sec, dist_sec, data_sec 
-  ) = pyic.zonal_section_3d_data(tbias, 
-    fpath_ckdtree=path_ckdtree+'sections/r2b4_nps100_30W80S_30W80N.npz')
-  """
-  # --- load ckdtree
-  ddnpz = np.load(fpath_ckdtree)
-  dckdtree = ddnpz['dckdtree']
-  ickdtree = ddnpz['ickdtree'] 
-  lon_sec = ddnpz['lon_sec'] 
-  lat_sec = ddnpz['lat_sec'] 
-  dist_sec = ddnpz['dist_sec'] 
-
-  nz = data3d.shape[0]
-  data_sec = np.ma.zeros((nz,dist_sec.size))
-  for k in range(nz):
-    data_sec[k,:] = icon_to_section(data3d[k,:], distances=dckdtree, inds=ickdtree)
-  return lon_sec, lat_sec, dist_sec, data_sec
   
-
-
   def load_vsnap(self, fpath, fpath_ckdtree, it=0, step_snap=0):
     self.step_snap = step_snap
     self.it = it
