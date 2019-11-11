@@ -1701,7 +1701,7 @@ qp.write_to_file()
 
   def __init__(self, title='Quick Plot', author='', date='', 
                info='', path_data='',
-               fpath_css='', fname_html='pyicon_qp.html'):
+               fpath_css='', fname_html='qp_index.html'):
     self.author = author 
     self.title = title
     self.date = date
