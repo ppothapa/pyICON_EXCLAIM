@@ -1,13 +1,13 @@
 import numpy as np
 from netCDF4 import Dataset
-import sys
+import sys, os
 from importlib import reload
 
 import pyicon as pyic
 reload(pyic)
 
-path_tgrid    = 
-path_ckdtree  = 
+path_tgrid    = '/pool/data/ICON/oes/input/r0002/' 
+path_ckdtree  = '/mnt/lustre01/work/mh0033/m300602/proj_vmix/icon/icon_ckdtree/'
 path_rgrid    = path_ckdtree + 'rectgrids/' 
 path_sections = path_ckdtree + 'sections/' 
 
@@ -23,12 +23,27 @@ all_secs = [
   '170W_100pts',
             ]
 
-all_grids = []
-all_secs = []
+#all_grids = []
+#all_secs = []
 
-gnames = ['OceanOnly_Icos_0158km_etopo40']
+gnames = []
+# r2b4
+gnames += ['OceanOnly_Icos_0158km_etopo40'] 
+# r2b6
+gnames += ['OCEANINP_pre04_LndnoLak_039km_editSLOHH2017_G']
+# r2b8
+gnames += ['OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min']
+# r2b9
+#gnames += ['OceanOnly_IcosSymmetric_4932m_rotatedZ37d_modified_srtm30_1min']
+
+if not os.path.exists(path_rgrid): 
+  os.makedirs(path_rgrid)
+if not os.path.exists(path_sections): 
+  os.makedirs(path_sections)
 
 for gname in gnames:
+  print(gname)
+
   # --- grids
   sname = 'global_1.0'
   if sname in all_grids:
@@ -36,7 +51,8 @@ for gname in gnames:
                       fname_tgrid  = gname+'/'+gname+'.nc',
                       path_tgrid   = path_tgrid,
                       path_ckdtree = path_rgrid,
-                      sname = sname
+                      sname = sname,
+                      gname = gname,
                       )
   
   sname = 'global_0.3'
@@ -45,7 +61,8 @@ for gname in gnames:
                       fname_tgrid  = gname+'/'+gname+'.nc',
                       path_tgrid   = path_tgrid,
                       path_ckdtree = path_rgrid,
-                      sname = sname
+                      sname = sname,
+                      gname = gname,
                       )
   
   sname = 'global_0.1'
@@ -54,7 +71,8 @@ for gname in gnames:
                       fname_tgrid  = gname+'/'+gname+'.nc',
                       path_tgrid   = path_tgrid,
                       path_ckdtree = path_rgrid,
-                      sname = sname
+                      sname = sname,
+                      gname = gname,
                       )
   
 
@@ -65,7 +83,8 @@ for gname in gnames:
                       fname_tgrid  = gname+'/'+gname+'.nc',
                       path_tgrid   = path_tgrid,
                       path_ckdtree = path_sections,
-                      sname = sname
+                      sname = sname,
+                      gname = gname,
                       )
 
   sname = '30W_200pts'
@@ -74,7 +93,8 @@ for gname in gnames:
                       fname_tgrid  = gname+'/'+gname+'.nc',
                       path_tgrid   = path_tgrid,
                       path_ckdtree = path_sections,
-                      sname = sname
+                      sname = sname,
+                      gname = gname,
                       )
     
   sname = '170W_100pts'
@@ -83,7 +103,8 @@ for gname in gnames:
                       fname_tgrid  = gname+'/'+gname+'.nc',
                       path_tgrid   = path_tgrid,
                       path_ckdtree = path_sections,
-                      sname = sname
+                      sname = sname,
+                      gname = gname,
                       )
 
-return('make_ckdtree.py: All done!')
+print('make_ckdtree.py: All done!')
