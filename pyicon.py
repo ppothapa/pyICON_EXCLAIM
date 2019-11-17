@@ -260,6 +260,7 @@ def ckdtree_hgrid(lon_reg, lat_reg, res,
                  path_tgrid='',
                  path_ckdtree='',
                  sname='',
+                 gname='',
                  ):
   """
   """
@@ -293,6 +294,7 @@ def ckdtree_hgrid(lon_reg, lat_reg, res,
             lon=lon,
             lat=lat,
             sname=sname,
+            gname=gname,
            )
   return
 
@@ -301,6 +303,7 @@ def ckdtree_section(p1, p2, npoints=101,
                  path_tgrid='',
                  path_ckdtree='',
                  sname='auto',
+                 gname='',
                  ):
   """
   """
@@ -336,6 +339,7 @@ def ckdtree_section(p1, p2, npoints=101,
             lat_sec=lat_sec,
             dist_sec=dist_sec,
             sname=sname,
+            gname=gname,
            )
   return dckdtree, ickdtree, lon_sec, lat_sec, dist_sec
 
@@ -559,7 +563,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                ax='auto', cax=0,
                title='auto', xlabel='', ylabel='',
                xlim='auto', ylim='auto',
-               projection='none', use_tgrid=True,
+               projection='none', use_tgrid='auto',
                logplot=False,
                sasp=0.5,
                fig_size_fac=2.,
@@ -582,6 +586,10 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     * mappable
   """
   Dstr = dict()
+
+  # --- plotting on original tgrid or interpolated rectgrid
+  if isinstance(use_tgrid, str) and use_tgrid=='auto':
+    use_tgrid = IcD.use_tgrid
 
   # --- color limits and color map
   if isinstance(clim,str) and clim=='auto':
@@ -957,20 +965,22 @@ class IconData(object):
   Used by Jupyter
   """
   def __init__(self, 
+               # data
                search_str="",
-
                path_data      = "",
-               path_ckdtree   = "",
+               # original grid
                path_tgrid     = "auto",
-               path_rgrid     = "auto",
-               path_sections  = "auto",
-
+               fpath_tgrid    = "auto",
+               fpath_fx       = "auto",
+               # interpolation
+               path_ckdtree   = "",
+               path_rgrid     = "auto", # not needed if conventions are followed
+               path_sections  = "auto", # not needed if convections are followed
                rgrid_name     = "",
+               section_name   = "",
                run            = "auto",
-
                lon_reg=[-180, 180],
                lat_reg=[-90, 90],
-
                do_triangulation=True,
               ):
 
@@ -989,21 +999,24 @@ class IconData(object):
     else:
       self.path_rgrid = path_rgrid
     if path_sections=="auto":
-      self.path_sections = self.path_ckdtree + 'rectgrids/'
+      self.path_sections = self.path_ckdtree + 'sections/'
     else:
       self.path_sections = path_sections
     if run=='auto':
       self.run = self.path_data.split('/')[-2]
     else: 
       self.run = run
-    self.fpath_fx = self.path_data + self.run + '_fx.nc'
+    if fpath_fx=='auto':
+      self.fpath_fx = self.path_data + self.run + '_fx.nc'
+    else:
+      self.fpath_fx = fpath_fx
     self.Dgrid = identify_grid(path_grid='', fpath_data=self.fpath_fx)
     if path_tgrid=='auto':
       self.path_tgrid    = path_data
       self.fpath_tgrid   = self.path_data + self.Dgrid['long_name'] + '.nc'
     else:
+      self.fpath_tgrid   = fpath_tgrid
       self.path_tgrid    = path_tgrid
-      self.fpath_tgrid   = self.path_tgrid + self.run
     self.Dgrid['fpath_grid'] = self.fpath_tgrid
 
     for fp in [self.path_data, self.path_ckdtree, 
@@ -1023,55 +1036,48 @@ class IconData(object):
     self.search_str = search_str
 
     # --- find ckdtrees fitting for this data set
-    sec_fpaths = np.array(glob.glob(path_ckdtree+'sections/'+'*.npz'))
+    sec_fpaths = np.array(
+      glob.glob(path_ckdtree+'sections/'+self.Dgrid['name']+'*.npz'))
     sec_names = np.zeros(sec_fpaths.size, '<U200')
+    self.Dsec_fpaths = dict()
     for nn, fpath_ckdtree in enumerate(sec_fpaths): 
-      #sec_names[nn] = fpath_ckdtree.split('/')[-1][:-4]
       ddnpz = np.load(fpath_ckdtree)
       sec_names[nn] = ddnpz['sname']
+      self.Dsec_fpaths[sec_names[nn]] = fpath_ckdtree
     self.sec_fpaths = sec_fpaths
     self.sec_names = sec_names
 
-    rgrid_fpaths = np.array(glob.glob(path_ckdtree+'rectgrids/'+'*.npz'))
+    rgrid_fpaths = np.array(
+      glob.glob(path_ckdtree+'rectgrids/'+self.Dgrid['name']+'*.npz'))
     rgrid_names = np.zeros(rgrid_fpaths.size, '<U200')
+    self.Drgrid_fpaths = dict()
     for nn, fpath_ckdtree in enumerate(rgrid_fpaths): 
-      #rgrid_names[nn] = fpath_ckdtree.split('/')[-1][:-4]
       ddnpz = np.load(fpath_ckdtree)
       rgrid_names[nn] = ddnpz['sname']
+      self.Drgrid_fpaths[rgrid_names[nn]] = fpath_ckdtree
     self.rgrid_fpaths = rgrid_fpaths
     self.rgrid_names = rgrid_names
 
     if rgrid_names.size==0:
       raise ValueError('::: Error: Could not find any rgrid-npz-file in %s. :::' 
                         % (path_ckdtree+'rectgrids/'))
-    if rgrid_name=="":
-      # take first of list
-      self.rgrid_fpath = self.rgrid_fpaths[0]
-      self.rgrid_name  = self.rgrid_names[0]
-    else:
-      if rgrid_name in self.rgrid_names[0]:
-        self.rgrid_fpath = self.rgrid_fpaths[
-          np.where(self.rgrid_names==rgrid_name)[0][0] ]
-        self.rgrid_name  = rgrid_name
-      else: 
-        self.rgrid_fpath = self.rgrid_fpaths[0]
-        self.rgrid_name  = self.rgrid_names[0]
-        print('::: Warning %s could not be found. We proceed with %s. :::' 
-              % (rgrid_name, self.rgrid_name))
-        print('You could have chosen one from:')
-        print(self.rgrid_names)
 
-    # --- enquire data set
-    # --- grid
-    self.load_grid()
+    # --- choose rgrid and section
+    self.set_rgrid(rgrid_name)
+    self.set_section(section_name)
+
+    # --- load grid
+    self.load_tgrid()
+    self.load_rgrid()
+    self.load_vgrid()
     #self.crop_grid(lon_reg=self.lon_reg, lat_reg=self.lat_reg)
-
-    # --- make triangulation
+    # --- triangulation
     if do_triangulation:
       self.Tri = matplotlib.tri.Triangulation(self.vlon, self.vlat, 
                                               triangles=self.vertex_of_cell)
       self.mask_big_triangles()
-    # --- 
+
+    # --- list of variables and time steps / files
     self.get_files_of_timeseries()
     self.get_varnames(self.flist[0])
     self.associate_variables(fpath_data=self.flist[0], skip_vars=[])
@@ -1116,10 +1122,50 @@ class IconData(object):
       #setattr(self, var, IV)
     fi.close()
     return
+
+  def set_rgrid(self, rgrid_name):
+    if rgrid_name=="":
+      # take first of list
+      self.rgrid_fpath = self.rgrid_fpaths[0]
+      self.rgrid_name  = self.rgrid_names[0]
+    else:
+      if rgrid_name in self.rgrid_names:
+        self.rgrid_fpath = self.rgrid_fpaths[
+          np.where(self.rgrid_names==rgrid_name)[0][0] ]
+        self.rgrid_name  = rgrid_name
+      else: 
+        self.rgrid_fpath = self.rgrid_fpaths[0]
+        self.rgrid_name  = self.rgrid_names[0]
+        print('::: Error: %s could not be found. :::' 
+              % (rgrid_name))
+        print('You could have chosen one from:')
+        print(self.rgrid_names)
+        raise ValueError('::: Stopping! :::')
+    return
+
+  def set_section(self, sec_name):
+    if sec_name=="":
+      # take first of list
+      self.sec_fpath = self.sec_fpaths[0]
+      self.sec_name  = self.sec_names[0]
+    else:
+      if sec_name in self.sec_names:
+        self.sec_fpath = self.sec_fpaths[
+          np.where(self.sec_names==sec_name)[0][0] ]
+        self.sec_name  = sec_name
+      else: 
+        self.sec_fpath = self.sec_fpaths[0]
+        self.sec_name  = self.sec_names[0]
+        print('::: Error: %s could not be found. :::' 
+              % (sec_name))
+        print('You could have chosen one from:')
+        print(self.sec_names)
+        raise ValueError('::: Stopping! :::')
+    return
   
-  def print_grid_info(self):
+  def show_grid_info(self):
     print('------------------------------------------------------------')
-    fpaths = glob.glob(self.path_rgrid+'*.npz')
+    fpaths = glob.glob(self.path_rgrid+self.Dgrid['name']+'*.npz')
     print('regular grid files:')
     print(self.path_rgrid)
     for fp in fpaths:
@@ -1128,7 +1174,7 @@ class IconData(object):
       print(info)
     
     print('------------------------------------------------------------')
-    fpaths = glob.glob(self.path_sections+'*.npz')
+    fpaths = glob.glob(self.path_sections+self.Dgrid['name']+'*.npz')
     print('section files:')
     print(self.path_sections)
     for fp in fpaths:
@@ -1139,19 +1185,21 @@ class IconData(object):
     print('------------------------------------------------------------') 
     return
 
-  def load_grid(self, lon_reg='all', lat_reg='all'):
+  def load_vgrid(self, lon_reg='all', lat_reg='all'):
     # --- vertical levels
     f = Dataset(self.fpath_fx, 'r')
     #self.clon = f.variables['clon'][:] * 180./np.pi
     #self.clat = f.variables['clat'][:] * 180./np.pi
     self.depthc = f.variables['depth'][:]
-    self.depthi = f.variables['depth_2'][:]
+    #self.depthi = f.variables['depth_2'][:]
     self.nz = self.depthc.size
     f.close()
+    return
 
     # --- tripolar grid
-    self.load_tripolar_grid()
+    #self.load_tripolar_grid()
 
+  def load_rgrid(self, lon_reg='all', lat_reg='all'):
     # --- rectangular grid
     ddnpz = np.load(self.rgrid_fpath)
     self.dckdtree = ddnpz['dckdtree']
@@ -1262,7 +1310,7 @@ class IconData(object):
 #    f.close()
 #    return
 
-  def load_tripolar_grid(self):
+  def load_tgrid(self):
     (self.clon, self.clat, self.vlon, self.vlat,
      self.elon, self.elat, self.vertex_of_cell,
      self.edge_of_cell ) = load_tripolar_grid(self.fpath_tgrid)
@@ -1459,16 +1507,15 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
   path_data += '/'
 
   # --- set-up grid and region if not given to function
-  if isinstance(IcD,str) and clim=='none':
-    pass
-  else:
+  if isinstance(IcD,str) and IcD=='none':
     IcD = IconData(
                    search_str   = fname,
                    path_data    = path_data,
                    path_ckdtree = path_ckdtree,
                    rgrid_name   = rgrid_name
                   )
-
+  else:
+    print('Using given IcD!')
 
   if depth!=-1e33:
     iz = np.argmin((IcD.depthc-depth)**2)
@@ -1504,7 +1551,7 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               xlim=xlim, ylim=ylim,
               title='auto', 
               projection=projection,
-              use_tgrid=IcD.use_tgrid,
+              #use_tgrid=IcD.use_tgrid,
               logplot=logplot,
               sasp=sasp,
              )
@@ -1546,15 +1593,15 @@ def qp_vplot(fpath, var, IcD='none', it=0,
   path_data += '/'
 
   # --- load data set
-  if isinstance(IcD,str) and clim=='none':
-    pass
-  else:
+  if isinstance(IcD,str) and IcD=='none':
     IcD = IconData(
                    search_str   = fname,
                    path_data    = path_data,
                    path_ckdtree = path_ckdtree,
                    #rgrid_name   = rgrid_name
                   )
+  else:
+    print('Using given IcD!')
 
   IaV = IcD.vars[var]
   step_snap = it
@@ -1699,14 +1746,14 @@ qp.write_to_file()
 
   def __init__(self, title='Quick Plot', author='', date='', 
                info='', path_data='',
-               fpath_css='', fname_html='qp_index.html'):
+               fpath_css='', fpath_html='./qp_index.html'):
     self.author = author 
     self.title = title
     self.date = date
     self.info = info
     self.path_data = path_data
     self.fpath_css = fpath_css
-    self.fname_html = fname_html
+    self.fpath_html = fpath_html
 
     self.first_add_section_call = True
 
@@ -1805,7 +1852,7 @@ qp.write_to_file()
     self.close_toc()
 
     # --- write to output file
-    f = open(self.fname_html, 'w')
+    f = open(self.fpath_html, 'w')
     f.write(self.header)
     f.write(self.toc)
     f.write(self.main)
