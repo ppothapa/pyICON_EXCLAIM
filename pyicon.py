@@ -19,8 +19,8 @@ from importlib import reload
 
 """
 pyicon
-  icon_to_regular_grid
-  icon_to_section
+#  icon_to_regular_grid
+#  icon_to_section
   apply_ckdtree
   ckdtree_hgrid
   ckdtree_section
@@ -78,40 +78,52 @@ class pyicon_configure(object):
       setattr(self, key, Dsettings[key])
     return
 
-def icon_to_regular_grid(data, shape, distances=None, \
-                  inds=None, radius_of_influence=100e3):
-  """
-  """
-  data_interpolated = apply_ckdtree(data, distances=distances, inds=inds, 
-                                    radius_of_influence=radius_of_influence)
-  data_interpolated = data_interpolated.reshape(shape)
-  return data_interpolated
+#def icon_to_regular_grid(data, shape, distances=None, \
+#                  inds=None, radius_of_influence=100e3):
+#  """
+#  """
+#  data_interpolated = apply_ckdtree(data, distances=distances, inds=inds, 
+#                                    radius_of_influence=radius_of_influence)
+#  data_interpolated = data_interpolated.reshape(shape)
+#  return data_interpolated
+#
+#def icon_to_section(data, distances=None, \
+#                  inds=None, radius_of_influence=100e3):
+#  """
+#  """
+#  data_interpolated = apply_ckdtree(data, distances=distances, inds=inds, 
+#                                    radius_of_influence=radius_of_influence)
+#  return data_interpolated
 
-def icon_to_section(data, distances=None, \
-                  inds=None, radius_of_influence=100e3):
-  """
-  """
-  data_interpolated = apply_ckdtree(data, distances=distances, inds=inds, 
-                                    radius_of_influence=radius_of_influence)
-  return data_interpolated
-
-def apply_ckdtree(data, distances=None, inds=None, radius_of_influence=100e3):
+def apply_ckdtree(data, fpath_ckdtree, coordinates='clat clon', radius_of_influence=100e3):
   """
   * credits
-    function taken (and slightly modified) from pyfesom (Nikolay Koldunov)
+    function modified from pyfesom (Nikolay Koldunov)
   """
+  ddnpz = np.load(fpath_ckdtree)
+  if coordinates=='clat clon':
+    distances = ddnpz['dckdtree_c']
+    inds = ddnpz['ickdtree_c'] 
+  elif coordinates=='elat elon':
+    distances = ddnpz['dckdtree_e']
+    inds = ddnpz['ickdtree_e'] 
+  elif coordinates=='vlat vlon':
+    distances = ddnpz['dckdtree_v']
+    inds = ddnpz['ickdtree_v'] 
+  else:
+    raise ValueError('::: Error: Unsupported coordinates: %s! ::: ' % (coordinates))
+
   if distances.ndim == 1:
       #distances_ma = np.ma.masked_greater(distances, radius_of_influence)
       data_interpolated = data[inds]
       data_interpolated[distances>=radius_of_influence] = np.nan
       data_interpolated = np.ma.masked_invalid(data_interpolated)
   else:
-      raise ValueError("::: distances.ndim>1 is not properly supported yet. :::")
+      #raise ValueError("::: distances.ndim>1 is not properly supported yet. :::")
       distances_ma = np.ma.masked_greater(distances, radius_of_influence)
       
       w = 1.0 / distances_ma**2
       data_interpolated = np.ma.sum(w * data[inds], axis=1) / np.ma.sum(w, axis=1)
-      data_interpolated.shape = lons.shape
       data_interpolated = np.ma.masked_invalid(data_interpolated)
   return data_interpolated
 
@@ -139,8 +151,6 @@ def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdt
   f.close()
   
   ddnpz = np.load(fpath_ckdtree)
-  dckdtree = ddnpz['dckdtree']
-  ickdtree = ddnpz['ickdtree'] 
   lon = ddnpz['lon'] 
   lat = ddnpz['lat'] 
   shape = [lat.size, lon.size]
@@ -148,6 +158,7 @@ def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdt
   
   f = Dataset(fpath_data, 'r')
   nz = f.variables[var].shape[1]
+  coordinates = f.variables[var].coordinates
   data_zave = np.ma.zeros((nz,lat_sec.size))
   for k in range(nz):
     #print('k = %d/%d'%(k,nz))
@@ -160,8 +171,8 @@ def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdt
     # --- go to normal np.array (not np.ma object)
     data = data.filled(0.)
     # --- interpolate to rectangular grid
-    datai = icon_to_regular_grid(data, shape=shape, 
-                                      distances=dckdtree, inds=ickdtree) 
+    datai = apply_ckdtree(data, fpath_ckdtree, coordinates=coordinates)
+    datai = datai.reshape(shape)
     # --- go back to masked array
     datai = np.ma.array(datai, mask=datai==0.)
     # --- do zonal average
@@ -169,7 +180,7 @@ def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdt
   f.close()
   return lat_sec, data_zave
 
-def zonal_average_3d_data(data3d, basin='global', it=0, fpath_fx='', fpath_ckdtree=''):
+def zonal_average_3d_data(data3d, basin='global', it=0, coordinates='clat clon', fpath_fx='', fpath_ckdtree=''):
   """ Like zonal_average but here data instead of path to data is given. This can only work if the whole data array fits into memory.
   """
 
@@ -195,8 +206,8 @@ def zonal_average_3d_data(data3d, basin='global', it=0, fpath_fx='', fpath_ckdtr
   f.close()
   
   ddnpz = np.load(fpath_ckdtree)
-  dckdtree = ddnpz['dckdtree']
-  ickdtree = ddnpz['ickdtree'] 
+  #dckdtree = ddnpz['dckdtree']
+  #ickdtree = ddnpz['ickdtree'] 
   lon = ddnpz['lon'] 
   lat = ddnpz['lat'] 
   shape = [lat.size, lon.size]
@@ -214,15 +225,15 @@ def zonal_average_3d_data(data3d, basin='global', it=0, fpath_fx='', fpath_ckdtr
     # --- go to normal np.array (not np.ma object)
     data = data.filled(0.)
     # --- interpolate to rectangular grid
-    datai = icon_to_regular_grid(data, shape=shape, 
-                                      distances=dckdtree, inds=ickdtree) 
+    datai = apply_ckdtree(data, fpath_ckdtree, coordinates=coordinates)
+    datai = datai.reshape(shape)
     # --- go back to masked array
     datai = np.ma.array(datai, mask=datai==0.)
     # --- do zonal average
     data_zave[k,:] = datai.mean(axis=1)
   return lat_sec, data_zave
 
-def zonal_section_3d_data(data3d, fpath_ckdtree):
+def zonal_section_3d_data(data3d, fpath_ckdtree, coordinates):
   """
   (
    lon_sec, lat_sec, dist_sec, data_sec 
@@ -231,8 +242,8 @@ def zonal_section_3d_data(data3d, fpath_ckdtree):
   """
   # --- load ckdtree
   ddnpz = np.load(fpath_ckdtree)
-  dckdtree = ddnpz['dckdtree']
-  ickdtree = ddnpz['ickdtree'] 
+  #dckdtree = ddnpz['dckdtree']
+  #ickdtree = ddnpz['ickdtree'] 
   lon_sec = ddnpz['lon_sec'] 
   lat_sec = ddnpz['lat_sec'] 
   dist_sec = ddnpz['dist_sec'] 
@@ -240,7 +251,7 @@ def zonal_section_3d_data(data3d, fpath_ckdtree):
   nz = data3d.shape[0]
   data_sec = np.ma.zeros((nz,dist_sec.size))
   for k in range(nz):
-    data_sec[k,:] = icon_to_section(data3d[k,:], distances=dckdtree, inds=ickdtree)
+    data_sec[k,:] = apply_ckdtree(data3d[k,:], fpath_ckdtree, coordinates=coordinates)
   return lon_sec, lat_sec, dist_sec, data_sec
 
 def lonlat2str(lon, lat):
@@ -261,21 +272,37 @@ def ckdtree_hgrid(lon_reg, lat_reg, res,
                  path_ckdtree='',
                  sname='',
                  gname='',
+                 tgname='',
+                 load_cgrid=True,
+                 load_egrid=True,
+                 load_vgrid=True,
+                 n_nearest_neighbours=1,
                  ):
   """
   """
-  Drgrid = identify_grid(path_tgrid, path_tgrid+fname_tgrid) 
-  tgname = Drgrid['name']
+  if tgname=='':
+    Drgrid = identify_grid(path_tgrid, path_tgrid+fname_tgrid) 
+    tgname = Drgrid['name']
   lon1str, lat1str = lonlat2str(lon_reg[0], lat_reg[0])
   lon2str, lat2str = lonlat2str(lon_reg[1], lat_reg[1])
 
-  fname = '%s_res%3.2f_%s-%s_%s-%s.npz'%(tgname, res, lon1str, lon2str, lat1str, lat2str) 
+  if n_nearest_neighbours==1:
+    fname = '%s_res%3.2f_%s-%s_%s-%s.npz'%(tgname, res, lon1str, lon2str, lat1str, lat2str) 
+  else:
+    fname = '%s_res%3.2f_%dnn_%s-%s_%s-%s.npz'%(tgname, res, n_nearest_neighbours, lon1str, lon2str, lat1str, lat2str) 
   fpath_ckdtree = path_ckdtree+fname
 
   # --- load triangular grid
   f = Dataset(path_tgrid+fname_tgrid, 'r')
-  clon = f.variables['clon'][:] * 180./np.pi
-  clat = f.variables['clat'][:] * 180./np.pi
+  if load_cgrid:
+    clon = f.variables['clon'][:] * 180./np.pi
+    clat = f.variables['clat'][:] * 180./np.pi
+  if load_egrid:
+    elon = f.variables['elon'][:] * 180./np.pi
+    elat = f.variables['elat'][:] * 180./np.pi
+  if load_vgrid:
+    vlon = f.variables['vlon'][:] * 180./np.pi
+    vlat = f.variables['vlat'][:] * 180./np.pi
   f.close()
 
   # --- make rectangular grid 
@@ -283,18 +310,50 @@ def ckdtree_hgrid(lon_reg, lat_reg, res,
   lat = np.arange(lat_reg[0],lat_reg[1],res)
   Lon, Lat = np.meshgrid(lon, lat)
 
-  dckdtree, ickdtree = calc_ckdtree(lon_i=clon, lat_i=clat,
-                                    lon_o=Lon.flatten(), lat_o = Lat.flatten())
+  # --- ckdtree for cells, edges and vertices
+  if load_cgrid:
+    dckdtree_c, ickdtree_c = calc_ckdtree(lon_i=clon, lat_i=clat,
+                                          lon_o=Lon.flatten(), lat_o = Lat.flatten(),
+                                          n_nearest_neighbours=n_nearest_neighbours,
+                                          )
+  if load_egrid:
+    dckdtree_e, ickdtree_e = calc_ckdtree(lon_i=elon, lat_i=elat,
+                                          lon_o=Lon.flatten(), lat_o = Lat.flatten(),
+                                          n_nearest_neighbours=n_nearest_neighbours,
+                                          )
+  if load_vgrid:
+    dckdtree_v, ickdtree_v = calc_ckdtree(lon_i=vlon, lat_i=vlat,
+                                          lon_o=Lon.flatten(), lat_o = Lat.flatten(),
+                                          n_nearest_neighbours=n_nearest_neighbours,
+                                          )
+
+  # --- save dict
+  Dsave = dict()
+  if load_cgrid: 
+    Dsave['dckdtree_c'] = dckdtree_c
+    Dsave['ickdtree_c'] = ickdtree_c
+  if load_egrid: 
+    Dsave['dckdtree_e'] = dckdtree_e
+    Dsave['ickdtree_e'] = ickdtree_e
+  if load_vgrid: 
+    Dsave['dckdtree_v'] = dckdtree_v
+    Dsave['ickdtree_v'] = ickdtree_v
 
   # --- save grid
   print('Saving grid file: %s' % (fpath_ckdtree))
   np.savez(fpath_ckdtree,
-            dckdtree=dckdtree,
-            ickdtree=ickdtree,
             lon=lon,
             lat=lat,
             sname=sname,
             gname=gname,
+            tgname='test',
+            **Dsave,
+            #dckdtree_c=dckdtree_c,
+            #ickdtree_c=ickdtree_c,
+            #dckdtree_e=dckdtree_e,
+            #ickdtree_e=ickdtree_e,
+            #dckdtree_v=dckdtree_v,
+            #ickdtree_v=ickdtree_v,
            )
   return
 
@@ -304,11 +363,13 @@ def ckdtree_section(p1, p2, npoints=101,
                  path_ckdtree='',
                  sname='auto',
                  gname='',
+                 tgname='',
                  ):
   """
   """
-  Drgrid = identify_grid(path_tgrid, path_tgrid+fname_tgrid) 
-  tgname = Drgrid['name']
+  if tgname=='':
+    Drgrid = identify_grid(path_tgrid, path_tgrid+fname_tgrid) 
+    tgname = Drgrid['name']
   lon1str, lat1str = lonlat2str(p1[0], p1[1])
   lon2str, lat2str = lonlat2str(p2[0], p2[1])
 
@@ -319,6 +380,10 @@ def ckdtree_section(p1, p2, npoints=101,
   f = Dataset(path_tgrid+fname_tgrid, 'r')
   clon = f.variables['clon'][:] * 180./np.pi
   clat = f.variables['clat'][:] * 180./np.pi
+  elon = f.variables['elon'][:] * 180./np.pi
+  elat = f.variables['elat'][:] * 180./np.pi
+  vlon = f.variables['vlon'][:] * 180./np.pi
+  vlat = f.variables['vlat'][:] * 180./np.pi
   f.close()
 
   if sname=='auto':
@@ -327,38 +392,47 @@ def ckdtree_section(p1, p2, npoints=101,
   # --- derive section points
   lon_sec, lat_sec, dist_sec = derive_section_points(p1, p2, npoints)
 
-  dckdtree, ickdtree = calc_ckdtree(lon_i=clon, lat_i=clat,
-                                    lon_o=lon_sec, lat_o=lat_sec)
+  # --- ckdtree for cells, edges and vertices
+  dckdtree_c, ickdtree_c = calc_ckdtree(lon_i=clon, lat_i=clat,
+                                        lon_o=lon_sec, lat_o=lat_sec)
+  dckdtree_e, ickdtree_e = calc_ckdtree(lon_i=elon, lat_i=elat,
+                                        lon_o=lon_sec, lat_o=lat_sec)
+  dckdtree_v, ickdtree_v = calc_ckdtree(lon_i=vlon, lat_i=vlat,
+                                        lon_o=lon_sec, lat_o=lat_sec)
 
   # --- save grid
   print('Saving grid file: %s' % (fpath_ckdtree))
   np.savez(fpath_ckdtree,
-            dckdtree=dckdtree,
-            ickdtree=ickdtree,
+            dckdtree_c=dckdtree_c,
+            ickdtree_c=ickdtree_c,
+            dckdtree_e=dckdtree_e,
+            ickdtree_e=ickdtree_e,
+            dckdtree_v=dckdtree_v,
+            ickdtree_v=ickdtree_v,
             lon_sec=lon_sec,
             lat_sec=lat_sec,
             dist_sec=dist_sec,
             sname=sname,
             gname=gname,
            )
-  return dckdtree, ickdtree, lon_sec, lat_sec, dist_sec
+  return dckdtree_c, ickdtree_c, lon_sec, lat_sec, dist_sec
 
-def calc_ckdtree(lon_i, lat_i, lon_o, lat_o):
+def calc_ckdtree(lon_i, lat_i, lon_o, lat_o, n_nearest_neighbours=1):
   """
   """
   # --- initialize timing
-  tims = np.array([0])
-  tims = timing(tims)
+#  tims = np.array([0])
+#  tims = timing(tims)
   # --- do ckdtree
-  tims = timing(tims, 'CKD: define reg grid')
+#  tims = timing(tims, 'CKD: define reg grid')
   lzip_i = list(zip(lon_i, lat_i))
-  tims = timing(tims, 'CKD: zip orig grid')
+#  tims = timing(tims, 'CKD: zip orig grid')
   tree = cKDTree(lzip_i)
-  tims = timing(tims, 'CKD: CKDgrid')
+#  tims = timing(tims, 'CKD: CKDgrid')
   lzip_o = list(zip(lon_o, lat_o))
-  tims = timing(tims, 'CKD: zip reg grid')
-  dckdtree, ickdtree = tree.query(lzip_o , k=1, n_jobs=1)
-  tims = timing(tims, 'CKD: tree query')
+#  tims = timing(tims, 'CKD: zip reg grid')
+  dckdtree, ickdtree = tree.query(lzip_o , k=n_nearest_neighbours, n_jobs=1)
+#  tims = timing(tims, 'CKD: tree query')
   return dckdtree, ickdtree
 
 def haversine_dist(lon_ref, lat_ref, lon_pts, lat_pts, degree=True):
@@ -386,12 +460,24 @@ def derive_section_points(p1, p2, npoints=101,):
   dist_sec = haversine_dist(lon_sec[0], lat_sec[0], lon_sec, lat_sec)
   return lon_sec, lat_sec, dist_sec
 
+def load_hsnap(fpath, var, it=0, iz=0, fpath_ckdtree=''):
+  f = Dataset(fpath, 'r')
+  print("Loading %s from %s" % (var, fpath))
+  if f.variables[var].ndim==2:
+    data = f.variables[var][it,:]
+  else:
+    data = f.variables[var][it,iz,:]
+  f.close()
+
+  data[data==0.] = np.ma.masked
+  return data
+
 def timing(ts, string=''):
   if ts[0]==0:
     ts = np.array([datetime.datetime.now()])
   else:
     ts = np.append(ts, [datetime.datetime.now()])
-    print(ts[-1]-ts[-2]), ' ', (ts[-1]-ts[0]), ' '+string
+    print(ts[-1]-ts[-2], ' ', (ts[-1]-ts[0]), ' '+string)
   return ts
 
 def conv_gname(gname):
@@ -540,7 +626,7 @@ def get_varnames(fpath, skip_vars=[]):
     varnames = [var for var in varnames if not var.startswith(skip_var)]
   return varnames
 
-def get_timesteps(flist):
+def get_timesteps(flist, mode='num2date'):
   f = Dataset(flist[0], 'r')
   nt = f.variables['time'].size 
   f.close()
@@ -551,8 +637,23 @@ def get_timesteps(flist):
   for nn, fpath in enumerate(flist):
     f = Dataset(fpath, 'r')
     ncv = f.variables['time']
-    np_time = num2date(ncv[:], units=ncv.units, calendar=ncv.calendar
+    if mode=='num2date':
+      np_time = num2date(ncv[:], units=ncv.units, calendar=ncv.calendar
                       ).astype("datetime64[s]")
+    elif mode=='float2date':
+      tps = ncv[:]
+      secs_tot = np.round(86400.*(tps-np.floor(tps)))
+      hours = np.floor(secs_tot/3600.)
+      mins = np.floor((secs_tot-hours*3600.)/60.) 
+      secs = secs_tot - hours*3600. - mins*60.
+      tstrs = [0]*tps.size
+      for l in range(tps.size):
+        tp = tps[l]
+        tstr = '%s-%s-%sT%02d:%02d:%02d' % (str(tp)[:4], str(tp)[4:6], str(tp)[6:8], hours[l], mins[l], secs[l]) 
+        tstrs[l] = tstr
+      np_time = np.array(tstrs, dtype='datetime64')
+    else:
+      raise ValueError('::: Error: Wrong mode %s in get_timesteps! :::' % mode)
     times[nn*nt:(nn+1)*nt] = np_time
     f.close()
     flist_ts[nn*nt:(nn+1)*nt] = np.array([fpath]*nt)
@@ -808,35 +909,33 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
 
 # //////////////////////////////////////////////////////////////////////////////// 
 class IconVariable(object):
-  def __init__(self, name, units='', long_name='', is3d=None, isinterpolated=False):
+  def __init__(self, name, units='', long_name='', 
+                     coordinates='', fpath_ckdtree='',
+                     is3d=None, isinterpolated=False,
+               ):
     self.name = name
     self.units = units
     self.long_name = long_name
     self.is3d = is3d
+    self.coordinates = coordinates
     self.isinterpolated = isinterpolated
+    self.fpath_ckdtree = fpath_ckdtree
     return
 
-  def load_hsnap(self, fpath, it=0, iz=0, step_snap=0):
+  def load_hsnap(self, fpath, it=0, iz=0, step_snap=0, fpath_ckdtree=''):
     self.step_snap = step_snap
     self.it = it
     self.iz = iz
     self.fpath = fpath
 
-    f = Dataset(fpath, 'r')
-    var = self.name
-    print("Loading %s from %s" % (var, fpath))
-    if f.variables[var].ndim==2:
-      data = f.variables[var][it,:]
-    else:
-      data = f.variables[var][it,iz,:]
-    #self.long_name = f.variables[var].long_name
-    #self.units = f.variables[var].units
-    f.close()
-    self.data = data
+    self.data = load_hsnap(fpath, self.name, it=it, iz=iz, fpath_ckdtree=fpath_ckdtree)
+    self.mask = self.data.mask
 
-    self.mask = self.data==0.
-    self.data[self.mask] = np.ma.masked
-    self.isinterpolated=False
+    if fpath_ckdtree=='':
+      self.isinterpolated = False
+    else:
+      self.interp_to_rectgrid(fpath_ckdtree)
+      self.isinterpolated = True
     return
   
   def load_vsnap(self, fpath, fpath_ckdtree, it=0, step_snap=0):
@@ -845,8 +944,8 @@ class IconVariable(object):
     self.fpath = fpath
     # --- load ckdtree
     ddnpz = np.load(fpath_ckdtree)
-    dckdtree = ddnpz['dckdtree']
-    ickdtree = ddnpz['ickdtree'] 
+    #dckdtree = ddnpz['dckdtree']
+    #ickdtree = ddnpz['ickdtree'] 
     self.lon_sec = ddnpz['lon_sec'] 
     self.lat_sec = ddnpz['lat_sec'] 
     self.dist_sec = ddnpz['dist_sec'] 
@@ -861,7 +960,7 @@ class IconVariable(object):
     for k in range(nz):
       #print('k = %d/%d'%(k,nz))
       data_hsec = f.variables[var][it,k,:]
-      data[k,:] = icon_to_section(data_hsec, distances=dckdtree, inds=ickdtree)
+      data[k,:] = apply_ckdtree(data_hsec, fpath_ckdtree, coordinates=self.coordinates)
     f.close()
     self.data = data
 
@@ -894,13 +993,12 @@ class IconVariable(object):
       raise ValueError('::: Variable %s is already interpolated. :::'%self.name)
 
     ddnpz = np.load(fpath_ckdtree)
-    dckdtree = ddnpz['dckdtree']
-    ickdtree = ddnpz['ickdtree'] 
+    #dckdtree = ddnpz['dckdtree']
+    #ickdtree = ddnpz['ickdtree'] 
     self.lon = ddnpz['lon'] 
     self.lat = ddnpz['lat'] 
-    self.data = icon_to_regular_grid(self.data, 
-                            shape=[self.lat.size, self.lon.size], 
-                            distances=dckdtree, inds=ickdtree)
+    self.data = apply_ckdtree(self.data, fpath_ckdtree, coordinates=self.coordinates)
+    self.data = self.data.reshape([self.lat.size, self.lon.size])
     self.data[self.data==0.] = np.ma.masked
     return
 
@@ -1110,13 +1208,17 @@ class IconData(object):
         long_name = fi.variables[var].long_name
       except:
         long_name = ''
+      try:
+        coordinates = fi.variables[var].coordinates
+      except:
+        coordinates = ''
       shape = fi.variables[var].shape
       if (self.nz in shape) or ((self.nz+1) in shape):
         is3d = True
       else:
         is3d = False 
       #print(var, fi.variables[var].shape, is3d)
-      IV = IconVariable(var, units=units, long_name=long_name, is3d=is3d)
+      IV = IconVariable(var, units=units, long_name=long_name, is3d=is3d, coordinates=coordinates)
       #print('%s: units = %s, long_name = %s'%(IV.name,IV.units,IV.long_name))
       self.vars[var] = IV
       #setattr(self, var, IV)
@@ -1192,6 +1294,7 @@ class IconData(object):
     #self.clat = f.variables['clat'][:] * 180./np.pi
     self.depthc = f.variables['depth'][:]
     #self.depthi = f.variables['depth_2'][:]
+    self.prism_thick_flat_sfc_c = f.variables['prism_thick_flat_sfc_c'][:]
     self.nz = self.depthc.size
     f.close()
     return
@@ -1202,8 +1305,8 @@ class IconData(object):
   def load_rgrid(self, lon_reg='all', lat_reg='all'):
     # --- rectangular grid
     ddnpz = np.load(self.rgrid_fpath)
-    self.dckdtree = ddnpz['dckdtree']
-    self.ickdtree = ddnpz['ickdtree']
+    #self.dckdtree = ddnpz['dckdtree']
+    #self.ickdtree = ddnpz['ickdtree']
     self.lon = ddnpz['lon']
     self.lat = ddnpz['lat']
     self.Lon, self.Lat = np.meshgrid(self.lon, self.lat)
@@ -1281,8 +1384,8 @@ class IconData(object):
 #    print("Using data set %s" % fpath)
 #
 #    ddnpz = np.load(fpath_ckdtree)
-#    dckdtree = ddnpz['dckdtree']
-#    ickdtree = ddnpz['ickdtree'] 
+#    #dckdtree = ddnpz['dckdtree']
+#    #ickdtree = ddnpz['ickdtree'] 
 #    self.lon_sec = ddnpz['lon_sec'] 
 #    self.lat_sec = ddnpz['lat_sec'] 
 #    self.dist_sec  = ddnpz['dist_sec'] 
@@ -1298,7 +1401,7 @@ class IconData(object):
 #        for k in range(nz):
 #          #print('k = %d/%d'%(k,nz))
 #          data = f.variables[var][it,k,:]
-#          data_sec[k,:] = icon_to_section(data, distances=dckdtree, inds=ickdtree)
+#          data_sec[k,:] = apply_ckdtree(data, fpath_ckdtree)
 #
 #        self.long_name[var] = f.variables[var].long_name
 #        self.units[var] = f.variables[var].units
@@ -2064,7 +2167,10 @@ last change:
       #cb.formatter.set_scientific(False)
       cb.update_ticks()
 
-  cax.set_title(cbtitle)
+  if isinstance(cax, int) and cax==0:
+    pass
+  else:
+    cax.set_title(cbtitle)
 
   # labels and ticks
   if adjust_axlims:
