@@ -10,6 +10,9 @@ import json
 #sys.path.append('/home/mpim/m300602/pyicon')
 import pyicon as pyic
 reload(pyic)
+import cartopy
+import cartopy.crs as ccrs
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 
 # ---
 #runname = 'icon_08'
@@ -19,8 +22,15 @@ reload(pyic)
 #path_data    = '/Users/nbruggemann/work/icon_playground/icon_r2b4_test_data/icon_08/icon-oes/experiments/nib0002/'
 #path_ckdtree = '/Users/nbruggemann/work/icon_playground/icon_ckdtree/'
 
+# ------ r2b4
 exec(open("./conf-icon_08-nib002.py").read())
+
+# ------ r2b6
 #exec(open("./conf-icon_08-nib003.py").read())
+# does not work so far. diff. grid file
+#exec(open("./conf-ocean_omip_long_r2b6_19224-YVF.py").read()) 
+
+# ------ r2b8
 #exec(open("./conf-ocean_era51h_r2b8_19074-AMK.py").read())
 
 path_qp = './all_qps/qp-'+runname+'-'+run+'/'
@@ -65,6 +75,9 @@ fig_names += ['salt_gzave', 'salt_azave', 'salt_ipzave']
 fig_names += ['salt_gzave', 'salt_azave', 'salt_ipzave']
 fig_names += ['amoc', 'pmoc', 'gmoc']
 #fig_names += ['tke30w', 'iwe30w', 'kv30w']
+
+fig_names = []
+fig_names += ['ice']
 
 #fig_names += ['vort']
 
@@ -170,6 +183,48 @@ if fig_name in fig_names:
                       clim=2, cincr=0.2, cmap='RdBu_r',
                       IcD=IcD, **Ddict)
   save_fig('Sea surface height', path_pics, fig_name, FigInf)
+
+# ---
+fig_name = 'ice'
+if fig_name in fig_names:
+  proj_1 = ccrs.NorthPolarStereo()
+  proj_2 = ccrs.SouthPolarStereo()
+  hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, sasp=1., fig_size_fac=2.,
+               sharex=True, sharey=True, xlabel="", ylabel="",
+               projection=[proj_1, proj_2],
+                            )
+  ii=-1
+  
+  ii+=1; ax=hca[ii]; cax=hcb[ii]
+  ax.set_extent([-180, 180, 60, 90], ccrs.PlateCarree())
+  #IaV = IcD.vars['hi']
+
+  #hplot_base(IcD, IaV, clim='auto', cmap='viridis',
+  #           ax=ax, cax=cax,
+  #           projection=proj_1,
+  #           )
+  FigInf = pyic.qp_hplot(fpath=path_data+fname, var='hi', depth=0, it=0,
+                         clim='auto', cincr=-1, cmap='auto',
+                         IcD=IcD,
+                         rgrid_name=rgrid_name,
+                         path_ckdtree=path_ckdtree,
+                         projection=proj_1,
+                        )
+
+  
+  ii+=1; ax=hca[ii]; cax=hcb[ii]
+  ax.set_extent([-180, 180, -90, -50], ccrs.PlateCarree())
+
+  for ax in hca:
+    ax.gridlines()
+    #ax.add_feature(cartopy.feature.OCEAN)
+    ax.add_feature(cartopy.feature.LAND)
+    ax.coastlines()
+
+  save_fig('Sea surface height', path_pics, fig_name, FigInf)
+
+plt.show()
+sys.exit()
 
 # -------------------------------------------------------------------------------- 
 # biases
