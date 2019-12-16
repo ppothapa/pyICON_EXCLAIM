@@ -519,6 +519,7 @@ def identify_grid(path_grid, fpath_data):
   r2b6:  40km:   327680: OCEANINP_pre04_LndnoLak_039km_editSLOHH2017_G.nc
   r2b8:  10km:  3729001: OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min.nc
   r2b9:   5km: 14886338: OceanOnly_IcosSymmetric_4932m_rotatedZ37d_modified_srtm30_1min.nc
+  r2b9a:  5km: 20971520: /pool/data/ICON/grids/public/mpim/0015/icon_grid_0015_R02B09_G.nc
   """
   
   Dgrid_list = dict()
@@ -550,6 +551,13 @@ def identify_grid(path_grid, fpath_data):
   Dgrid_list[grid_name]['long_name'] = 'OceanOnly_IcosSymmetric_4932m_rotatedZ37d_modified_srtm30_1min'
   Dgrid_list[grid_name]['size'] = 14886338
   Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+
+  grid_name = 'r2b9a'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '5km'
+  Dgrid_list[grid_name]['long_name'] = 'icon_grid_0015_R02B09_G'
+  Dgrid_list[grid_name]['size'] = 20971520
+  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '.nc'
   
   f = Dataset(fpath_data, 'r')
   gsize = f.variables['clon'].size
@@ -615,6 +623,8 @@ def get_files_of_timeseries(path_data, search_str):
   #  tstr = fpath.split('/')[-1].split('_')[-1][:-4]
   #  times_flist[l] = '%s-%s-%sT%s:%s:%s' % ( (tstr[:4], tstr[4:6], tstr[6:8], 
   #                                      tstr[9:11], tstr[11:13], tstr[13:15]))
+  if flist.size==0:
+    raise ValueError('::: Error: No file found matching %s!:::' % (path_data+search_str))
   return times_flist, flist
 
 def get_varnames(fpath, skip_vars=[]):
@@ -910,7 +920,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
 # //////////////////////////////////////////////////////////////////////////////// 
 class IconVariable(object):
   def __init__(self, name, units='', long_name='', 
-                     coordinates='', fpath_ckdtree='',
+                     coordinates='clat clon', fpath_ckdtree='',
                      is3d=None, isinterpolated=False,
                ):
     self.name = name
@@ -1293,9 +1303,18 @@ class IconData(object):
     #self.clon = f.variables['clon'][:] * 180./np.pi
     #self.clat = f.variables['clat'][:] * 180./np.pi
     self.depthc = f.variables['depth'][:]
-    #self.depthi = f.variables['depth_2'][:]
+    self.depthi = f.variables['depth_2'][:]
+
+    # --- the variables prism_thick_flat_sfc_c seem to be corrupted in fx file
     self.prism_thick_flat_sfc_c = f.variables['prism_thick_flat_sfc_c'][:]
+    self.constantPrismCenters_Zdistance = f.variables['constantPrismCenters_Zdistance'][:]
+    self.dzw = f.variables['prism_thick_flat_sfc_c'][:]
+    self.dzt = f.variables['constantPrismCenters_Zdistance'][:]
     self.nz = self.depthc.size
+    #for var in f.variables.keys():
+    #  print(var)
+    #  print(f.variables[var][:].max())
+    #mybreak()
     f.close()
     return
 
@@ -1417,7 +1436,11 @@ class IconData(object):
     (self.clon, self.clat, self.vlon, self.vlat,
      self.elon, self.elat, self.vertex_of_cell,
      self.edge_of_cell ) = load_tripolar_grid(self.fpath_tgrid)
+    f = Dataset(self.fpath_tgrid, 'r')
+    self.cell_area = f.variables['cell_area'][:]
+    f.close()
     return
+
   
   def crop_grid(self, lon_reg, lat_reg):
     """ Crop all cell related variables (data, clon, clat, vertex_of_cell, edge_of_cell to regin defined by lon_reg and lat_reg.
