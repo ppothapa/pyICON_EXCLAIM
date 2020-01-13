@@ -579,12 +579,8 @@ def load_tripolar_grid(fpath_grid):
   vlat = f.variables['vlat'][:] * 180./np.pi
   elon = f.variables['elon'][:] * 180./np.pi
   elat = f.variables['elat'][:] * 180./np.pi
-  vertex_of_cell = f.variables['vertex_of_cell'][:]-1
-  vertex_of_cell = vertex_of_cell.transpose()
-  edge_of_cell = f.variables['edge_of_cell'][:]-1
-  edge_of_cell = edge_of_cell.transpose()
   f.close()
-  return clon, clat, vlon, vlat, elon, elat, vertex_of_cell, edge_of_cell
+  return clon, clat, vlon, vlat, elon, elat
 
 def crop_tripolar_grid(lon_reg, lat_reg,
                        clon, clat, vertex_of_cell, edge_of_cell):
@@ -916,6 +912,83 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
 #    print code+name+lname+units+shape
 #  f.close()
 #  return Dfinf
+
+# //////////////////////////////////////////////////////////////////////////////// 
+# \\\\\ Calculation for ICON
+
+def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90.):
+  """ Calculates barotropic streamfunction in Sv from mass_flux_vint on vertex-grid.
+
+  This function determines neighbouring vertices starting from lon_start, lat_start 
+  vertex. It determines source and target vertices and the corresponding edges. 
+  Then the bstr value for each target vertex is that of the source vertex plus the 
+  transport through the edge between source and target.
+
+  Algorithm is taken from mo_postprocess.f90 (Leonidas Linardakis, MPI-M).
+  """
+
+  # --- allocations
+  edge_integration_list = np.zeros((IcD.elon.size), dtype=int)
+  orientation_path = np.zeros((IcD.elon.size), dtype=int)
+  source_vertex_list = np.zeros((IcD.vlon.size), dtype=int)
+  target_vertex_list = np.zeros((IcD.vlon.size), dtype=int)
+  vertexIsAccounted_list = np.zeros((IcD.vlon.size))
+  next_vertex_list = []
+  
+  # --- start vertex
+  list_vertex_index = np.argmin((IcD.vlon-lon_start)**2+(IcD.vlat-lat_start)**2)
+  vertexIsAccounted_list[list_vertex_index] = 1.
+  next_vertex_list.append(list_vertex_index)
+  
+  print('start finding indices')
+  aa = 0
+  totalListedEdges = 0 # index for all listed edges
+  while next_vertex_list:
+    aa += 1
+    #if aa%100==0:
+    #  print(f'aa = {aa}/')
+    
+    # --- take last index from least and delete it from list
+    list_vertex_index = next_vertex_list.pop(-1) 
+    for nn in range(6): # all neighbors
+      check_vertex = IcD.vertices_of_vertex[list_vertex_index, nn] 
+  
+      # --- find edge that is in between list_vertex_index and check_vertex
+      edge_index = IcD.edges_of_vertex[list_vertex_index, nn]
+  
+      if (edge_index>-1):
+        # --- check if check_vertex is not in vertexIsAccounted_list
+        orientation = IcD.edge_orientation[list_vertex_index,nn]
+        if (vertexIsAccounted_list[check_vertex]==0.):
+          totalListedEdges += 1
+          # --- save everything
+          edge_integration_list[totalListedEdges] = edge_index
+          orientation_path[totalListedEdges]      = orientation
+          source_vertex_list[totalListedEdges]    = list_vertex_index
+          target_vertex_list[totalListedEdges]    = check_vertex
+  
+          # --- add check_vertex to next_vertex_list and mark it as accounted
+          next_vertex_list.append(check_vertex)
+          vertexIsAccounted_list[check_vertex] = 1
+  
+  # --- calculate streamfunction
+  print('start calculating stream')
+  stream_variable = np.zeros((IcD.vlon.size))
+  for target_list_index in range(target_vertex_list.size):
+    #if target_list_index%100==0:
+    #  print(f'target_list_index = {target_list_index}')
+    source_vertex = source_vertex_list[target_list_index]
+    target_vertex = target_vertex_list[target_list_index]
+    edge_index = edge_integration_list[target_list_index]
+    orientation = orientation_path[target_list_index]
+  
+    # --- add transport between source and target vertex to stream function of
+    #     source vertex
+    stream_variable[target_vertex] = stream_variable[source_vertex] \
+      + orientation * IcD.edge_length[edge_index] * mass_flux_vint[edge_index]
+  bstr = stream_variable * 1e-6
+
+  return bstr
 
 # //////////////////////////////////////////////////////////////////////////////// 
 class IconVariable(object):
@@ -1433,11 +1506,25 @@ class IconData(object):
 #    return
 
   def load_tgrid(self):
-    (self.clon, self.clat, self.vlon, self.vlat,
-     self.elon, self.elat, self.vertex_of_cell,
-     self.edge_of_cell ) = load_tripolar_grid(self.fpath_tgrid)
+    (self.clon, self.clat, 
+     self.vlon, self.vlat,
+     self.elon, self.elat ) = load_tripolar_grid(self.fpath_tgrid)
+
     f = Dataset(self.fpath_tgrid, 'r')
+    # --- distances and areas 
     self.cell_area = f.variables['cell_area'][:]
+    self.cell_area_p = f.variables['cell_area_p'][:]
+    self.edge_length = f.variables['edge_length'][:]
+    # --- neighbor information
+    self.vertex_of_cell = f.variables['vertex_of_cell'][:].transpose()-1
+    self.edge_of_cell = f.variables['edge_of_cell'][:].transpose()-1
+    self.vertices_of_vertex = f.variables['vertices_of_vertex'][:].transpose()-1
+    self.edges_of_vertex = f.variables['edges_of_vertex'][:].transpose()-1
+    self.edge_vertices = f.variables['edge_vertices'][:].transpose()-1
+    self.adjacent_cell_of_edge = f.variables['adjacent_cell_of_edge'][:].transpose()-1
+    # --- orientation
+    self.orientation_of_normal = f.variables['orientation_of_normal'][:].transpose()
+    self.edge_orientation = f.variables['edge_orientation'][:].transpose()
     f.close()
     return
 
