@@ -670,10 +670,12 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                ax='auto', cax=0,
                title='auto', xlabel='', ylabel='',
                xlim='auto', ylim='auto',
+               adjust_axlims=True,
                projection='none', use_tgrid='auto',
                logplot=False,
                sasp=0.5,
                fig_size_fac=2.,
+               crs_features=True,
               ):
   """
   IaV variable needs the following attributes
@@ -737,6 +739,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                       ax=ax, cax=cax, clim=clim, cincr=cincr, cmap=cmap,
                       transform=ccrs_proj,
                       logplot=logplot,
+                      adjust_axlims=adjust_axlims,
                  )
     if isinstance(xlim, str) and (xlim=='auto'):
       xlim = [IcD.clon.min(), IcD.clon.max()]
@@ -747,6 +750,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                       ax=ax, cax=cax, clim=clim, cincr=cincr, cmap=cmap,
                       transform=ccrs_proj,
                       logplot=logplot,
+                      adjust_axlims=adjust_axlims,
               )
     if isinstance(xlim, str) and (xlim=='auto'):
       xlim = [IcD.lon.min(), IcD.lon.max()]
@@ -762,7 +766,9 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   ax.set_xlim(xlim)
   ax.set_ylim(ylim)
 
-  if projection!='none':
+  if (projection!='none') and (crs_features):
+  #if projection=='PlateCarree':
+  #if False:
     ax.coastlines()
     ax.add_feature(cartopy.feature.LAND, zorder=0, facecolor='0.9')
     ax.set_xticks(np.linspace(np.round(xlim[0]),np.round(xlim[1]),7), crs=ccrs_proj)
@@ -987,6 +993,10 @@ def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90.):
     stream_variable[target_vertex] = stream_variable[source_vertex] \
       + orientation * IcD.edge_length[edge_index] * mass_flux_vint[edge_index]
   bstr = stream_variable * 1e-6
+
+  #bstr = IconVariable('bstr', units='Sv', long_name='barotropic streamfunction',
+  #                   coordinates='vlat vlon', is3d=False)
+  #bstr.data = stream_variable * 1e-6
 
   return bstr
 
@@ -1699,6 +1709,8 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               path_ckdtree="",
               clim='auto', cincr=-1., cmap='auto',
               xlim=[-180,180], ylim=[-90,90], projection='none',
+              crs_features=True,
+              adjust_axlims=False,
               sasp=0.543,
               title='auto', xlabel='', ylabel='',
               verbose=1,
@@ -1762,8 +1774,10 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               ax=ax, cax=cax,
               clim=clim, cmap=cmap, cincr=cincr,
               xlim=xlim, ylim=ylim,
+              adjust_axlims=adjust_axlims,
               title='auto', 
               projection=projection,
+              crs_features=crs_features,
               #use_tgrid=IcD.use_tgrid,
               logplot=logplot,
               sasp=sasp,
