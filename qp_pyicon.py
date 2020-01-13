@@ -23,7 +23,8 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 #path_ckdtree = '/Users/nbruggemann/work/icon_playground/icon_ckdtree/'
 
 # ------ r2b4
-exec(open("./conf-icon_08-nib002.py").read())
+#exec(open("./conf-icon_08-nib002.py").read())
+exec(open("./conf-mac-icon_08-nib0002.py").read())
 
 # ------ r2b6
 #exec(open("./conf-icon_08-nib003.py").read())
@@ -67,17 +68,19 @@ fig_names = []
 #fig_names += ['sst']
 #fig_names += ['mld_jan', 'mld_jul', 'sst', 'sss', 'ssh']
 fig_names += ['mld_jan', 'sst', 'sss', 'ssh']
+fig_names += ['ice']
 fig_names += ['temp30w', 'salt30w', 'dens30w']
 fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
 fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
 fig_names += ['temp_gzave', 'temp_azave', 'temp_ipzave']
 fig_names += ['salt_gzave', 'salt_azave', 'salt_ipzave']
 fig_names += ['salt_gzave', 'salt_azave', 'salt_ipzave']
-fig_names += ['amoc', 'pmoc', 'gmoc']
+fig_names += ['bstr', 'amoc', 'pmoc', 'gmoc']
 #fig_names += ['tke30w', 'iwe30w', 'kv30w']
 
 fig_names = []
 fig_names += ['ice']
+#fig_names += ['bstr']
 
 #fig_names += ['vort']
 
@@ -187,44 +190,46 @@ if fig_name in fig_names:
 # ---
 fig_name = 'ice'
 if fig_name in fig_names:
-  proj_1 = ccrs.NorthPolarStereo()
-  proj_2 = ccrs.SouthPolarStereo()
+  proj_1 = 'NorthPolarStereo'
+  proj_2 = 'SouthPolarStereo'
   hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, sasp=1., fig_size_fac=2.,
                sharex=True, sharey=True, xlabel="", ylabel="",
-               projection=[proj_1, proj_2],
-                            )
+               projection=[getattr(ccrs,proj_1)(), getattr(ccrs,proj_2)()],
+                              )
   ii=-1
   
   ii+=1; ax=hca[ii]; cax=hcb[ii]
-  ax.set_extent([-180, 180, 60, 90], ccrs.PlateCarree())
-  #IaV = IcD.vars['hi']
-
-  #hplot_base(IcD, IaV, clim='auto', cmap='viridis',
-  #           ax=ax, cax=cax,
-  #           projection=proj_1,
-  #           )
   FigInf = pyic.qp_hplot(fpath=path_data+fname, var='hi', depth=0, it=0,
-                         clim='auto', cincr=-1, cmap='auto',
+                         clim=[0,6], cincr=0.5, cmap='cmo.ice_r',
+                         xlim=[-180, 180], ylim=[60,90],
+                         ax=ax, cax=cax,
                          IcD=IcD,
                          rgrid_name=rgrid_name,
                          path_ckdtree=path_ckdtree,
-                         projection=proj_1,
+                         projection='PlateCarree',
+                         crs_features=False,
                         )
+  ax.set_extent([-180, 180, 60, 90], ccrs.PlateCarree())
 
-  
   ii+=1; ax=hca[ii]; cax=hcb[ii]
+  FigInf = pyic.qp_hplot(fpath=path_data+fname, var='hi', depth=0, it=0,
+                         clim=[0,3], cincr=0.25, cmap='cmo.ice_r',
+                         xlim=[-180, 180], ylim=[-90,-50],
+                         ax=ax, cax=cax,
+                         IcD=IcD,
+                         rgrid_name=rgrid_name,
+                         path_ckdtree=path_ckdtree,
+                         projection='PlateCarree',
+                         crs_features=False,
+                        )
   ax.set_extent([-180, 180, -90, -50], ccrs.PlateCarree())
 
   for ax in hca:
     ax.gridlines()
-    #ax.add_feature(cartopy.feature.OCEAN)
     ax.add_feature(cartopy.feature.LAND)
     ax.coastlines()
-
-  save_fig('Sea surface height', path_pics, fig_name, FigInf)
-
-plt.show()
-sys.exit()
+  
+  save_fig('Ice thickness', path_pics, fig_name, FigInf)
 
 # -------------------------------------------------------------------------------- 
 # biases
@@ -456,8 +461,36 @@ if fig_name in fig_names:
   save_fig('Salinity Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
 
 # -------------------------------------------------------------------------------- 
-# Circulation
+# Transports
 # -------------------------------------------------------------------------------- 
+
+# ---
+fig_name = 'bstr'
+
+if fig_name in fig_names:
+  fname = '%s_%s.nc' % (run, tstep)
+  f = Dataset(IcD.path_data+fname, 'r')
+  # FIXME: where to deal with time averaging?
+  mass_flux = f.variables['mass_flux'][:].mean(axis=0)
+  mass_flux_vint = mass_flux.sum(axis=0)
+  f.close()
+
+  # --- derive and interp bstr
+  bstr = pyic.calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90.)
+  IaV = pyic.IconVariable('bstr', units='Sv', long_name='barotropic streamfunction',
+                          coordinates='vlat vlon', is3d=False)
+  IaV.data = bstr
+  IaV.interp_to_rectgrid(fpath_ckdtree=fpath_ckdtree)
+
+  # --- plot bstr
+  ax, cax, mappable, Dstr = pyic.hplot_base(
+    IcD, IaV, clim=60, cmap='RdBu_r', cincr=5.,
+    use_tgrid=False, projection=projection,)
+  FigInf = dict(name=fig_name, fpath=path_pics+fig_name,
+                long_name=IaV.long_name)
+  save_fig('Barotropic streamfunction', path_pics, fig_name, FigInf)
+
+# --- 
 Ddict = dict(
   xlim=[-180.,180.], ylim=[-90.,90.],
   sec_name='moc',
@@ -537,13 +570,14 @@ plist = []
 plist += ['sec:Upper ocean']
 #plist += ['ssh', 'sst', 'sss', 'mld_jan', 'mld_jul'] 
 plist += ['ssh', 'sst', 'sss', 'mld_jan'] 
+plist += ['ice']
 plist += ['sec:Sections']
 plist += ['temp30w', 'salt30w', 'dens30w']
 plist += ['sec:Zonal averages']
 plist += ['temp_gzave', 'salt_gzave', 'temp_azave', 'salt_azave', 
           'temp_ipzave', 'salt_ipzave']
-plist += ['sec:Circulation']
-plist += ['amoc', 'pmoc', 'gmoc']
+plist += ['sec:Transports']
+plist += ['bstr', 'amoc', 'pmoc', 'gmoc']
 plist += ['sec:Biases']
 plist += ['sst_bias', 'sss_bias']
 plist += ['temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
