@@ -65,6 +65,32 @@ sys.path.insert(0,'/path/to/pyicon')
 
 ## Use pyicon with Jupyter
 
+To use Jupyter on the DKRZ cluster you find valuable information here:
+
+```
+https://www.dkrz.de/up/systems/mistral/programming/jupyter-notebook
+```
+
+Easiest way is to download this script:
+
+```
+https://gitlab.dkrz.de/k202009/ssh_scripts/raw/master/start-jupyter?inline=false
+```
+
+and execute it (!!! not working!!!):
+
+```
+./start-jupyter -u username -i incfile.txt
+```
+
+with incfile.txt containing:
+
+```
+export PYTHONPATH="\${HOME}/python/pytbx/mypy"
+export PATH="/home/mpim/m300602/miniconda2/bin:\$PATH"
+source activate myenv_py3
+```
+
 !!! Needs to be updated!!!
 
 Open jupyter notebook with ssh tunnel:
