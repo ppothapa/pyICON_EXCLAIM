@@ -1,16 +1,97 @@
 # User guide for pyicon
 
+Pyicon is a python post-processing and visualization toolbox for ICON with a focus on ocean data. The three main features of pyicon are:
+
+* a number of functions to facilitate the every-day script-based plotting of ICON data
+* an interactive (ncview-like) plotting GUI for Jupyter notebook
+* a monitoring suite ICON ocean simulations which combines all plots of an ICON simulation in a website
+
+Pyicon is developed within the DFG-project TRR181 - Energy Transfers in Atmosphere and Ocean.
+
+## Install pyicon
+
+Pyicon has depends on frequently used python libraries in the geoscience business. They are easiest installed using conda
+
+```
+conda env create -f pyicon_env.yml
+```
+
+with the following yml-file (assumed to be named pyicon_env.yml):
+
+~~~
+name: pyicon_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+#  - python=2.7 # use this line to get python2.7 env
+  - numpy
+  - matplotlib
+  - scipy
+  - ipython
+  - jupyter
+  - jupyterlab  # optional
+  - netcdf4
+  - mpi4py      # optional
+  - cartopy
+  - cmocean
+  - seawater
+  - xarray
+  - dask
+~~~
+
 Get pyicon by copying all files on mistral from:
 
 ```bash
-cp -r /mnt/lustre01/pf/zmaw/m300602/pyicon /path/to/copy/to
+git clone git@gitlab.dkrz.de:m300602/pyicon.git
+```
+
+Add pyicon to your PYTHONPATH either by setting:
+
+```
+export PYTHONPATH="/path/to/pyicon:${PYTHONPATH}"
+```
+
+or by adding it within your python script:
+
+```
+import sys
+sys.path.insert(0,'/path/to/pyicon')
 ```
 
 ## Known bugs:
 
-* only first time step of each file is read
+* there are always problems with vertical grid variables loaded from the ICON fx-files.
 
 ## Use pyicon with Jupyter
+
+To use Jupyter on the DKRZ cluster you find valuable information here:
+
+```
+https://www.dkrz.de/up/systems/mistral/programming/jupyter-notebook
+```
+
+Easiest way is to download this script:
+
+```
+https://gitlab.dkrz.de/k202009/ssh_scripts/raw/master/start-jupyter?inline=false
+```
+
+and execute it (!!! not working!!!):
+
+```
+./start-jupyter -u username -i incfile.txt
+```
+
+with incfile.txt containing:
+
+```
+export PYTHONPATH="\${HOME}/python/pytbx/mypy"
+export PATH="/home/mpim/m300602/miniconda2/bin:\$PATH"
+source activate myenv_py3
+```
+
+!!! Needs to be updated!!!
 
 Open jupyter notebook with ssh tunnel:
 
@@ -25,6 +106,8 @@ pyic_test_r2b9.ipynb
 ```
 
 ## Use pyicon with normal python scripts
+
+!!! Needs to be updated!!!
 
 Example script:
 
