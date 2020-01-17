@@ -114,17 +114,22 @@ def apply_ckdtree(data, fpath_ckdtree, coordinates='clat clon', radius_of_influe
     raise ValueError('::: Error: Unsupported coordinates: %s! ::: ' % (coordinates))
 
   if distances.ndim == 1:
-      #distances_ma = np.ma.masked_greater(distances, radius_of_influence)
+    #distances_ma = np.ma.masked_greater(distances, radius_of_influence)
+    if data.ndim==1:
       data_interpolated = data[inds]
       data_interpolated[distances>=radius_of_influence] = np.nan
       data_interpolated = np.ma.masked_invalid(data_interpolated)
-  else:
-      #raise ValueError("::: distances.ndim>1 is not properly supported yet. :::")
-      distances_ma = np.ma.masked_greater(distances, radius_of_influence)
-      
-      w = 1.0 / distances_ma**2
-      data_interpolated = np.ma.sum(w * data[inds], axis=1) / np.ma.sum(w, axis=1)
+    elif data.ndim==2:
+      data_interpolated = data[:,inds]
+      data_interpolated[:,distances>=radius_of_influence] = np.nan
       data_interpolated = np.ma.masked_invalid(data_interpolated)
+  else:
+    #raise ValueError("::: distances.ndim>1 is not properly supported yet. :::")
+    distances_ma = np.ma.masked_greater(distances, radius_of_influence)
+    
+    w = 1.0 / distances_ma**2
+    data_interpolated = np.ma.sum(w * data[inds], axis=1) / np.ma.sum(w, axis=1)
+    data_interpolated = np.ma.masked_invalid(data_interpolated)
   return data_interpolated
 
 def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdtree=''):
@@ -1147,22 +1152,22 @@ class IconData(object):
     sec_fpaths = np.array(
       glob.glob(path_ckdtree+'sections/'+self.Dgrid['name']+'*.npz'))
     sec_names = np.zeros(sec_fpaths.size, '<U200')
-    self.Dsec_fpaths = dict()
+    self.sec_fpath_dict = dict()
     for nn, fpath_ckdtree in enumerate(sec_fpaths): 
       ddnpz = np.load(fpath_ckdtree)
       sec_names[nn] = ddnpz['sname']
-      self.Dsec_fpaths[sec_names[nn]] = fpath_ckdtree
+      self.sec_fpath_dict[sec_names[nn]] = fpath_ckdtree
     self.sec_fpaths = sec_fpaths
     self.sec_names = sec_names
 
     rgrid_fpaths = np.array(
       glob.glob(path_ckdtree+'rectgrids/'+self.Dgrid['name']+'*.npz'))
     rgrid_names = np.zeros(rgrid_fpaths.size, '<U200')
-    self.Drgrid_fpaths = dict()
+    self.rgrid_fpath_dict = dict()
     for nn, fpath_ckdtree in enumerate(rgrid_fpaths): 
       ddnpz = np.load(fpath_ckdtree)
       rgrid_names[nn] = ddnpz['sname']
-      self.Drgrid_fpaths[rgrid_names[nn]] = fpath_ckdtree
+      self.rgrid_fpath_dict[rgrid_names[nn]] = fpath_ckdtree
     self.rgrid_fpaths = rgrid_fpaths
     self.rgrid_names = rgrid_names
 
