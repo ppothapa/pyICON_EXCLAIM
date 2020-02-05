@@ -6,7 +6,7 @@ from importlib import reload
 import pyicon as pyic
 reload(pyic)
 
-path_tgrid    = '/pool/data/ICON/oes/input/r0002/' 
+path_tgrid    = '/pool/data/ICON/oes/input/r0003/' 
 path_ckdtree  = '/mnt/lustre01/work/mh0033/m300602/proj_vmix/icon/icon_ckdtree/'
 path_rgrid    = path_ckdtree + 'rectgrids/' 
 path_sections = path_ckdtree + 'sections/' 
@@ -29,13 +29,14 @@ all_secs = [
 
 gnames = []
 # r2b4
-gnames += ['OceanOnly_Icos_0158km_etopo40'] 
+#gnames += ['OceanOnly_Icos_0158km_etopo40'] 
 # r2b6
 gnames += ['OCEANINP_pre04_LndnoLak_039km_editSLOHH2017_G']
+#gnames += ['OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min']
 # r2b8
-gnames += ['OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min']
+#gnames += ['OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min']
 # r2b9
-gnames += ['OceanOnly_IcosSymmetric_4932m_rotatedZ37d_modified_srtm30_1min']
+#gnames += ['OceanOnly_IcosSymmetric_4932m_rotatedZ37d_modified_srtm30_1min']
 
 if not os.path.exists(path_rgrid): 
   os.makedirs(path_rgrid)
