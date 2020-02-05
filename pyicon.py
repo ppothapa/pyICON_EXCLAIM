@@ -132,6 +132,39 @@ def apply_ckdtree(data, fpath_ckdtree, coordinates='clat clon', radius_of_influe
     data_interpolated = np.ma.masked_invalid(data_interpolated)
   return data_interpolated
 
+def calc_moc(clat, wTransp, basin='global', fpath_fx='', res=1.0):
+  if not os.path.exists(fpath_fx):
+    raise ValueError('::: Error: Cannot find file %s! :::' % (fpath_fx))
+
+  f = Dataset(fpath_fx, 'r')
+  basin_c = f.variables['basin_c'][:]
+  mask_basin = np.zeros(basin_c.shape, dtype=bool)
+  if basin.lower()=='atlantic' or basin=='atl':
+    mask_basin[basin_c==1] = True 
+  elif basin.lower()=='pacific' or basin=='pac':
+    mask_basin[basin_c==3] = True 
+  elif basin.lower()=='southern ocean' or basin=='soc' or basin=='so':
+    mask_basin[basin_c==6] = True 
+  elif basin.lower()=='indian ocean' or basin=='ind' or basin=='io':
+    mask_basin[basin_c==7] = True 
+  elif basin.lower()=='global' or basin=='glob' or basin=='glo':
+    mask_basin[basin_c!=0] = True 
+  elif basin.lower()=='indopacific' or basin=='indopac':
+    mask_basin[(basin_c==3) | (basin_c==7)] = True 
+  elif basin.lower()=='indopacso':
+    mask_basin[(basin_c==3) | (basin_c==7) | (basin_c==6)] = True 
+  f.close()
+
+  lat_mg = np.arange(-90.,90.,res)
+  ny = lat_mg.size
+  moc = np.zeros((wTransp.shape[0],lat_mg.size))
+  for j in range(lat_mg.size-1):
+    #ind = (clat>=lat_mg[j]) & (clat<lat_mg[j+1])
+    #moc[:,j+1] = moc[:,j] + (wTransp[:,ind]*mask_basin[np.newaxis,ind]).sum(axis=1)
+    ind = (clat>=lat_mg[ny-(j+2)]) & (clat<lat_mg[ny-(j+1)])
+    moc[:,ny-(j+2)] = moc[:,ny-(j+1)] - (wTransp[:,ind]*mask_basin[np.newaxis,ind]).sum(axis=1)
+  return moc
+
 def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdtree=''):
 
   for fp in [fpath_data, fpath_fx, fpath_ckdtree]:
@@ -536,13 +569,20 @@ def identify_grid(path_grid, fpath_data):
   Dgrid_list[grid_name]['size'] = 15117
   Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
   
-  grid_name = 'r2b6'; Dgrid_list[grid_name] = dict()
+  grid_name = 'r2b6_old'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
   Dgrid_list[grid_name]['res'] = '40km'
   Dgrid_list[grid_name]['long_name'] = 'OCEANINP_pre04_LndnoLak_039km_editSLOHH2017_G'
   Dgrid_list[grid_name]['size'] = 327680
   Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
   
+  grid_name = 'r2b6'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '40km'
+  Dgrid_list[grid_name]['long_name'] = 'OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min'
+  Dgrid_list[grid_name]['size'] = 235403 
+  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+
   grid_name = 'r2b8'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
   Dgrid_list[grid_name]['res'] = '10km'
@@ -571,7 +611,7 @@ def identify_grid(path_grid, fpath_data):
     if gsize == Dgrid_list[grid_name]['size']:
       Dgrid = Dgrid_list[grid_name]
       break
-  fpath_grid = '/pool/data/ICON/oes/input/r0002/' + Dgrid['long_name'] +'/' + Dgrid['long_name'] + '.nc'
+  fpath_grid = '/pool/data/ICON/oes/input/r0003/' + Dgrid['long_name'] +'/' + Dgrid['long_name'] + '.nc'
   return Dgrid
 
 def load_tripolar_grid(fpath_grid):
@@ -1110,7 +1150,7 @@ class IconVariable(object):
 ###  """
 ###  def __init__(self, 
 ###               fpath_data,
-###               path_grid='/pool/data/ICON/oes/input/r0002/',
+###               path_grid='/pool/data/ICON/oes/input/r0003/',
 ###              ):
 ###    self.path_grid = path_grid
 ###    self.fpath_data = fpath_data
@@ -1909,7 +1949,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
 ##  if isinstance(IC,str) and clim=='none':
 ##    pass
 ##  else:
-##    IC = IconDataFile(fpath, path_grid='/pool/data/ICON/oes/input/r0002/')
+##    IC = IconDataFile(fpath, path_grid='/pool/data/ICON/oes/input/r0003/')
 ##    IC.identify_grid()
 ##    IC.load_tripolar_grid()
 ##    IC.data = data
