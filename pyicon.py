@@ -1045,6 +1045,137 @@ def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90.):
 
   return bstr
 
+def calc_bstr_rgrid(IcD, mass_flux_vint, lon_rg, lat_rg):
+  """ Calculates barotropic streamfunction in Sv from mass_flux_vint on regular grid.
+
+  """
+  nx = lon_rg.size
+  ny = lat_rg.size
+  Lon_rg, Lat_rg = np.meshgrid(lon_rg, lat_rg)
+
+  imat_edge = np.zeros((IcD.elon.size), dtype=int)
+  jmat_edge = np.zeros((IcD.elon.size), dtype=int)
+  orie_edge = np.zeros((IcD.elon.size))
+  #nx = 10
+  #ny = 5
+  for i in range(nx-1):
+    if (i%5==0):
+      print(f'i = {i}/{nx}')
+    for j in range(ny-1):
+      #if (i%5==0) and (j%5==0):
+      #  print(f'i = {i}/{nx}, j = {j}/{ny}')
+  
+      # --- all cells in stripe
+      # <\> for u integration
+      ireg = ((IcD.clon>=lon_rg[i]) & (IcD.clon<lon_rg[i+1]))
+      # <\> for v integration
+      #ireg = ((clat>=lat_rg[j]) & (clat<lat_rg[j+1]))
+      
+      # --- all edges that belong to the cells of the stripe
+      iedge = IcD.edge_of_cell[ireg]
+      iedge = iedge.reshape(iedge.size)
+      oedge = IcD.orientation_of_normal[ireg]
+      oedge = oedge.reshape(iedge.size)
+      # --- edges that appear only once and which are thus stripe boundaries
+      #iedge_out, cnts = np.unique(iedge, return_counts=True)
+      iedge_out, ind, cnts = np.unique(iedge, return_index=True, return_counts=True)
+      #iedge_out = iedge[ind]
+      iedge_out = iedge_out[cnts==1]
+      oedge_out = oedge[ind]
+      oedge_out = oedge_out[cnts==1]
+      
+      # <\> for u integration
+      # --- only edges of western part
+      mask = (  (IcD.elat[iedge_out]>=lat_rg[j]) & (IcD.elat[iedge_out]<lat_rg[j+1])
+              & (IcD.elon[iedge_out]-lon_rg[i]<(lon_rg[1]-lon_rg[0])/2.) )
+      # <\> for v integration
+      ## --- only edges of southern part
+      #mask = (  (elon[iedge_out]>=lon_rg[i]) & (elon[iedge_out]<lon_rg[i+1])
+      #        & (elat[iedge_out]-lat_rg[j]<res/2.) )
+      iedge_west = iedge_out[mask]
+      oedge_west = oedge_out[mask] 
+      imat_edge[iedge_west] = i
+      jmat_edge[iedge_west] = j
+      orie_edge[iedge_west] = oedge_west
+  
+  # <\> for u integration
+  bstr = np.zeros((ny,nx))
+  for i in range(nx-1):
+    if (i%5==0):
+      print(f'i = {i}/{nx}')
+    for j in range(1,ny):
+      mask = (imat_edge==i)&(jmat_edge==j)
+      bstr[j,i] = bstr[j-1,i] + (mass_flux_vint[mask]*IcD.edge_length[mask]*orie_edge[mask]).sum()
+  
+  # <\> for v integration
+  #bstr = np.zeros((ny,nx))
+  #for i in range(1,nx):
+  #  if (i%5==0):
+  #    print(f'i = {i}/{nx}')
+  #  for j in range(ny-1):
+  #    mask = (imat_edge==i)&(jmat_edge==j)
+  #    bstr[j,i] = bstr[j,i-1] + (mass_flux_vint[mask]*IcD.edge_length[mask]*orie_edge[mask]).sum()
+  
+  # --- subtract land value (find nearest point to Moscow)
+  jl, il = np.unravel_index(np.argmin((Lon_rg-37)**2+(Lat_rg-55)**2), Lon_rg.shape)
+  bstr += -bstr[jl,il]
+  bstr *= 1e-6
+  
+  # DEBUGGIN:
+  if False:
+    empt_data = np.ma.array(np.zeros(IcD.clon.shape), mask=True)
+
+    hca, hcb = arrange_axes(3,2, plot_cb=True, sasp=0.5, fig_size_fac=2.,
+                                sharex=True, sharey=True, xlabel="", ylabel="")
+    ii=-1
+    
+    ii+=1; ax=hca[ii]; cax=hcb[ii]
+    shade(lon_rg, lat_rg, bstr, ax=ax, cax=cax, clim=60)
+    
+    ii+=1; ax=hca[ii]; cax=hcb[ii]
+    trishade(IcD.Tri, empt_data, ax=ax, cax=cax, edgecolor='k')
+    ax.scatter(Lon_rg, Lat_rg, s=5, c='r')
+    #ax.set_xlim(-100,0)
+    #ax.set_ylim(0,50)
+    
+    ii+=1; ax=hca[ii]; cax=hcb[ii]
+    trishade(IcD.Tri, empt_data, ax=ax, cax=cax, edgecolor='k')
+    # --- plotting
+    ax.scatter(IcD.clon[ireg], IcD.clat[ireg], s=2, c='r')
+    ax.scatter(IcD.elon[iedge], IcD.elat[iedge], s=2, c='b')
+    ax.scatter(IcD.elon[iedge_out], IcD.elat[iedge_out], s=2, c='g')
+    ax.scatter(IcD.elon[iedge_west], IcD.elat[iedge_west], s=2, c='y')
+    #ax.scatter(elon[iedge_upp], elat[iedge_upp], s=2, c='y')
+    #ax.set_xlim(-100,0)
+    #ax.set_ylim(0,50)
+    
+    ii+=1; ax=hca[ii]; cax=hcb[ii]
+    trishade(IcD.Tri, empt_data, ax=ax, cax=cax, edgecolor='k')
+    imat_edge = np.ma.array(imat_edge, mask=imat_edge==0)
+    ax.scatter(IcD.elon, IcD.elat, s=2, c=imat_edge, cmap='prism')
+    
+    ii+=1; ax=hca[ii]; cax=hcb[ii]
+    trishade(IcD.Tri, empt_data, ax=ax, cax=cax, edgecolor='k')
+    jmat_edge = np.ma.array(jmat_edge, mask=jmat_edge==0)
+    ax.scatter(IcD.elon, IcD.elat, s=2, c=jmat_edge, cmap='prism')
+
+    plt.show()
+    sys.exit()
+  
+  return bstr
+
+def calc_wvel(IcD, mass_flux):
+  div_mass_flux = (
+    mass_flux[:,IcD.edge_of_cell]*IcD.div_coeff[np.newaxis,:,:]).sum(axis=2)
+  wvel = np.zeros((IcD.nz+1, IcD.clon.size))
+  wvel[:IcD.nz,:] = -div_mass_flux[::-1,:].cumsum(axis=0)[::-1,:]
+  return wvel
+
+def calc_vort(IcD, vn):
+  # FIXME: this needs to be tested
+  vort = (vn[:,IcD.edges_of_vertex] * IcD.rot_coeff).sum(axis=2)
+  return vort
+
 # //////////////////////////////////////////////////////////////////////////////// 
 class IconVariable(object):
   def __init__(self, name, units='', long_name='', 
@@ -1570,6 +1701,7 @@ class IconData(object):
     self.cell_area = f.variables['cell_area'][:]
     self.cell_area_p = f.variables['cell_area_p'][:]
     self.edge_length = f.variables['edge_length'][:]
+    self.dual_edge_length = f.variables['dual_edge_length'][:]
     # --- neighbor information
     self.vertex_of_cell = f.variables['vertex_of_cell'][:].transpose()-1
     self.edge_of_cell = f.variables['edge_of_cell'][:].transpose()-1
@@ -1581,6 +1713,18 @@ class IconData(object):
     self.orientation_of_normal = f.variables['orientation_of_normal'][:].transpose()
     self.edge_orientation = f.variables['edge_orientation'][:].transpose()
     f.close()
+
+    # --- derive coefficients
+    self.div_coeff = (  self.edge_length[self.edge_of_cell] 
+                      * self.orientation_of_normal 
+                      / self.cell_area_p[:,np.newaxis] )
+    # FIXME: Is grid_sphere_radius okay?
+    #        Necessary to scale with grid_rescale_factor? (configure_model/mo_grid_config.f90)
+    grid_sphere_radius = 6371e3
+    self.rot_coeff = (  self.dual_edge_length[self.edges_of_vertex]
+                      * grid_sphere_radius
+                      * self.edge_orientation )
+
     return
 
   
