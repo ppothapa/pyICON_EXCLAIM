@@ -24,7 +24,7 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 
 # ------ r2b4
 #exec(open("./conf-icon_08-nib002.py").read())
-exec(open("./conf-mac-icon_08-nib0002.py").read())
+#exec(open("./conf-mac-icon_08-nib0002.py").read())
 
 # ------ r2b6
 #exec(open("./conf-icon_08-nib003.py").read())
@@ -33,6 +33,10 @@ exec(open("./conf-mac-icon_08-nib0002.py").read())
 
 # ------ r2b8
 #exec(open("./conf-ocean_era51h_r2b8_19074-AMK.py").read())
+
+# ------ r2b6
+exec(open("./conf-icon_08-nib0004.py").read())
+#exec(open("./conf-icon_08-nib0006.py").read())
 
 path_qp = './all_qps/qp-'+runname+'-'+run+'/'
 if not os.path.exists(path_qp):
@@ -50,7 +54,7 @@ qp = pyic.QuickPlotWebsite(
   author=os.environ.get('USER'),
   date=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
   path_data=path_data,
-  info='ICON ocean simulation',
+  info='time: '+tstep,
   fpath_css='./qp_css.css',
   fpath_html=path_qp+'qp_index.html'
   )
@@ -78,8 +82,8 @@ fig_names += ['salt_gzave', 'salt_azave', 'salt_ipzave']
 fig_names += ['bstr', 'amoc', 'pmoc', 'gmoc']
 #fig_names += ['tke30w', 'iwe30w', 'kv30w']
 
-fig_names = []
-fig_names += ['ice']
+#fig_names = []
+#fig_names += ['ice']
 #fig_names += ['bstr']
 
 #fig_names += ['vort']
@@ -118,8 +122,9 @@ if True:
                  fpath_fx     = fpath_fx,
                  rgrid_name   = rgrid_name,
                  do_triangulation = False,
+                 omit_last_file = False,
                 )
-  fpath_ckdtree = IcD.Drgrid_fpaths[rgrid_name]
+  fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
   
   fname_moc = '%s_MOC_%s.nc' % (run, tstep)
   print('Dataset %s' % (fname))
@@ -132,6 +137,7 @@ if True:
                  fpath_fx     = fpath_fx,
                  rgrid_name   = rgrid_name,
                  do_triangulation = False,
+                 omit_last_file = False,
                 )
   
 print('Done reading datasets')
@@ -169,7 +175,8 @@ if fig_name in fig_names:
   FigInf = pyic.qp_hplot(fpath=path_data+fname, var='to', depth=0, it=0,
                       clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
                       IcD=IcD, **Ddict)
-  save_fig('Sea surface temperature', path_pics, fig_name, FigInf)
+  #save_fig('Sea surface temperature', path_pics, fig_name, FigInf)
+  save_fig('SST', path_pics, fig_name, FigInf)
 
 # ---
 fig_name = 'sss'
@@ -177,7 +184,8 @@ if fig_name in fig_names:
   FigInf = pyic.qp_hplot(fpath=path_data+fname, var='so', depth=0, it=0,
                       clim=[32.,37], cincr=0.25, cmap='cmo.haline',
                       IcD=IcD, **Ddict)
-  save_fig('Sea surface salinity', path_pics, fig_name, FigInf)
+  #save_fig('Sea surface salinity', path_pics, fig_name, FigInf)
+  save_fig('SSS', path_pics, fig_name, FigInf)
 
 # ---
 fig_name = 'ssh'
@@ -185,7 +193,8 @@ if fig_name in fig_names:
   FigInf = pyic.qp_hplot(fpath=path_data+fname, var='zos', depth=0, it=0,
                       clim=2, cincr=0.2, cmap='RdBu_r',
                       IcD=IcD, **Ddict)
-  save_fig('Sea surface height', path_pics, fig_name, FigInf)
+  #save_fig('Sea surface height', path_pics, fig_name, FigInf)
+  save_fig('SSH', path_pics, fig_name, FigInf)
 
 # ---
 fig_name = 'ice'
@@ -242,7 +251,7 @@ if True:
   #               path_ckdtree = path_ckdtree,
   #               rgrid_name   = rgrid_name,
   #              )
-  fpath_ckdtree = IcD.Drgrid_fpaths[rgrid_name]
+  fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
 
   #fpath_initial_state = path_data+'initial_state.nc'
   f = Dataset(fpath_initial_state, 'r')
@@ -270,7 +279,7 @@ if fig_name in fig_names:
   pyic.hplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
                   projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], sasp=0.5)
   FigInf = dict(long_name=IaV.long_name)
-  save_fig('Sea surface temperature bias', path_pics, fig_name, FigInf)
+  save_fig('Tbias: surface', path_pics, fig_name, FigInf)
 
 # ---
 fig_name = 'temp_bias_gzave'
@@ -281,7 +290,7 @@ if fig_name in fig_names:
   pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
                   sasp=0.5)
   FigInf = dict(long_name=IaV.long_name)
-  save_fig('Temperature bias global zon. ave.', path_pics, fig_name, FigInf)
+  save_fig('Tbias: global zon. ave.', path_pics, fig_name, FigInf)
 
 # ---
 fig_name = 'temp_bias_azave'
@@ -292,7 +301,7 @@ if fig_name in fig_names:
   pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
                   sasp=0.5)
   FigInf = dict(long_name=IaV.long_name)
-  save_fig('Temperature bias Atlantic zon. ave.', path_pics, fig_name, FigInf)
+  save_fig('Tbias: Atlantic zon. ave.', path_pics, fig_name, FigInf)
 
 # ---
 fig_name = 'temp_bias_ipzave'
@@ -303,7 +312,7 @@ if fig_name in fig_names:
   pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
                   sasp=0.5)
   FigInf = dict(long_name=IaV.long_name)
-  save_fig('Temperature bias Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
+  save_fig('Tbias: Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
 
 # ---
 fig_name = 'sss_bias'
@@ -314,7 +323,7 @@ if fig_name in fig_names:
   pyic.hplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
                   projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], sasp=0.5)
   FigInf = dict(long_name=IaV.long_name)
-  save_fig('Sea surface salinity bias', path_pics, fig_name, FigInf)
+  save_fig('Sbias: surface', path_pics, fig_name, FigInf)
 
 # ---
 fig_name = 'salt_bias_gzave'
@@ -325,7 +334,7 @@ if fig_name in fig_names:
   pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
                   sasp=0.5)
   FigInf = dict(long_name=IaV.long_name)
-  save_fig('Salinity bias global zon. ave.', path_pics, fig_name, FigInf)
+  save_fig('Sbias: global zon. ave.', path_pics, fig_name, FigInf)
 
 # ---
 fig_name = 'salt_bias_azave'
@@ -336,7 +345,7 @@ if fig_name in fig_names:
   pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
                   sasp=0.5)
   FigInf = dict(long_name=IaV.long_name)
-  save_fig('Salinity bias Atlantic zon. ave.', path_pics, fig_name, FigInf)
+  save_fig('Sbias: Atlantic zon. ave.', path_pics, fig_name, FigInf)
 
 # ---
 fig_name = 'salt_bias_ipzave'
@@ -347,7 +356,7 @@ if fig_name in fig_names:
   pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
                   sasp=0.5)
   FigInf = dict(long_name=IaV.long_name)
-  save_fig('Salinity bias Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
+  save_fig('Sbias: Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
 
 ## ---
 #fname = '%s_restart_oce_%s.nc' % (run, tstep)
