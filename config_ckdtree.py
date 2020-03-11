@@ -21,18 +21,20 @@ all_grids = [
 all_secs = [
   '30W_100pts',
   '30W_200pts',
+  '30W_300pts',
   '170W_100pts',
             ]
 
-#all_grids = []
-#all_secs = []
+all_grids = []
+all_secs = []
+all_secs = ['30W_300pts']
 
 gnames = []
 # r2b4
 #gnames += ['OceanOnly_Icos_0158km_etopo40'] 
 # r2b6
-gnames += ['OCEANINP_pre04_LndnoLak_039km_editSLOHH2017_G']
-#gnames += ['OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min']
+#gnames += ['OCEANINP_pre04_LndnoLak_039km_editSLOHH2017_G']
+gnames += ['OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min']
 # r2b8
 #gnames += ['OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min']
 # r2b9
@@ -107,6 +109,17 @@ for gname in gnames:
   print(gname+': '+sname)
   if sname in all_secs:
     dckdtree, ickdtree, lon_sec, lat_sec, dist_sec = pyic.ckdtree_section(p1=[-30,-80], p2=[-30,80], npoints=200,
+                      fname_tgrid  = gname+'/'+gname+'.nc',
+                      path_tgrid   = path_tgrid,
+                      path_ckdtree = path_sections,
+                      sname = sname,
+                      gname = gname,
+                      )
+
+  sname = '30W_300pts'
+  print(gname+': '+sname)
+  if sname in all_secs:
+    dckdtree, ickdtree, lon_sec, lat_sec, dist_sec = pyic.ckdtree_section(p1=[-30,-80], p2=[-30,80], npoints=300,
                       fname_tgrid  = gname+'/'+gname+'.nc',
                       path_tgrid   = path_tgrid,
                       path_ckdtree = path_sections,
