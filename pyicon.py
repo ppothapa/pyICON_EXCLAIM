@@ -2413,7 +2413,7 @@ def shade(x, y, datai,
             logplot=False,
             cbtitle='',
             edgecolor='none',
-            drawedges='auto',
+            cbdrawedges='auto',
          ):
   """ Makes a nice pcolor(mesh) plot.
 
@@ -2457,13 +2457,13 @@ last change:
     #print(levs)
     #print(clim)
     #print(cincr)
-    if isinstance(drawedges, str) and drawedges=='auto':
-      drawedges = True
+    if isinstance(cbdrawedges, str) and cbdrawedges=='auto':
+      cbdrawedges = True
     else:
-      drawedges = False
+      cbdrawedges = False
   else:
     norm = None
-    drawedges = False
+    cbdrawedges = False
 
   # calculate contour x/y and contour levels if needed
   if conts is None:
@@ -2582,7 +2582,7 @@ last change:
       from mpl_toolkits.axes_grid1 import make_axes_locatable
       div = make_axes_locatable(ax)
       cax = div.append_axes("right", size="10%", pad=0.1)
-    cb = plt.colorbar(mappable=hm, cax=cax, extend=extend, drawedges=drawedges)
+    cb = plt.colorbar(mappable=hm, cax=cax, extend=extend, drawedges=cbdrawedges)
     # this prevents white lines if fig is saved as pdf
     cb.solids.set_edgecolor("face")
     hs.append(cb)
