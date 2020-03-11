@@ -95,6 +95,29 @@ class pyicon_configure(object):
 #                                    radius_of_influence=radius_of_influence)
 #  return data_interpolated
 
+def apply_ckdtree_base(data, inds, distances, radius_of_influence=100e3):
+  if distances.ndim == 1:
+    #distances_ma = np.ma.masked_greater(distances, radius_of_influence)
+    if data.ndim==1:
+      data_interpolated = data[inds]
+      data_interpolated[distances>=radius_of_influence] = np.nan
+    elif data.ndim==2:
+      data_interpolated = data[:,inds]
+      data_interpolated[:,distances>=radius_of_influence] = np.nan
+  else:
+    #raise ValueError("::: distances.ndim>1 is not properly supported yet. :::")
+    #distances_ma = np.ma.masked_greater(distances, radius_of_influence)
+    weights = 1.0 / distances**2
+    if data.ndim==1:
+      data_interpolated = np.ma.sum(weights * data[inds], axis=1) / np.ma.sum(weights, axis=1)
+      #data_interpolated[distances>=radius_of_influence] = np.nan
+    elif data.ndim==2:
+      data_interpolated = np.ma.sum(weights[np.newaxis,:,:] * data[:,inds], axis=2) / np.ma.sum(weights[np.newaxis,:,:], axis=2)
+      #data_interpolated[:,distances>=radius_of_influence] = np.nan
+    data_interpolated = np.ma.masked_invalid(data_interpolated)
+
+  return data_interpolated
+
 def apply_ckdtree(data, fpath_ckdtree, coordinates='clat clon', radius_of_influence=100e3):
   """
   * credits
@@ -113,24 +136,17 @@ def apply_ckdtree(data, fpath_ckdtree, coordinates='clat clon', radius_of_influe
   else:
     raise ValueError('::: Error: Unsupported coordinates: %s! ::: ' % (coordinates))
 
-  if distances.ndim == 1:
-    #distances_ma = np.ma.masked_greater(distances, radius_of_influence)
-    if data.ndim==1:
-      data_interpolated = data[inds]
-      data_interpolated[distances>=radius_of_influence] = np.nan
-      data_interpolated = np.ma.masked_invalid(data_interpolated)
-    elif data.ndim==2:
-      data_interpolated = data[:,inds]
-      data_interpolated[:,distances>=radius_of_influence] = np.nan
-      data_interpolated = np.ma.masked_invalid(data_interpolated)
-  else:
-    #raise ValueError("::: distances.ndim>1 is not properly supported yet. :::")
-    distances_ma = np.ma.masked_greater(distances, radius_of_influence)
-    
-    w = 1.0 / distances_ma**2
-    data_interpolated = np.ma.sum(w * data[inds], axis=1) / np.ma.sum(w, axis=1)
-    data_interpolated = np.ma.masked_invalid(data_interpolated)
+  data_interpolated = apply_ckdtree_base(data, inds, distances, radius_of_influence)
   return data_interpolated
+
+def interp_to_rectgrid(data, fpath_ckdtree, coordinates='clat clon'):
+  ddnpz = np.load(fpath_ckdtree)
+  lon = ddnpz['lon'] 
+  lat = ddnpz['lat'] 
+  data = apply_ckdtree(data, fpath_ckdtree, coordinates=coordinates)
+  data = data.reshape([lat.size, lon.size])
+  data[data==0.] = np.ma.masked
+  return lon, lat, data
 
 def calc_moc(clat, wTransp, basin='global', fpath_fx='', res=1.0):
   if not os.path.exists(fpath_fx):
@@ -186,6 +202,8 @@ def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdt
     mask_basin[basin_c!=0] = True 
   elif basin.lower()=='indopacific' or basin=='indopac':
     mask_basin[(basin_c==3) | (basin_c==7)] = True 
+  elif basin.lower()=='indopacso':
+    mask_basin[(basin_c==3) | (basin_c==7) | (basin_c==6)] = True 
   f.close()
   
   ddnpz = np.load(fpath_ckdtree)
@@ -241,6 +259,8 @@ def zonal_average_3d_data(data3d, basin='global', it=0, coordinates='clat clon',
     mask_basin[basin_c!=0] = True 
   elif basin.lower()=='indopacific' or basin=='indopac':
     mask_basin[(basin_c==3) | (basin_c==7)] = True 
+  elif basin.lower()=='indopacso':
+    mask_basin[(basin_c==3) | (basin_c==7) | (basin_c==6)] = True 
   f.close()
   
   ddnpz = np.load(fpath_ckdtree)
@@ -254,7 +274,7 @@ def zonal_average_3d_data(data3d, basin='global', it=0, coordinates='clat clon',
   nz = data3d.shape[0]
   data_zave = np.ma.zeros((nz,lat_sec.size))
   for k in range(nz):
-    data = data3d[k,:]
+    data = 1.*data3d[k,:]
     #print('k = %d/%d'%(k,nz))
     # --- mask land points
     data[data==0] = np.ma.masked
@@ -569,7 +589,7 @@ def identify_grid(path_grid, fpath_data):
   Dgrid_list[grid_name]['size'] = 15117
   Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
   
-  grid_name = 'r2b6_old'; Dgrid_list[grid_name] = dict()
+  grid_name = 'r2b6old'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
   Dgrid_list[grid_name]['res'] = '40km'
   Dgrid_list[grid_name]['long_name'] = 'OCEANINP_pre04_LndnoLak_039km_editSLOHH2017_G'
@@ -611,7 +631,7 @@ def identify_grid(path_grid, fpath_data):
     if gsize == Dgrid_list[grid_name]['size']:
       Dgrid = Dgrid_list[grid_name]
       break
-  fpath_grid = '/pool/data/ICON/oes/input/r0003/' + Dgrid['long_name'] +'/' + Dgrid['long_name'] + '.nc'
+  #fpath_grid = '/pool/data/ICON/oes/input/r0003/' + Dgrid['long_name'] +'/' + Dgrid['long_name'] + '.nc'
   return Dgrid
 
 def load_tripolar_grid(fpath_grid):
@@ -677,21 +697,31 @@ def get_varnames(fpath, skip_vars=[]):
     varnames = [var for var in varnames if not var.startswith(skip_var)]
   return varnames
 
-def get_timesteps(flist, mode='num2date'):
-  f = Dataset(flist[0], 'r')
-  nt = f.variables['time'].size 
-  f.close()
+def nctime2numpy(ncv):
+  np_time = num2date(ncv[:], units=ncv.units, calendar=ncv.calendar
+                  ).astype("datetime64[s]")
+  return np_time
+
+
+def get_timesteps(flist, time_mode='num2date'):
+  #f = Dataset(flist[0], 'r')
+  #nt = f.variables['time'].size 
+  #f.close()
   #times = np.zeros((len(flist)*nt))
-  times = np.array(['2010']*(len(flist)*nt), dtype='datetime64[s]')
-  its = np.zeros((len(flist)*nt), dtype='int')
-  flist_ts = np.zeros((len(flist)*nt), dtype='<U200')
+  #times = np.array(['2010']*(len(flist)*nt), dtype='datetime64[s]')
+  #its = np.zeros((len(flist)*nt), dtype='int')
+  #flist_ts = np.zeros((len(flist)*nt), dtype='<U200')
+  times = np.array([], dtype='datetime64[s]')
+  its = np.array([], dtype='int')
+  flist_ts = np.array([], dtype='<U200')
   for nn, fpath in enumerate(flist):
     f = Dataset(fpath, 'r')
     ncv = f.variables['time']
-    if mode=='num2date':
+    nt = f.variables['time'].size 
+    if time_mode=='num2date':
       np_time = num2date(ncv[:], units=ncv.units, calendar=ncv.calendar
                       ).astype("datetime64[s]")
-    elif mode=='float2date':
+    elif time_mode=='float2date':
       tps = ncv[:]
       secs_tot = np.round(86400.*(tps-np.floor(tps)))
       hours = np.floor(secs_tot/3600.)
@@ -704,11 +734,15 @@ def get_timesteps(flist, mode='num2date'):
         tstrs[l] = tstr
       np_time = np.array(tstrs, dtype='datetime64')
     else:
-      raise ValueError('::: Error: Wrong mode %s in get_timesteps! :::' % mode)
-    times[nn*nt:(nn+1)*nt] = np_time
+      raise ValueError('::: Error: Wrong time_mode %s in get_timesteps! :::' % time_mode)
+    #mybreak()
+    #times[nn*nt:(nn+1)*nt] = np_time
+    #flist_ts[nn*nt:(nn+1)*nt] = np.array([fpath]*nt)
+    #its[nn*nt:(nn+1)*nt] = np.arange(nt)
+    times    = np.concatenate((times, np_time))
+    flist_ts = np.concatenate((flist_ts, np.array([fpath]*nt).astype('<U200')))
+    its      = np.concatenate((its, np.arange(nt, dtype='int')))
     f.close()
-    flist_ts[nn*nt:(nn+1)*nt] = np.array([fpath]*nt)
-    its[nn*nt:(nn+1)*nt] = np.arange(nt)
   return times, flist_ts, its
 
 def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
@@ -1171,10 +1205,57 @@ def calc_wvel(IcD, mass_flux):
   wvel[:IcD.nz,:] = -div_mass_flux[::-1,:].cumsum(axis=0)[::-1,:]
   return wvel
 
-def calc_vort(IcD, vn):
+def calc_vort(IcD, ve):
   # FIXME: this needs to be tested
-  vort = (vn[:,IcD.edges_of_vertex] * IcD.rot_coeff).sum(axis=2)
-  return vort
+  vort_v = (ve[:,IcD.edges_of_vertex] * IcD.rot_coeff).sum(axis=2)
+  return vort_v
+
+def edges2cell(IcD, ve):
+  """
+From math/mo_scalar_product.f90 map_edges2cell_no_height_3d_onTriangles:
+and from math/mo_operator_ocean_coeff_3d.f90 init_operator_coeffs_cell:
+        edge_1_index = patch_2d%cells%edge_idx(cell_index,blockNo,1)
+        edge_1_block = patch_2d%cells%edge_blk(cell_index,blockNo,1)
+        edge_2_index = patch_2d%cells%edge_idx(cell_index,blockNo,2)
+        edge_2_block = patch_2d%cells%edge_blk(cell_index,blockNo,2)
+        edge_3_index = patch_2d%cells%edge_idx(cell_index,blockNo,3)
+        edge_3_block = patch_2d%cells%edge_blk(cell_index,blockNo,3)
+
+        DO level = startLevel, MIN(patch_3D%p_patch_1D(1)%dolic_c(cell_index,blockNo), endLevel)
+          p_vn_c(cell_index,level,blockNo)%x =                                            &
+            & (  operators_coefficients%edge2cell_coeff_cc(cell_index,level,blockNo,1)%x  &
+            &      * vn_e(edge_1_index,level,edge_1_block)                                &
+            &*patch_3d%p_patch_1d(1)%prism_thick_e(edge_1_index,level,edge_1_block)       &
+            &  + operators_coefficients%edge2cell_coeff_cc(cell_index,level,blockNo,2)%x  &
+            &      * vn_e(edge_2_index,level,edge_2_block)                                &
+            &*patch_3d%p_patch_1d(1)%prism_thick_e(edge_2_index,level,edge_2_block)       &
+            &  + operators_coefficients%edge2cell_coeff_cc(cell_index,level,blockNo,3)%x  &
+            &       * vn_e(edge_3_index,level,edge_3_block)                               &
+            &*patch_3d%p_patch_1d(1)%prism_thick_e(edge_3_index,level,edge_3_block))      &
+            & / (operators_coefficients%fixed_vol_norm(cell_index,level,blockNo)          &
+            &    * patch_3d%p_patch_1d(1)%prism_thick_c(cell_index,level,blockNo))
+        END DO
+
+          edge_index = patch_2D%cells%edge_idx(cell_index, cell_block, neigbor)
+          edge_block = patch_2D%cells%edge_blk(cell_index, cell_block, neigbor)
+
+          IF (edge_block > 0 ) THEN
+            ! we have an edge
+            dist_vector = distance_vector( &
+              & patch_2D%edges%cartesian_center(edge_index,edge_block), &
+              & cell_center, &
+              & patch_2D%geometry_info)
+
+            ! compute edge2cell_coeff_cc
+            edge2cell_coeff_cc(cell_index,cell_block,neigbor)%x =  &
+              & dist_vector%x *                                             &
+              & prime_edge_length(edge_index,edge_block) *                  &
+              & patch_2D%cells%edge_orientation(cell_index,cell_block,neigbor)
+  """
+
+  #edge2cell_coeff_cc = dist_vector * IcD.edge_length[:,np.newaxis] * IcD.orientation_of_normal[
+  #p_vn_c = (edge2cell_coeff_cc[np.newaxis,:,:]*ve[:,IcD.edge_of_cell]*IcD.prism_thick_e[:,IcD.edge_of_cell]).sum(axis=1)
+  return
 
 # //////////////////////////////////////////////////////////////////////////////// 
 class IconVariable(object):
@@ -1261,14 +1342,15 @@ class IconVariable(object):
     if self.isinterpolated:
       raise ValueError('::: Variable %s is already interpolated. :::'%self.name)
 
-    ddnpz = np.load(fpath_ckdtree)
-    #dckdtree = ddnpz['dckdtree']
-    #ickdtree = ddnpz['ickdtree'] 
-    self.lon = ddnpz['lon'] 
-    self.lat = ddnpz['lat'] 
-    self.data = apply_ckdtree(self.data, fpath_ckdtree, coordinates=self.coordinates)
-    self.data = self.data.reshape([self.lat.size, self.lon.size])
-    self.data[self.data==0.] = np.ma.masked
+    #ddnpz = np.load(fpath_ckdtree)
+    ##dckdtree = ddnpz['dckdtree']
+    ##ickdtree = ddnpz['ickdtree'] 
+    #self.lon = ddnpz['lon'] 
+    #self.lat = ddnpz['lat'] 
+    #self.data = apply_ckdtree(self.data, fpath_ckdtree, coordinates=self.coordinates)
+    #self.data = self.data.reshape([self.lat.size, self.lon.size])
+    #self.data[self.data==0.] = np.ma.masked
+    self.lon, self.lat, self.data = interp_to_rectgrid(self.data, fpath_ckdtree, coordinates=self.coordinates)
     return
 
 #### //////////////////////////////////////////////////////////////////////////////// 
@@ -1348,7 +1430,9 @@ class IconData(object):
                run            = "auto",
                lon_reg=[-180, 180],
                lat_reg=[-90, 90],
-               do_triangulation=True,
+               do_triangulation= True,
+               omit_last_file  = True,
+               time_mode='num2date',
               ):
 
 
@@ -1378,12 +1462,17 @@ class IconData(object):
     else:
       self.fpath_fx = fpath_fx
     self.Dgrid = identify_grid(path_grid='', fpath_data=self.fpath_fx)
-    if path_tgrid=='auto':
-      self.path_tgrid    = path_data
-      self.fpath_tgrid   = self.path_data + self.Dgrid['long_name'] + '.nc'
+    #if path_tgrid=='auto':
+    #  self.path_tgrid    = path_data
+    #else:
+    #  self.path_tgrid    = path_tgrid
+    if fpath_tgrid=='auto':
+      #self.fpath_tgrid   = self.path_data + self.Dgrid['long_name'] + '.nc'
+      self.fpath_tgrid   =   '/pool/data/ICON/oes/input/r0003/'  \
+                           + self.Dgrid['long_name']+'/'         \
+                           + self.Dgrid['long_name']+'.nc'
     else:
       self.fpath_tgrid   = fpath_tgrid
-      self.path_tgrid    = path_tgrid
     self.Dgrid['fpath_grid'] = self.fpath_tgrid
 
     for fp in [self.path_data, self.path_ckdtree, 
@@ -1404,7 +1493,7 @@ class IconData(object):
 
     # --- find ckdtrees fitting for this data set
     sec_fpaths = np.array(
-      glob.glob(path_ckdtree+'sections/'+self.Dgrid['name']+'*.npz'))
+      glob.glob(path_ckdtree+'sections/'+self.Dgrid['name']+'_*.npz'))
     sec_names = np.zeros(sec_fpaths.size, '<U200')
     self.sec_fpath_dict = dict()
     for nn, fpath_ckdtree in enumerate(sec_fpaths): 
@@ -1415,7 +1504,7 @@ class IconData(object):
     self.sec_names = sec_names
 
     rgrid_fpaths = np.array(
-      glob.glob(path_ckdtree+'rectgrids/'+self.Dgrid['name']+'*.npz'))
+      glob.glob(path_ckdtree+'rectgrids/'+self.Dgrid['name']+'_*.npz'))
     rgrid_names = np.zeros(rgrid_fpaths.size, '<U200')
     self.rgrid_fpath_dict = dict()
     for nn, fpath_ckdtree in enumerate(rgrid_fpaths): 
@@ -1445,24 +1534,38 @@ class IconData(object):
       self.mask_big_triangles()
 
     # --- list of variables and time steps / files
-    self.get_files_of_timeseries()
-    self.get_varnames(self.flist[0])
-    self.associate_variables(fpath_data=self.flist[0], skip_vars=[])
-    self.get_timesteps()
+    if self.search_str!="":
+      self.get_files_of_timeseries()
+      if omit_last_file:
+        self.flist = self.flist[:-1]
+      self.get_varnames(self.flist[0])
+      self.associate_variables(fpath_data=self.flist[0], skip_vars=[])
+      #self.get_timesteps(time_mode='float2date')
+      self.get_timesteps(time_mode=time_mode)
     return
 
   def get_files_of_timeseries(self):
     self.times_flist, self.flist = get_files_of_timeseries(self.path_data, self.search_str)
     return 
   
-  def get_timesteps(self):
-    self.times, self.flist_ts, self.its = get_timesteps(self.flist)
+  def get_timesteps(self, time_mode='num2date'):
+    self.times, self.flist_ts, self.its = get_timesteps(self.flist, time_mode=time_mode)
+    self.nt = self.its.size
     return
   
   def get_varnames(self, fpath, skip_vars=[]):
     skip_vars = ['clon', 'clat', 'elon', 'elat', 'time', 'depth', 'lev']
     varnames = get_varnames(fpath, skip_vars)
     self.varnames = varnames
+    return
+  
+  def reduce_tsteps(self, inds):
+    if isinstance(inds, int):
+      inds = np.arange(inds, dtype=int)
+    self.times = self.times[inds]
+    self.flist_ts = self.flist_ts[inds]
+    self.its = self.its[inds]
+    self.nt = self.its.size
     return
 
   def associate_variables(self, fpath_data, skip_vars=[]):
@@ -1565,11 +1668,17 @@ class IconData(object):
     self.depthi = f.variables['depth_2'][:]
 
     # --- the variables prism_thick_flat_sfc_c seem to be corrupted in fx file
-    self.prism_thick_flat_sfc_c = f.variables['prism_thick_flat_sfc_c'][:]
+    self.prism_thick_flat_sfc_c = f.variables['prism_thick_flat_sfc_c'][:] # delete this later
+    self.prism_thick_c = f.variables['prism_thick_flat_sfc_c'][:]
+    self.prism_thick_e = f.variables['prism_thick_flat_sfc_e'][:]
     self.constantPrismCenters_Zdistance = f.variables['constantPrismCenters_Zdistance'][:]
     self.dzw = f.variables['prism_thick_flat_sfc_c'][:]
     self.dzt = f.variables['constantPrismCenters_Zdistance'][:]
     self.nz = self.depthc.size
+    self.dolic_c = f.variables['dolic_c'][:]-1
+    self.dolic_e = f.variables['dolic_e'][:]-1
+    self.wet_c = f.variables['wet_c'][:]
+    #self.wet_e = f.variables['wet_e'][:]
     #for var in f.variables.keys():
     #  print(var)
     #  print(f.variables[var][:].max())
@@ -1926,7 +2035,8 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
                    search_str   = fname,
                    path_data    = path_data,
                    path_ckdtree = path_ckdtree,
-                   rgrid_name   = rgrid_name
+                   rgrid_name   = rgrid_name,
+                   omit_last_file = False,
                   )
   else:
     print('Using given IcD!')
@@ -2015,6 +2125,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
                    path_data    = path_data,
                    path_ckdtree = path_ckdtree,
                    #rgrid_name   = rgrid_name
+                   omit_last_file = False,
                   )
   else:
     print('Using given IcD!')
@@ -2302,6 +2413,7 @@ def shade(x, y, datai,
             logplot=False,
             cbtitle='',
             edgecolor='none',
+            drawedges='auto',
          ):
   """ Makes a nice pcolor(mesh) plot.
 
@@ -2342,8 +2454,16 @@ last change:
   if cincr>0.:
     levs = np.arange(clim[0], clim[1]+cincr, cincr)
     norm = matplotlib.colors.BoundaryNorm(boundaries=levs, ncolors=cmap.N)
+    #print(levs)
+    #print(clim)
+    #print(cincr)
+    if isinstance(drawedges, str) and drawedges=='auto':
+      drawedges = True
+    else:
+      drawedges = False
   else:
     norm = None
+    drawedges = False
 
   # calculate contour x/y and contour levels if needed
   if conts is None:
@@ -2425,7 +2545,7 @@ last change:
                         vmin=clim[0], vmax=clim[1],
                         cmap=cmap, 
                         norm=norm,
-                        extend='both',
+                        extend=extend,
                         **ccrsdict
                       )
     # this prevents white lines if fig is saved as pdf
@@ -2462,7 +2582,7 @@ last change:
       from mpl_toolkits.axes_grid1 import make_axes_locatable
       div = make_axes_locatable(ax)
       cax = div.append_axes("right", size="10%", pad=0.1)
-    cb = plt.colorbar(mappable=hm, cax=cax, extend=extend)
+    cb = plt.colorbar(mappable=hm, cax=cax, extend=extend, drawedges=drawedges)
     # this prevents white lines if fig is saved as pdf
     cb.solids.set_edgecolor("face")
     hs.append(cb)
@@ -2472,6 +2592,9 @@ last change:
       cb.formatter.set_powerlimits((-3, 2))
       tick_locator = ticker.MaxNLocator(nbins=8)
       cb.locator = tick_locator
+      cb.update_ticks()
+    elif isinstance(cbticks, np.ndarray):
+      cb.set_ticks(cbticks)
       cb.update_ticks()
     else:
       if norm is not None:
@@ -2637,7 +2760,7 @@ last change:
                         vmin=clim[0], vmax=clim[1],
                         cmap=cmap, 
                         norm=norm,
-                        extend='both',
+                        extend=extend,
                         **ccrsdict
                       )
     # this prevents white lines if fig is saved as pdf
