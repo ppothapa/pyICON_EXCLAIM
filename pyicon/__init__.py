@@ -10,4 +10,3 @@ __version__ = "0.1.0"
 from .pyicon_calc import *
 from .pyicon_tb import *
 from .pyicon_IconData import *
-from .file2 import *
