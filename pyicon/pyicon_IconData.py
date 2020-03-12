@@ -6,7 +6,7 @@ from scipy import interpolate
 from scipy.spatial import cKDTree
 import matplotlib
 from ipdb import set_trace as mybreak  
-from pyicon_tb import *
+from .pyicon_tb import *
 
 class IconData(object):
   """
@@ -83,7 +83,7 @@ class IconData(object):
     for pname in ['path_data', 'path_ckdtree', 'fpath_tgrid', 'fpath_fx']:
       fp = getattr(self, pname)
       if not os.path.exists(fp):
-        raise ValueError('::: Error: Cannot find %s: %s! :::' % (fp))
+        raise ValueError('::: Error: Cannot find %s: %s! :::' % (pname, fp))
 
     # --- global variables
     if rgrid_name=='orig':
