@@ -4,13 +4,13 @@ Pyicon is a python post-processing and visualization toolbox for ICON with a foc
 
 * a number of functions to facilitate the every-day script-based plotting of ICON data
 * an interactive (ncview-like) plotting GUI for Jupyter notebook
-* a monitoring suite ICON ocean simulations which combines all plots of an ICON simulation in a website
+* a monitoring suite for ICON ocean simulations which combines dedicated diagnostic plots of an ICON simulation on a website
 
 Pyicon is developed within the DFG-project TRR181 - Energy Transfers in Atmosphere and Ocean.
 
 ## Install pyicon
 
-Pyicon has depends on frequently used python libraries in the geoscience business. They are easiest installed using conda
+Pyicon depends a number of libraries typically used for geoscience data evaluation and plotting. The easiest installation is probably by using conda
 
 ```
 conda env create -f pyicon_env.yml
@@ -40,7 +40,7 @@ dependencies:
   - dask
 ~~~
 
-Get pyicon by copying all files on mistral from:
+Get pyicon by:
 
 ```bash
 git clone git@gitlab.dkrz.de:m300602/pyicon.git
@@ -62,6 +62,14 @@ sys.path.insert(0,'/path/to/pyicon')
 ## Known bugs:
 
 * there are always problems with vertical grid variables loaded from the ICON fx-files.
+
+## Mistral specific information
+
+* grid files can be found here:
+
+```
+/mnt/lustre01/work/mh0033/m300602/icon/grids
+```
 
 ## Use pyicon with Jupyter
 
