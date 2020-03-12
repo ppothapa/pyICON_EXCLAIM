@@ -16,6 +16,7 @@ import cmocean
 import json
 from ipdb import set_trace as mybreak  
 from importlib import reload
+#from file2 import *
 
 """
 pyicon
@@ -30,7 +31,6 @@ pyicon
   timing
   conv_gname
   identify_grid
-  load_tripolar_grid
   crop_tripolar_grid
   crop_regular_grid
   get_files_of_timeseries
@@ -124,13 +124,16 @@ def apply_ckdtree(data, fpath_ckdtree, coordinates='clat clon', radius_of_influe
     function modified from pyfesom (Nikolay Koldunov)
   """
   ddnpz = np.load(fpath_ckdtree)
-  if coordinates=='clat clon':
+  #if coordinates=='clat clon':
+  if 'clon' in coordinates:
     distances = ddnpz['dckdtree_c']
     inds = ddnpz['ickdtree_c'] 
-  elif coordinates=='elat elon':
+  #elif coordinates=='elat elon':
+  elif 'elon' in coordinates:
     distances = ddnpz['dckdtree_e']
     inds = ddnpz['ickdtree_e'] 
-  elif coordinates=='vlat vlon':
+  #elif coordinates=='vlat vlon':
+  elif 'vlon' in coordinates:
     distances = ddnpz['dckdtree_v']
     inds = ddnpz['ickdtree_v'] 
   else:
@@ -634,19 +637,6 @@ def identify_grid(path_grid, fpath_data):
   #fpath_grid = '/pool/data/ICON/oes/input/r0003/' + Dgrid['long_name'] +'/' + Dgrid['long_name'] + '.nc'
   return Dgrid
 
-def load_tripolar_grid(fpath_grid):
-  """ Load longitude and latitude of cell centers, edges and vertices and vertex_of_cell and edge_of_cell from fpath_grid.'
-  """
-  f = Dataset(fpath_grid, 'r')
-  clon = f.variables['clon'][:] * 180./np.pi
-  clat = f.variables['clat'][:] * 180./np.pi
-  vlon = f.variables['vlon'][:] * 180./np.pi
-  vlat = f.variables['vlat'][:] * 180./np.pi
-  elon = f.variables['elon'][:] * 180./np.pi
-  elat = f.variables['elat'][:] * 180./np.pi
-  f.close()
-  return clon, clat, vlon, vlat, elon, elat
-
 def crop_tripolar_grid(lon_reg, lat_reg,
                        clon, clat, vertex_of_cell, edge_of_cell):
   ind_reg = np.where(   (clon>lon_reg[0]) 
@@ -676,8 +666,8 @@ def crop_regular_grid(lon_reg, lat_reg, Lon, Lat):
   ind_reg = ind_reg
   return Lon, Lat, lon, lat, ind_reg
 
-def get_files_of_timeseries(path_data, search_str):
-  flist = np.array(glob.glob(path_data+search_str))
+def get_files_of_timeseries(path_data, fname):
+  flist = np.array(glob.glob(path_data+fname))
   flist.sort()
   times_flist = np.zeros(flist.size, dtype='datetime64[s]')
   #for l, fpath in enumerate(flist):
@@ -685,7 +675,7 @@ def get_files_of_timeseries(path_data, search_str):
   #  times_flist[l] = '%s-%s-%sT%s:%s:%s' % ( (tstr[:4], tstr[4:6], tstr[6:8], 
   #                                      tstr[9:11], tstr[11:13], tstr[13:15]))
   if flist.size==0:
-    raise ValueError('::: Error: No file found matching %s!:::' % (path_data+search_str))
+    raise ValueError('::: Error: No file found matching %s!:::' % (path_data+fname))
   return times_flist, flist
 
 def get_varnames(fpath, skip_vars=[]):
@@ -1197,66 +1187,6 @@ def calc_bstr_rgrid(IcD, mass_flux_vint, lon_rg, lat_rg):
     sys.exit()
   
   return bstr
-
-def calc_wvel(IcD, mass_flux):
-  div_mass_flux = (
-    mass_flux[:,IcD.edge_of_cell]*IcD.div_coeff[np.newaxis,:,:]).sum(axis=2)
-  wvel = np.zeros((IcD.nz+1, IcD.clon.size))
-  wvel[:IcD.nz,:] = -div_mass_flux[::-1,:].cumsum(axis=0)[::-1,:]
-  return wvel
-
-def calc_vort(IcD, ve):
-  # FIXME: this needs to be tested
-  vort_v = (ve[:,IcD.edges_of_vertex] * IcD.rot_coeff).sum(axis=2)
-  return vort_v
-
-def edges2cell(IcD, ve):
-  """
-From math/mo_scalar_product.f90 map_edges2cell_no_height_3d_onTriangles:
-and from math/mo_operator_ocean_coeff_3d.f90 init_operator_coeffs_cell:
-        edge_1_index = patch_2d%cells%edge_idx(cell_index,blockNo,1)
-        edge_1_block = patch_2d%cells%edge_blk(cell_index,blockNo,1)
-        edge_2_index = patch_2d%cells%edge_idx(cell_index,blockNo,2)
-        edge_2_block = patch_2d%cells%edge_blk(cell_index,blockNo,2)
-        edge_3_index = patch_2d%cells%edge_idx(cell_index,blockNo,3)
-        edge_3_block = patch_2d%cells%edge_blk(cell_index,blockNo,3)
-
-        DO level = startLevel, MIN(patch_3D%p_patch_1D(1)%dolic_c(cell_index,blockNo), endLevel)
-          p_vn_c(cell_index,level,blockNo)%x =                                            &
-            & (  operators_coefficients%edge2cell_coeff_cc(cell_index,level,blockNo,1)%x  &
-            &      * vn_e(edge_1_index,level,edge_1_block)                                &
-            &*patch_3d%p_patch_1d(1)%prism_thick_e(edge_1_index,level,edge_1_block)       &
-            &  + operators_coefficients%edge2cell_coeff_cc(cell_index,level,blockNo,2)%x  &
-            &      * vn_e(edge_2_index,level,edge_2_block)                                &
-            &*patch_3d%p_patch_1d(1)%prism_thick_e(edge_2_index,level,edge_2_block)       &
-            &  + operators_coefficients%edge2cell_coeff_cc(cell_index,level,blockNo,3)%x  &
-            &       * vn_e(edge_3_index,level,edge_3_block)                               &
-            &*patch_3d%p_patch_1d(1)%prism_thick_e(edge_3_index,level,edge_3_block))      &
-            & / (operators_coefficients%fixed_vol_norm(cell_index,level,blockNo)          &
-            &    * patch_3d%p_patch_1d(1)%prism_thick_c(cell_index,level,blockNo))
-        END DO
-
-          edge_index = patch_2D%cells%edge_idx(cell_index, cell_block, neigbor)
-          edge_block = patch_2D%cells%edge_blk(cell_index, cell_block, neigbor)
-
-          IF (edge_block > 0 ) THEN
-            ! we have an edge
-            dist_vector = distance_vector( &
-              & patch_2D%edges%cartesian_center(edge_index,edge_block), &
-              & cell_center, &
-              & patch_2D%geometry_info)
-
-            ! compute edge2cell_coeff_cc
-            edge2cell_coeff_cc(cell_index,cell_block,neigbor)%x =  &
-              & dist_vector%x *                                             &
-              & prime_edge_length(edge_index,edge_block) *                  &
-              & patch_2D%cells%edge_orientation(cell_index,cell_block,neigbor)
-  """
-
-  #edge2cell_coeff_cc = dist_vector * IcD.edge_length[:,np.newaxis] * IcD.orientation_of_normal[
-  #p_vn_c = (edge2cell_coeff_cc[np.newaxis,:,:]*ve[:,IcD.edge_of_cell]*IcD.prism_thick_e[:,IcD.edge_of_cell]).sum(axis=1)
-  return
-
 # //////////////////////////////////////////////////////////////////////////////// 
 class IconVariable(object):
   def __init__(self, name, units='', long_name='', 
@@ -1353,60 +1283,6 @@ class IconVariable(object):
     self.lon, self.lat, self.data = interp_to_rectgrid(self.data, fpath_ckdtree, coordinates=self.coordinates)
     return
 
-#### //////////////////////////////////////////////////////////////////////////////// 
-###class IconDataFile(object):
-###  """
-###  Used by QuickPlots
-###
-###  To do:
-###    * similar to IconData see if we need both
-###  """
-###  def __init__(self, 
-###               fpath_data,
-###               path_grid='/pool/data/ICON/oes/input/r0003/',
-###              ):
-###    self.path_grid = path_grid
-###    self.fpath_data = fpath_data
-###    return
-###
-###
-###  def identify_grid(self):
-###    self.Dgrid = identify_grid(path_grid=self.path_grid, fpath_data=self.fpath_data)
-###    return
-###  
-###  def load_tripolar_grid(self):
-###    (self.clon, self.clat, self.vlon, self.vlat,
-###     self.elon, self.elat, self.vertex_of_cell,
-###     self.edge_of_cell ) = load_tripolar_grid(fpath_grid=self.Dgrid['fpath_grid'])
-###    return
-###  
-###  def crop_grid(self, lon_reg, lat_reg, grid='orig'):
-###    """ Crop all cell related variables (data, clon, clat, vertex_of_cell, edge_of_cell to regin defined by lon_reg and lat_reg.
-###    """
-###    if grid=='orig':
-###      (self.clon, self.clat,
-###       self.vertex_of_cell, self.edge_of_cell,
-###       self.ind_reg ) = crop_tripolar_grid(lon_reg, lat_reg,
-###                                           self.clon, self.clat, 
-###                                           self.vertex_of_cell,
-###                                           self.edge_of_cell)
-###    else:
-###      (self.Lon, self.Lat, self.lon, self.lat, 
-###       self.ind_reg ) = crop_regular_grid(lon_reg, lat_reg, self.Lon, self.Lat)
-###
-###  def mask_big_triangles(self, do_mask_zeros=True):
-###    mask_grid_c = (
-###          (self.vlon[self.vertex_of_cell[:,0]] - self.vlon[self.vertex_of_cell[:,1]] )**2
-###        + (self.vlon[self.vertex_of_cell[:,0]] - self.vlon[self.vertex_of_cell[:,2]] )**2 
-###        + (self.vlat[self.vertex_of_cell[:,0]] - self.vlat[self.vertex_of_cell[:,1]] )**2
-###        + (self.vlat[self.vertex_of_cell[:,0]] - self.vlat[self.vertex_of_cell[:,2]] )**2 
-###                  ) > 2.*180./np.pi
-###    #ipdb.set_trace()
-###    if do_mask_zeros:
-###      mask_grid_c += self.data==0
-###    self.Tri.set_mask(mask_grid_c)
-###    return
-
 # //////////////////////////////////////////////////////////////////////////////// 
 # ---- classes and methods necessary for Jupyter data viewer
 class IconData(object):
@@ -1415,72 +1291,83 @@ class IconData(object):
   """
   def __init__(self, 
                # data
-               search_str="",
-               path_data      = "",
-               # original grid
-               path_tgrid     = "auto",
-               fpath_tgrid    = "auto",
-               fpath_fx       = "auto",
-               # interpolation
-               path_ckdtree   = "",
-               path_rgrid     = "auto", # not needed if conventions are followed
-               path_sections  = "auto", # not needed if convections are followed
-               rgrid_name     = "",
-               section_name   = "",
-               run            = "auto",
-               lon_reg=[-180, 180],
-               lat_reg=[-90, 90],
-               do_triangulation= True,
-               omit_last_file  = True,
-               time_mode='num2date',
+               fname             = "",
+               path_data         = "",
+               # original grid   
+               path_grid         = "",
+               gname             = "",
+               lev               = "",
+               fpath_tgrid       = "auto",
+               fpath_fx          = "auto",
+               # interpolation   
+               path_ckdtree      = "auto",
+               #path_rgrid        = "auto", # not needed if conventions are followed
+               #path_sections     = "auto", # not needed if convections are followed
+               rgrid_name        = "",
+               section_name      = "",
+               # 
+               run               = "auto",
+               lon_reg           = [-180, 180],
+               lat_reg           = [-90, 90],
+               do_triangulation      = True,
+               omit_last_file        = False,  # set to true to avoid data damage for running simulations
+               load_vertical_grid    = True,
+               load_triangular_grid  = True,
+               load_rectangular_grid = True,
+               load_variable_info    = True,
+               calc_coeff            = True,
+               time_mode             = 'num2date',
               ):
 
 
+    # --- paths data and grid
+    self.path_data     = path_data
+    self.path_grid     = path_grid
+    self.gname         = gname
+    self.lev           = lev
+    
+    # --- automatically identify grid from data
+    # (does not work anymore, maybe not necessary)
+    if gname=='auto':
+      pass
+      #self.Dgrid = identify_grid(path_grid='', fpath_data=self.fpath_fx)
+    
+    # --- fpaths original grid
+    if fpath_tgrid=='auto':
+      self.fpath_tgrid   = self.path_grid + gname + '_tgrid.nc'
+    else:
+      self.fpath_tgrid   = fpath_tgrid
+
+    if fpath_fx=='auto':
+      self.fpath_fx = self.path_grid + self.gname + '_' + self.lev + '_fx.nc'
+    else:
+      self.fpath_fx = fpath_fx
+
+    # --- paths ckdtree
+    if path_ckdtree=='auto':
+      self.path_ckdtree = self.path_grid + 'ckdtree/'
+    else:
+      self.path_ckdtree = path_ckdtree
+    self.path_rgrid    = self.path_ckdtree + 'rectgrids/'
+    self.path_sections = self.path_ckdtree + 'sections/'
+
+    if run=='auto':
+      self.run = self.path_data.split('/')[-2]
+    else: 
+      self.run = run
+
+    # --- check if all important files and paths exist
+    for pname in ['path_data', 'path_ckdtree', 'fpath_tgrid', 'fpath_fx']:
+      fp = getattr(self, pname)
+      if not os.path.exists(fp):
+        raise ValueError('::: Error: Cannot find %s: %s! :::' % (fp))
+
+    # --- global variables
     if rgrid_name=='orig':
       use_tgrid = True
       rgrid_name = ""
     else:
       use_tgrid = False
-
-    # --- paths and file names
-    self.path_data     = path_data
-    self.path_ckdtree  = path_ckdtree
-    if path_rgrid=="auto":
-      self.path_rgrid = self.path_ckdtree + 'rectgrids/'
-    else:
-      self.path_rgrid = path_rgrid
-    if path_sections=="auto":
-      self.path_sections = self.path_ckdtree + 'sections/'
-    else:
-      self.path_sections = path_sections
-    if run=='auto':
-      self.run = self.path_data.split('/')[-2]
-    else: 
-      self.run = run
-    if fpath_fx=='auto':
-      self.fpath_fx = self.path_data + self.run + '_fx.nc'
-    else:
-      self.fpath_fx = fpath_fx
-    self.Dgrid = identify_grid(path_grid='', fpath_data=self.fpath_fx)
-    #if path_tgrid=='auto':
-    #  self.path_tgrid    = path_data
-    #else:
-    #  self.path_tgrid    = path_tgrid
-    if fpath_tgrid=='auto':
-      #self.fpath_tgrid   = self.path_data + self.Dgrid['long_name'] + '.nc'
-      self.fpath_tgrid   =   '/pool/data/ICON/oes/input/r0003/'  \
-                           + self.Dgrid['long_name']+'/'         \
-                           + self.Dgrid['long_name']+'.nc'
-    else:
-      self.fpath_tgrid   = fpath_tgrid
-    self.Dgrid['fpath_grid'] = self.fpath_tgrid
-
-    for fp in [self.path_data, self.path_ckdtree, 
-               self.fpath_tgrid, self.fpath_fx]:
-      if not os.path.exists(fp):
-        raise ValueError('::: Error: Cannot find file %s! :::' % (fp))
-
-    # --- global variables
     self.interpolate = True
     self.units=dict()
     self.long_name=dict()
@@ -1489,11 +1376,11 @@ class IconData(object):
     self.lon_reg = lon_reg
     self.lat_reg = lat_reg
     self.use_tgrid = use_tgrid
-    self.search_str = search_str
+    self.fname = fname
 
-    # --- find ckdtrees fitting for this data set
+    # --- find regular grid ckdtrees for this grid
     sec_fpaths = np.array(
-      glob.glob(path_ckdtree+'sections/'+self.Dgrid['name']+'_*.npz'))
+      glob.glob(self.path_sections+self.gname+'_*.npz'))
     sec_names = np.zeros(sec_fpaths.size, '<U200')
     self.sec_fpath_dict = dict()
     for nn, fpath_ckdtree in enumerate(sec_fpaths): 
@@ -1503,8 +1390,13 @@ class IconData(object):
     self.sec_fpaths = sec_fpaths
     self.sec_names = sec_names
 
+    if self.sec_names.size==0:
+      print('::: Warning: Could not find any section-npz-file in %s. :::' 
+                        % (self.path_sections))
+
+    # --- find section grid ckdtrees for this grid
     rgrid_fpaths = np.array(
-      glob.glob(path_ckdtree+'rectgrids/'+self.Dgrid['name']+'_*.npz'))
+      glob.glob(self.path_rgrid+self.gname+'_*.npz'))
     rgrid_names = np.zeros(rgrid_fpaths.size, '<U200')
     self.rgrid_fpath_dict = dict()
     for nn, fpath_ckdtree in enumerate(rgrid_fpaths): 
@@ -1514,18 +1406,30 @@ class IconData(object):
     self.rgrid_fpaths = rgrid_fpaths
     self.rgrid_names = rgrid_names
 
-    if rgrid_names.size==0:
-      raise ValueError('::: Error: Could not find any rgrid-npz-file in %s. :::' 
-                        % (path_ckdtree+'rectgrids/'))
+    if self.rgrid_names.size==0:
+      print('::: Warning: Could not find any rgrid-npz-file in %s. :::' 
+                        % (self.path_rectgrids))
 
     # --- choose rgrid and section
+    # (do we need this?)
     self.set_rgrid(rgrid_name)
     self.set_section(section_name)
 
+    # ---------- 
+    # the following can be computatinally expensive
+    # ---------- 
     # --- load grid
-    self.load_tgrid()
-    self.load_rgrid()
-    self.load_vgrid()
+    if load_triangular_grid:
+      self.load_tgrid()
+    if load_rectangular_grid:
+      self.load_rgrid()
+    if load_vertical_grid:
+      self.load_vgrid()
+
+    # --- calculate coefficients for divergence, curl, etc.
+    if calc_coeff:
+      self.calc_coeff()
+
     #self.crop_grid(lon_reg=self.lon_reg, lat_reg=self.lat_reg)
     # --- triangulation
     if do_triangulation:
@@ -1534,18 +1438,21 @@ class IconData(object):
       self.mask_big_triangles()
 
     # --- list of variables and time steps / files
-    if self.search_str!="":
+    if self.fname!="":
       self.get_files_of_timeseries()
       if omit_last_file:
         self.flist = self.flist[:-1]
+      self.get_timesteps(time_mode=time_mode)
+
+    if load_variable_info:
       self.get_varnames(self.flist[0])
       self.associate_variables(fpath_data=self.flist[0], skip_vars=[])
       #self.get_timesteps(time_mode='float2date')
-      self.get_timesteps(time_mode=time_mode)
+
     return
 
   def get_files_of_timeseries(self):
-    self.times_flist, self.flist = get_files_of_timeseries(self.path_data, self.search_str)
+    self.times_flist, self.flist = get_files_of_timeseries(self.path_data, self.fname)
     return 
   
   def get_timesteps(self, time_mode='num2date'):
@@ -1639,7 +1546,7 @@ class IconData(object):
   
   def show_grid_info(self):
     print('------------------------------------------------------------')
-    fpaths = glob.glob(self.path_rgrid+self.Dgrid['name']+'*.npz')
+    fpaths = glob.glob(self.path_rgrid+self.gname+'*.npz')
     print('regular grid files:')
     print(self.path_rgrid)
     for fp in fpaths:
@@ -1648,7 +1555,7 @@ class IconData(object):
       print(info)
     
     print('------------------------------------------------------------')
-    fpaths = glob.glob(self.path_sections+self.Dgrid['name']+'*.npz')
+    fpaths = glob.glob(self.path_sections+self.gname+'*.npz')
     print('section files:')
     print(self.path_sections)
     for fp in fpaths:
@@ -1660,24 +1567,30 @@ class IconData(object):
     return
 
   def load_vgrid(self, lon_reg='all', lat_reg='all'):
+    """ Load certain variables from self.fpath_fx which are typically related to a specification of the vertical grid.
+    """
+
     # --- vertical levels
     f = Dataset(self.fpath_fx, 'r')
     #self.clon = f.variables['clon'][:] * 180./np.pi
     #self.clat = f.variables['clat'][:] * 180./np.pi
     self.depthc = f.variables['depth'][:]
     self.depthi = f.variables['depth_2'][:]
+    self.nz = self.depthc.size
 
     # --- the variables prism_thick_flat_sfc_c seem to be corrupted in fx file
     self.prism_thick_flat_sfc_c = f.variables['prism_thick_flat_sfc_c'][:] # delete this later
     self.prism_thick_c = f.variables['prism_thick_flat_sfc_c'][:]
     self.prism_thick_e = f.variables['prism_thick_flat_sfc_e'][:]
     self.constantPrismCenters_Zdistance = f.variables['constantPrismCenters_Zdistance'][:]
-    self.dzw = f.variables['prism_thick_flat_sfc_c'][:]
-    self.dzt = f.variables['constantPrismCenters_Zdistance'][:]
-    self.nz = self.depthc.size
+    self.dzw           = self.prism_thick_c
+    self.dze           = self.prism_thick_e
+    self.dzt           = self.constantPrismCenters_Zdistance
+
     self.dolic_c = f.variables['dolic_c'][:]-1
     self.dolic_e = f.variables['dolic_e'][:]-1
     self.wet_c = f.variables['wet_c'][:]
+
     #self.wet_e = f.variables['wet_e'][:]
     #for var in f.variables.keys():
     #  print(var)
@@ -1686,49 +1599,14 @@ class IconData(object):
     f.close()
     return
 
-    # --- tripolar grid
-    #self.load_tripolar_grid()
-
   def load_rgrid(self, lon_reg='all', lat_reg='all'):
+    """ Load lon and lat from the ckdtree rectangular grid file self.rgrid_fpath.
+    """
     # --- rectangular grid
     ddnpz = np.load(self.rgrid_fpath)
-    #self.dckdtree = ddnpz['dckdtree']
-    #self.ickdtree = ddnpz['ickdtree']
     self.lon = ddnpz['lon']
     self.lat = ddnpz['lat']
     self.Lon, self.Lat = np.meshgrid(self.lon, self.lat)
-
-      ## --- triangle grid
-      #self.ind_reg = np.where( 
-      #    (self.clon >  self.lon_reg[0]) 
-      #  & (self.clon <= self.lon_reg[1]) 
-      #  & (self.clat >  self.lat_reg[0]) 
-      #  & (self.clat <= self.lat_reg[1]) )[0]
-      #self.clon = self.clon[self.ind_reg]
-      #self.clat = self.clat[self.ind_reg]
-
-      ## triangulation
-      #ntr = self.clon.size
-      #f = Dataset(self.fpath_fx, 'r')
-      #clon_bnds = f.variables['clon_bnds'][:] * 180./np.pi
-      #clat_bnds = f.variables['clat_bnds'][:] * 180./np.pi
-      #clon_bnds = clon_bnds[self.ind_reg,:]
-      #clat_bnds = clat_bnds[self.ind_reg,:]
-      #f.close()
-
-      #clon_bnds_rs = clon_bnds.reshape(ntr*3)
-      #clat_bnds_rs = clat_bnds.reshape(ntr*3)
-      #triangles = np.arange(ntr*3).reshape(ntr,3)
-      #self.Tri = matplotlib.tri.Triangulation(
-      #  clon_bnds_rs, clat_bnds_rs, triangles=triangles)
-
-      #mask_grid = (   (clon_bnds[:,0]-clon_bnds[:,1])**2 
-      #              + (clon_bnds[:,0]-clon_bnds[:,2])**2 
-      #              + (clat_bnds[:,0]-clat_bnds[:,1])**2 
-      #              + (clat_bnds[:,0]-clat_bnds[:,2])**2 
-      #            ) > 2.*180./np.pi
-      #self. maskTri = mask_grid
-      #self.Tri.set_mask(self.maskTri)
     return
 
 #  def load_hsnap(self, varnames, step_snap=0, iz=0):
@@ -1801,11 +1679,18 @@ class IconData(object):
 #    return
 
   def load_tgrid(self):
-    (self.clon, self.clat, 
-     self.vlon, self.vlat,
-     self.elon, self.elat ) = load_tripolar_grid(self.fpath_tgrid)
-
+    """ Load certain variables related to the triangular grid from the grid file self.fpath_tgrid.
+    """
     f = Dataset(self.fpath_tgrid, 'r')
+
+    # --- lonn lat of cells, vertices and edges
+    self.clon = f.variables['clon'][:] * 180./np.pi
+    self.clat = f.variables['clat'][:] * 180./np.pi
+    self.vlon = f.variables['vlon'][:] * 180./np.pi
+    self.vlat = f.variables['vlat'][:] * 180./np.pi
+    self.elon = f.variables['elon'][:] * 180./np.pi
+    self.elat = f.variables['elat'][:] * 180./np.pi
+
     # --- distances and areas 
     self.cell_area = f.variables['cell_area'][:]
     self.cell_area_p = f.variables['cell_area_p'][:]
@@ -1823,6 +1708,9 @@ class IconData(object):
     self.edge_orientation = f.variables['edge_orientation'][:].transpose()
     f.close()
 
+    return
+
+  def calc_coeff(self):
     # --- derive coefficients
     self.div_coeff = (  self.edge_length[self.edge_of_cell] 
                       * self.orientation_of_normal 
@@ -1833,7 +1721,6 @@ class IconData(object):
     self.rot_coeff = (  self.dual_edge_length[self.edges_of_vertex]
                       * grid_sphere_radius
                       * self.edge_orientation )
-
     return
 
   
@@ -1853,14 +1740,14 @@ class IconData(object):
     return
 
   def mask_big_triangles(self):
-    mask_bt = (
-      (self.vlon[self.vertex_of_cell[:,0]] - self.vlon[self.vertex_of_cell[:,1]])**2
-    + (self.vlon[self.vertex_of_cell[:,0]] - self.vlon[self.vertex_of_cell[:,2]])**2
-    + (self.vlat[self.vertex_of_cell[:,0]] - self.vlat[self.vertex_of_cell[:,1]])**2
-    + (self.vlat[self.vertex_of_cell[:,0]] - self.vlat[self.vertex_of_cell[:,2]])**2
-               ) > 2.*180./np.pi
-    self.Tri.set_mask(mask_bt)
-    self.maskTri = mask_bt
+    self.mask_bt = (
+        (np.abs(  self.vlon[self.vertex_of_cell[:,0]] 
+                - self.vlon[self.vertex_of_cell[:,1]])>180.)
+      | (np.abs(  self.vlon[self.vertex_of_cell[:,0]] 
+                - self.vlon[self.vertex_of_cell[:,2]])>180.)
+                  )
+    self.Tri.set_mask(self.mask_bt)
+    self.maskTri = self.mask_bt
     return
 
 # ////////////////////////////////////////
@@ -2032,7 +1919,7 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
   # --- set-up grid and region if not given to function
   if isinstance(IcD,str) and IcD=='none':
     IcD = IconData(
-                   search_str   = fname,
+                   fname   = fname,
                    path_data    = path_data,
                    path_ckdtree = path_ckdtree,
                    rgrid_name   = rgrid_name,
@@ -2121,7 +2008,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
   # --- load data set
   if isinstance(IcD,str) and IcD=='none':
     IcD = IconData(
-                   search_str   = fname,
+                   fname   = fname,
                    path_data    = path_data,
                    path_ckdtree = path_ckdtree,
                    #rgrid_name   = rgrid_name
@@ -2811,14 +2698,15 @@ last change:
   return hs 
 
 # ================================================================================ 
+
 def arrange_axes( nx,ny,
                   # height of and aspect ratio of subplot
                   asy  = 3.5,
-                  sasp = 1.0,
+                  sasp = 0.5,
                   # plot colorbar
                   plot_cb = False,
                   # have common x or y axes
-                  sharex = True, sharey = True,
+                  sharex = False, sharey = False,
                   xlabel = "",   ylabel = "",
                   # additional space left right and above and below axes
                   oxl = 0.1, oxr = 0.0,
@@ -2830,7 +2718,7 @@ def arrange_axes( nx,ny,
                   # figure size and aspect ratio
                   fig_size     = 'auto',
                   fig_asp      = 'auto',
-                  fig_size_fac = 1.,
+                  fig_size_fac = 2.,
                   # figure title
                   fig_title = None,
                   projection = None,
