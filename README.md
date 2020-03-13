@@ -8,6 +8,8 @@ Pyicon is a python post-processing and visualization toolbox for ICON with a foc
 
 Pyicon is developed within the DFG-project TRR181 - Energy Transfers in Atmosphere and Ocean.
 
+Documentation can be found here: [documentation](https://modvis.dkrz.de/mh0033/m300602/pyicon_doc/html/index.html)
+
 ## Install pyicon
 
 Pyicon depends a number of libraries typically used for geoscience data evaluation and plotting. The easiest installation is probably by using conda
