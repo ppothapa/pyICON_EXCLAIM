@@ -1,9 +1,12 @@
 import sys, glob, os
-import datetime
+import json
+# --- calculations
 import numpy as np
-from netCDF4 import Dataset, num2date
 from scipy import interpolate
 from scipy.spatial import cKDTree
+# --- reading data 
+from netCDF4 import Dataset, num2date
+import datetime
 # --- plotting
 import matplotlib.pyplot as plt
 import matplotlib
@@ -13,7 +16,7 @@ import cartopy
 import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import cmocean
-import json
+# --- debugging
 from ipdb import set_trace as mybreak  
 from importlib import reload
 #from file2 import *
