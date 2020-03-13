@@ -11,7 +11,15 @@ Mistral environment
 The easiest way to use pyicon on Mistral is to use a pre-installed environment.
 In this case, you do not need to read further but on Mistral simply type::
 
-  source /home/mpim/m300602/bin/myactcondenv.sh
+  source pyicon/tools/conda_act_mistral_pyicon_env.sh
+
+The content of this script is::
+
+.. code-block::
+
+ export PYTHONPATH="/home/mpim/m300602/python/pytbx/mypy:/home/mpim/m300602/pyicon"
+ export PATH="/home/mpim/m300602/miniconda2/bin:$PATH"
+ source activate myenv_py3
 
 
 Requirements

@@ -20,6 +20,7 @@ Pyicon is developed within the DFG-project TRR181 - Energy Transfers in Atmosphe
 
    installation
    quickstart
+   mistral
 
   
 Indices and tables

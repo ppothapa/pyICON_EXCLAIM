@@ -10,69 +10,6 @@ Pyicon is developed within the DFG-project TRR181 - Energy Transfers in Atmosphe
 
 Documentation can be found here: [documentation](https://modvis.dkrz.de/mh0033/m300602/pyicon_doc/html/index.html)
 
-## Install pyicon
-
-Pyicon depends a number of libraries typically used for geoscience data evaluation and plotting. The easiest installation is probably by using conda
-
-```
-conda env create -f pyicon_env.yml
-```
-
-with the following yml-file (assumed to be named pyicon_env.yml):
-
-~~~
-name: pyicon_env
-channels:
-  - conda-forge
-  - defaults
-dependencies:
-#  - python=2.7 # use this line to get python2.7 env
-  - numpy
-  - matplotlib
-  - scipy
-  - ipython
-  - jupyter
-  - jupyterlab  # optional
-  - netcdf4
-  - mpi4py      # optional
-  - cartopy
-  - cmocean
-  - seawater
-  - xarray
-  - dask
-~~~
-
-Get pyicon by:
-
-```bash
-git clone git@gitlab.dkrz.de:m300602/pyicon.git
-```
-
-Add pyicon to your PYTHONPATH either by setting:
-
-```
-export PYTHONPATH="/path/to/pyicon:${PYTHONPATH}"
-```
-
-or by adding it within your python script:
-
-```
-import sys
-sys.path.insert(0,'/path/to/pyicon')
-```
-
-## Known bugs:
-
-* there are always problems with vertical grid variables loaded from the ICON fx-files.
-
-## Mistral specific information
-
-* grid files can be found here:
-
-```
-/mnt/lustre01/work/mh0033/m300602/icon/grids
-```
-
 ## Use pyicon with Jupyter
 
 To use Jupyter on the DKRZ cluster you find valuable information here:
