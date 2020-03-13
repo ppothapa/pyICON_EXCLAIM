@@ -23,20 +23,20 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 #path_ckdtree = '/Users/nbruggemann/work/icon_playground/icon_ckdtree/'
 
 # ------ r2b4
-#exec(open("./conf-icon_08-nib002.py").read())
-#exec(open("./conf-mac-icon_08-nib0002.py").read())
+#exec(open("./config_qp/conf-icon_08-nib002.py").read())
+#exec(open("./config_qp/conf-mac-icon_08-nib0002.py").read())
 
 # ------ r2b6
-#exec(open("./conf-icon_08-nib003.py").read())
+#exec(open("./config_qp/conf-icon_08-nib003.py").read())
 # does not work so far. diff. grid file
-#exec(open("./conf-ocean_omip_long_r2b6_19224-YVF.py").read()) 
+#exec(open("./config_qp/conf-ocean_omip_long_r2b6_19224-YVF.py").read()) 
 
 # ------ r2b8
-#exec(open("./conf-ocean_era51h_r2b8_19074-AMK.py").read())
+#exec(open("./config_qp/conf-ocean_era51h_r2b8_19074-AMK.py").read())
 
 # ------ r2b6
-exec(open("./conf-icon_08-nib0004.py").read())
-#exec(open("./conf-icon_08-nib0006.py").read())
+exec(open("./config_qp/conf-icon_08-nib0004.py").read())
+#exec(open("./config_qp/conf-icon_08-nib0006.py").read())
 
 path_qp = './all_qps/qp-'+runname+'-'+run+'/'
 if not os.path.exists(path_qp):
@@ -114,12 +114,15 @@ if True:
   #rgrid_name = 'global_1.0'
   rgrid_name = 'global_0.3'
   IcD = pyic.IconData(
-                 search_str   = fname,
+                 fname        = fname,
                  path_data    = path_data,
-                 path_ckdtree = path_ckdtree,
-                 path_tgrid   = path_tgrid,
-                 fpath_tgrid  = fpath_tgrid,
-                 fpath_fx     = fpath_fx,
+                 path_grid    = path_grid,
+                 gname        = gname,
+                 lev          = lev,
+                 #path_ckdtree = path_ckdtree,
+                 #path_tgrid   = path_tgrid,
+                 #fpath_tgrid  = fpath_tgrid,
+                 #fpath_fx     = fpath_fx,
                  rgrid_name   = rgrid_name,
                  do_triangulation = False,
                  omit_last_file = False,
@@ -129,12 +132,15 @@ if True:
   fname_moc = '%s_MOC_%s.nc' % (run, tstep)
   print('Dataset %s' % (fname))
   IcD_moc = pyic.IconData(
-                 search_str   = fname_moc,
+                 fname        = fname_moc,
                  path_data    = path_data,
-                 path_ckdtree = path_ckdtree,
-                 path_tgrid   = path_tgrid,
-                 fpath_tgrid  = fpath_tgrid,
-                 fpath_fx     = fpath_fx,
+                 path_grid    = path_grid,
+                 gname        = gname,
+                 lev          = lev,
+                 #path_ckdtree = path_ckdtree,
+                 #path_tgrid   = path_tgrid,
+                 #fpath_tgrid  = fpath_tgrid,
+                 #fpath_fx     = fpath_fx,
                  rgrid_name   = rgrid_name,
                  do_triangulation = False,
                  omit_last_file = False,
@@ -246,7 +252,7 @@ if fig_name in fig_names:
 fname = '%s_%s.nc' % (run, tstep)
 if True:
   #IcD = pyic.IconData(
-  #               search_str   = fname,
+  #               fname        = fname,
   #               path_data    = path_data,
   #               path_ckdtree = path_ckdtree,
   #               rgrid_name   = rgrid_name,
