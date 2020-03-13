@@ -1,2 +1,10 @@
+
+# compiled files
+__pycache__/
 *.pyc
+
+# jupyter notebooks
 .ipynb_checkpoints
+
+# sphinx documentation
+doc/_build/
