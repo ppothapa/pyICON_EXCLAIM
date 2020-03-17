@@ -1,8 +1,8 @@
 import sys
-#import glob, os
+import glob, os
 #import datetime
 import numpy as np
-#from netCDF4 import Dataset, num2date
+from netCDF4 import Dataset, num2date
 #from scipy import interpolate
 #from scipy.spatial import cKDTree
 from ipdb import set_trace as mybreak  
@@ -266,3 +266,37 @@ def calc_bstr_rgrid(IcD, mass_flux_vint, lon_rg, lat_rg):
     sys.exit()
   
   return bstr
+
+def calc_moc(clat, wTransp, basin='global', fpath_fx='', res=1.0):
+  if not os.path.exists(fpath_fx):
+    raise ValueError('::: Error: Cannot find file %s! :::' % (fpath_fx))
+
+  f = Dataset(fpath_fx, 'r')
+  basin_c = f.variables['basin_c'][:]
+  mask_basin = np.zeros(basin_c.shape, dtype=bool)
+  if basin.lower()=='atlantic' or basin=='atl':
+    mask_basin[basin_c==1] = True 
+  elif basin.lower()=='pacific' or basin=='pac':
+    mask_basin[basin_c==3] = True 
+  elif basin.lower()=='southern ocean' or basin=='soc' or basin=='so':
+    mask_basin[basin_c==6] = True 
+  elif basin.lower()=='indian ocean' or basin=='ind' or basin=='io':
+    mask_basin[basin_c==7] = True 
+  elif basin.lower()=='global' or basin=='glob' or basin=='glo':
+    mask_basin[basin_c!=0] = True 
+  elif basin.lower()=='indopacific' or basin=='indopac':
+    mask_basin[(basin_c==3) | (basin_c==7)] = True 
+  elif basin.lower()=='indopacso':
+    mask_basin[(basin_c==3) | (basin_c==7) | (basin_c==6)] = True 
+  f.close()
+
+  lat_mg = np.arange(-90.,90.,res)
+  ny = lat_mg.size
+  moc = np.zeros((wTransp.shape[0],lat_mg.size))
+  for j in range(lat_mg.size-1):
+    #ind = (clat>=lat_mg[j]) & (clat<lat_mg[j+1])
+    #moc[:,j+1] = moc[:,j] + (wTransp[:,ind]*mask_basin[np.newaxis,ind]).sum(axis=1)
+    ind = (clat>=lat_mg[ny-(j+2)]) & (clat<lat_mg[ny-(j+1)])
+    moc[:,ny-(j+2)] = moc[:,ny-(j+1)] - (wTransp[:,ind]*mask_basin[np.newaxis,ind]).sum(axis=1)
+  return moc
+
