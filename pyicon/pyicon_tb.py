@@ -154,39 +154,6 @@ def interp_to_rectgrid(data, fpath_ckdtree, coordinates='clat clon'):
   data[data==0.] = np.ma.masked
   return lon, lat, data
 
-def calc_moc(clat, wTransp, basin='global', fpath_fx='', res=1.0):
-  if not os.path.exists(fpath_fx):
-    raise ValueError('::: Error: Cannot find file %s! :::' % (fpath_fx))
-
-  f = Dataset(fpath_fx, 'r')
-  basin_c = f.variables['basin_c'][:]
-  mask_basin = np.zeros(basin_c.shape, dtype=bool)
-  if basin.lower()=='atlantic' or basin=='atl':
-    mask_basin[basin_c==1] = True 
-  elif basin.lower()=='pacific' or basin=='pac':
-    mask_basin[basin_c==3] = True 
-  elif basin.lower()=='southern ocean' or basin=='soc' or basin=='so':
-    mask_basin[basin_c==6] = True 
-  elif basin.lower()=='indian ocean' or basin=='ind' or basin=='io':
-    mask_basin[basin_c==7] = True 
-  elif basin.lower()=='global' or basin=='glob' or basin=='glo':
-    mask_basin[basin_c!=0] = True 
-  elif basin.lower()=='indopacific' or basin=='indopac':
-    mask_basin[(basin_c==3) | (basin_c==7)] = True 
-  elif basin.lower()=='indopacso':
-    mask_basin[(basin_c==3) | (basin_c==7) | (basin_c==6)] = True 
-  f.close()
-
-  lat_mg = np.arange(-90.,90.,res)
-  ny = lat_mg.size
-  moc = np.zeros((wTransp.shape[0],lat_mg.size))
-  for j in range(lat_mg.size-1):
-    #ind = (clat>=lat_mg[j]) & (clat<lat_mg[j+1])
-    #moc[:,j+1] = moc[:,j] + (wTransp[:,ind]*mask_basin[np.newaxis,ind]).sum(axis=1)
-    ind = (clat>=lat_mg[ny-(j+2)]) & (clat<lat_mg[ny-(j+1)])
-    moc[:,ny-(j+2)] = moc[:,ny-(j+1)] - (wTransp[:,ind]*mask_basin[np.newaxis,ind]).sum(axis=1)
-  return moc
-
 def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdtree=''):
 
   for fp in [fpath_data, fpath_fx, fpath_ckdtree]:
@@ -2124,12 +2091,12 @@ last change:
       # delet labels for shared axes
       if sharex and jj!=ny-1:
         hca[kk].ticklabel_format(axis='x',style='plain',useOffset=False)
-        hca[kk].tick_params(labelbottom='off')
+        hca[kk].tick_params(labelbottom=False)
         hca[kk].set_xlabel('')
 
       if sharey and ii!=0:
         hca[kk].ticklabel_format(axis='y',style='plain',useOffset=False)
-        hca[kk].tick_params(labelleft='off')
+        hca[kk].tick_params(labelleft=False)
         hca[kk].set_ylabel('')
 
       # plot colorbars
@@ -2186,4 +2153,61 @@ last change:
     # e.g. by hca[nn].axlab.set_fontsize(8)
     hca[nn].axlab = ht
   return hca
+
+def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', 
+                     ticks_position='both', template='none', 
+                     # cartopy specific settings
+                     projection=None, 
+                     coastlines_color='none', coastlines_resolution='110m',
+                     land_zorder=2, land_facecolor='0.7'):
+
+  # --- templates
+  if template=='global':
+    xlim = [-180,180]
+    ylim = [-90,90]
+  elif template=='na':
+    xlim = [-80,0]
+    ylim = [30,70]
+  elif template=='labsea':
+    pass
+  elif template=='zlat':
+    pass
+  elif template=='zlat_noso':
+    pass
+
+  # --- xlim, ylim
+  if isinstance(xlim,str) and xlim=='none':
+    xlim = ax.get_xlim()
+  else:
+    ax.set_xlim(xlim)
+  if isinstance(ylim,str) and ylim=='none':
+    ylim = ax.get_ylim()
+  else:
+    ax.set_ylim(ylim)
+  
+  # --- xticks, yticks
+  if isinstance(xticks,str) and xticks=='auto':
+    xticks = np.linspace(xlim[0],xlim[1],5) 
+  if isinstance(yticks,str) and yticks=='auto':
+    yticks = np.linspace(ylim[0],ylim[1],5) 
+    
+  if projection is None:
+    ax.set_xticks(xticks)
+    ax.set_yticks(yticks)
+  else:
+    ax.set_xticks(xticks, crs=projection)
+    ax.set_yticks(yticks, crs=projection)
+  
+  if ticks_position=='both':
+    ax.xaxis.set_ticks_position('both')
+    ax.yaxis.set_ticks_position('both')
+
+  # --- cartopy specific stuff
+  if not projection is None: 
+    ax.xaxis.set_major_formatter(cartopy.mpl.ticker.LongitudeFormatter())
+    ax.yaxis.set_major_formatter(cartopy.mpl.ticker.LatitudeFormatter() )
+    ax.add_feature(cartopy.feature.LAND, zorder=land_zorder, facecolor=land_facecolor)
+    if isinstance(coastlines_color, str) and coastlines_color!='none':
+      ax.coastlines(color=coastlines_color, resolution=coastlines_resolution)
+  return
 
