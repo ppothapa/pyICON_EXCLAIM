@@ -1,4 +1,4 @@
-.. image:: _static/logo.png
+.. image:: _static/logo2.png
 
 python diagnostic tool for ICON
 =======================================

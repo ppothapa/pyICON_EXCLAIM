@@ -46,6 +46,9 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
+# !by_nils
+html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'] }
+
 # General information about the project.
 project = u'pyicon'
 copyright = u'2020, ICON team'
