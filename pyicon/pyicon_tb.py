@@ -1489,231 +1489,274 @@ qp.write_to_file()
 
 # ================================================================================ 
 # ================================================================================ 
+def calc_conts(conts, clim, cincr, nclev):
+  # ------ decide how to determine contour levels
+  if isinstance(conts, np.ndarray) or isinstance(conts, list):
+    # use given contours 
+    conts = np.array(conts)
+  else:
+    # calculate contours
+    # ------ decide wether contours should be calculated by cincr or nclev
+    if cincr>0:
+      conts = np.arange(clim[0], clim[1]+cincr, cincr)
+    else:
+      if isinstance(nclev,str) and nclev=='auto':
+        nclev = 11
+      conts = np.linspace(clim[0], clim[1], nclev)
+  return conts
 
-def shade(x, y, datai,
-            ax='auto', cax=0,
-            cmap='auto',
-            cincr=-1.,
-            norm=None,
-            rasterized=True,
-            clim=[None, None],
-            extend='both',
-            conts=None,
-            nclev='auto',
-            cint='auto',
-            contcolor='k',
-            contthick=0.,
-            contfs=None,
-            contlw=1.,
-            use_pcol=True,
-            cbticks='auto',
-            adjust_axlims=True,
-            bmp=None,
-            transform=None,
-            logplot=False,
-            cbtitle='',
-            edgecolor='none',
-            cbdrawedges='auto',
-         ):
-  """ Makes a nice pcolor(mesh) plot.
+#class shade(object):
+#  def __init__(self,
+def shade(
+              x='auto', y='auto', datai='auto',
+              ax='auto', cax=0,
+              cmap='auto',
+              cincr=-1.,
+              norm=None,
+              rasterized=True,
+              clim=[None, None],
+              extend='both',
+              conts=None,
+              nclev='auto',
+              #cint='auto', # old: use cincr now
+              contcolor='k',
+              contthick=0.,
+              contfs=None,
+              contlw=1.,
+              use_pcol=True,
+              cbticks='auto',
+              adjust_axlims=True,
+              bmp=None,
+              transform=None,
+              logplot=False,
+              cbtitle='',
+              edgecolor='none',
+              cbdrawedges='auto',
+           ):
+    """ Convenient wrapper around pcolormesh, contourf, contour and their triangular versions.
+    """
+    # --- decide wether regular or triangular plots should be made
+    if isinstance(datai, str) and datai=='auto':
+      Tri = x
+      datai = y
+      rectangular_grid = False
+    else:
+      rectangular_grid = True
 
-last change:
-----------
-2016-08-23
-  """
-  # mask 0 and negative values in case of log plot
-  data = 1.*datai
-  if logplot and isinstance(data, np.ma.MaskedArray):
-    data[data<=0.0] = np.ma.masked
-    data = np.ma.log10(data) 
-  elif logplot and not isinstance(data, np.ma.MaskedArray):
-    data[data<=0.0] = np.nan
-    data = np.log10(data) 
-
-  #clims
-  if isinstance(clim, str) and clim=='auto':
-    clim = [None, None]
-  elif isinstance(clim, str) and clim=='sym':
-    clim = np.abs(data).max()
-  clim=np.array(clim)
-  if clim.size==1:
-    clim = np.array([-1, 1])*clim
-  if clim[0] is None:
-    clim[0] = data.min()
-  if clim[1] is None:
-    clim[1] = data.max()
-
-  if (clim[0]==-clim[1]) and cmap=='auto':
-    cmap = 'RdBu_r'
-  elif cmap=='auto':
-    #cmap = 'viridis'
-    cmap = 'RdYlBu_r'
-  if isinstance(cmap, str):
-    cmap = getattr(plt.cm, cmap)
-
-  if cincr>0.:
-    levs = np.arange(clim[0], clim[1]+cincr, cincr)
-    norm = matplotlib.colors.BoundaryNorm(boundaries=levs, ncolors=cmap.N)
-    #print(levs)
-    #print(clim)
-    #print(cincr)
+    # --- mask 0 and negative values in case of log plot
+    data = 1.*datai
+    if logplot and isinstance(data, np.ma.MaskedArray):
+      data[data<=0.0] = np.ma.masked
+      data = np.ma.log10(data) 
+    elif logplot and not isinstance(data, np.ma.MaskedArray):
+      data[data<=0.0] = np.nan
+      data = np.log10(data) 
+  
+    # --- clim
+    if isinstance(clim, str) and clim=='auto':
+      clim = [None, None]
+    elif isinstance(clim, str) and clim=='sym':
+      clim = np.abs(data).max()
+    clim=np.array(clim)
+    if clim.size==1:
+      clim = np.array([-1, 1])*clim
+    if clim[0] is None:
+      clim[0] = data.min()
+    if clim[1] is None:
+      clim[1] = data.max()
+  
+    # --- cmap
+    if (clim[0]==-clim[1]) and cmap=='auto':
+      cmap = 'RdBu_r'
+    elif cmap=='auto':
+      #cmap = 'viridis'
+      cmap = 'RdYlBu_r'
+    if isinstance(cmap, str):
+      cmap = getattr(plt.cm, cmap)
+  
+    # --- norm
+    if cincr>0.:
+      clevs = np.arange(clim[0], clim[1]+cincr, cincr)
+      norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)
+      use_norm = True
+    else:
+      norm = None
+      use_norm = False
+  
+    # --- decide wether to use extra contour lines
+    if conts is None:
+      use_cont = False
+    else:
+      use_cont = True
+      conts = calc_conts(conts, clim, cincr, nclev)
+  
+    # --- decide wether to use pcolormesh or contourf plotting
+    if contfs is None:
+      # use pcolormesh and not contourf
+      use_contf = False
+      use_pcol  = True
+    else:
+      # use contourf and not pcolormesh
+      use_contf = True
+      use_pcol  = False
+      contfs = calc_conts(contfs, clim, cincr, nclev)
+  
+    # --- decide wether there should be black edges at colorbar
     if isinstance(cbdrawedges, str) and cbdrawedges=='auto':
-      cbdrawedges = True
+      if use_norm or use_contf:
+        cbdrawedges = True
+      else:
+        cbdrawedges = False
     else:
       cbdrawedges = False
-  else:
-    norm = None
-    cbdrawedges = False
-
-  # calculate contour x/y and contour levels if needed
-  if conts is None:
-    use_cont = False
-  elif isinstance(conts,str) and conts=='auto':
-    use_cont = True
-    if isinstance(nclev,str) and nclev=='auto':
-      conts = np.linspace(clim[0], clim[1], 11)
-    else:
-      conts = np.linspace(clim[0], clim[1], nclev)
-    if not (isinstance(cint,str) and cint=='auto'):
-      conts = np.arange(clim[0], clim[1]+cint, cint)
-  else:
-    use_cont = True
-    conts = np.array(conts)
-
-  if contfs is None:
-    use_contf=False
-  elif isinstance(contfs, str) and contfs=='auto':
-    use_contf=True
-    use_pcol=False
-    if isinstance(nclev,str) and nclev=='auto':
-      contfs = np.linspace(clim[0], clim[1], 11)
-    else:
-      contfs = np.linspace(clim[0], clim[1], nclev)
-    if not (isinstance(cint,str) and cint=='auto'):
-      contfs = np.arange(clim[0], clim[1]+cint, cint)
-  elif isinstance(contfs, str) and contfs!='auto':
-    use_contf=True
-    use_pcol=False
-    contfs = np.linspace(clim[0], clim[1], int(contfs))
-  else:
-    use_contf=True
-    use_pcol=False
-    contfs = np.array(contfs)
-
-  ccrsdict = dict()
-  if transform is not None:
-    ccrsdict = dict(transform=transform)
-    #adjust_axlims = False
-    adjust_axlims = True
   
-  # make axes if necessary
-  if ax == 'auto':
-    ax = plt.gca()
-
-  # make x and y 2D
-  if x.ndim==1:
-    x, y = np.meshgrid(x, y)
-
-  # convert to Basemap maps coordinates
-  if bmp is not None:
-    x, y = bmp(x, y)
+    # --- necessary cartopy settings
+    ccrsdict = dict()
+    if transform is not None:
+      ccrsdict = dict(transform=transform)
+      #adjust_axlims = False
+      #adjust_axlims = True
     
-  # bring x and y to correct shape for contour
-  if (use_cont) or (use_contf):
-    if x.shape[1] != data.shape[1]:
-      xc = 0.25*(x[1:,1:]+x[:-1,1:]+x[1:,:-1]+x[:-1,:-1])
-      yc = 0.25*(y[1:,1:]+y[:-1,1:]+y[1:,:-1]+y[:-1,:-1])
-    else:
-      xc = 1.*x
-      yc = 1.*y
-    
-  hs = []
-  # pcolor plot
-  if use_pcol:
-    hm = ax.pcolormesh(x, y, data, 
-                        vmin=clim[0], vmax=clim[1],
-                        cmap=cmap, 
-                        norm=norm,
-                        rasterized=rasterized,
-                        edgecolor=edgecolor,
-                        **ccrsdict
-                      )
-    hs.append(hm)
-  # contourf plot
-  elif use_contf:
-    hm = ax.contourf(xc, yc, data, contfs,
-                        vmin=clim[0], vmax=clim[1],
-                        cmap=cmap, 
-                        norm=norm,
-                        extend=extend,
-                        **ccrsdict
-                      )
-    # this prevents white lines if fig is saved as pdf
-    for cl in hm.collections: 
-      cl.set_edgecolor("face")
-      cl.set_rasterized(True)
-    # add handle to hanlde list
-    hs.append(hm)
-    # rasterize
-    if rasterized:
-      zorder = -5
-      ax.set_rasterization_zorder(zorder)
-      for cl in hm.collections:
-        cl.set_zorder(zorder - 1)
+    # --- make axes if necessary
+    if ax == 'auto':
+      ax = plt.gca()
+  
+    if rectangular_grid:
+      # --- adjust x and y if necessary
+      # ------ make x and y 2D
+      if x.ndim==1:
+        x, y = np.meshgrid(x, y)
+  
+      # ------ convert to Basemap maps coordinates
+      if bmp is not None:
+        x, y = bmp(x, y)
+        
+      # ------ bring x and y to correct shape for contour
+      if (use_cont) or (use_contf):
+        if x.shape[1] != data.shape[1]:
+          xc = 0.25*(x[1:,1:]+x[:-1,1:]+x[1:,:-1]+x[:-1,:-1])
+          yc = 0.25*(y[1:,1:]+y[:-1,1:]+y[1:,:-1]+y[:-1,:-1])
+        else:
+          xc = 1.*x
+          yc = 1.*y
+      
+    # --- allocate list of all plot handles
+    hs = []
+  
+    # --- color plot
+    # either pcolormesh plot
+    if use_pcol:
+      if rectangular_grid:
+        hm = ax.pcolormesh(x, y, 
+                           data, 
+                           vmin=clim[0], vmax=clim[1],
+                           cmap=cmap, 
+                           norm=norm,
+                           rasterized=rasterized,
+                           edgecolor=edgecolor,
+                           **ccrsdict
+                          )
+      else:
+        hm = ax.tripcolor(Tri, 
+                          data, 
+                          vmin=clim[0], vmax=clim[1],
+                          cmap=cmap, 
+                          norm=norm,
+                          rasterized=rasterized,
+                          edgecolor=edgecolor,
+                          **ccrsdict
+                         )
+      hs.append(hm)
+    # or contourf plot
+    elif use_contf:
+      if rectangular_grid:
+        hm = ax.contourf(xc, yc, 
+                         data, contfs,
+                         vmin=clim[0], vmax=clim[1],
+                         cmap=cmap, 
+                         norm=norm,
+                         extend=extend,
+                         **ccrsdict
+                        )
+      else:
+        raise ValueError("::: Error: Triangular contourf not supported yet. :::")
+        # !!! This does not work sinc Tri.x.size!=data.size which is natural for the picon Triangulation. Not sure why matplotlib tries to enforce this.
+        #hm = ax.tricontourf(Tri,
+        #                 data, contfs,
+        #                 vmin=clim[0], vmax=clim[1],
+        #                 cmap=cmap, 
+        #                 norm=norm,
+        #                 extend=extend,
+        #                 **ccrsdict
+        #                   )
+      hs.append(hm)
+  
+      # this prevents white lines if fig is saved as pdf
+      for cl in hm.collections: 
+        cl.set_edgecolor("face")
         cl.set_rasterized(True)
-  else:
-    hm = None
-
-  # extra contours
-  if use_cont:
-    hc = ax.contour(xc, yc, data, conts, colors=contcolor, linewidths=contlw, **ccrsdict)
-    try:
-      i0 = np.where(hc.levels==contthick)[0][0]
-      #hc.collections[i0].set_linewidth(1.5)
-      hc.collections[i0].set_linewidth(2.5*contlw)
-    except:
-      #print "::: Warning: Could not make contour contthick=%g thick. :::" % (contthick)
-      pass
-    hs.append(hc)
-
-  # colorbar
-  if ((cax is not None) and (cax!=0)) and (hm is not None): 
-    if cax == 1:
-      from mpl_toolkits.axes_grid1 import make_axes_locatable
-      div = make_axes_locatable(ax)
-      cax = div.append_axes("right", size="10%", pad=0.1)
-    cb = plt.colorbar(mappable=hm, cax=cax, extend=extend, drawedges=cbdrawedges)
-    # this prevents white lines if fig is saved as pdf
-    cb.solids.set_edgecolor("face")
-    hs.append(cb)
-
-    # colobar ticks
-    if isinstance(cbticks, str) and cbticks=='auto':
-      cb.formatter.set_powerlimits((-3, 2))
-      tick_locator = ticker.MaxNLocator(nbins=8)
-      cb.locator = tick_locator
-      cb.update_ticks()
-    elif isinstance(cbticks, np.ndarray):
-      cb.set_ticks(cbticks)
-      cb.update_ticks()
+      # rasterize
+      if rasterized:
+        zorder = -5
+        ax.set_rasterization_zorder(zorder)
+        for cl in hm.collections:
+          cl.set_zorder(zorder - 1)
+          cl.set_rasterized(True)
     else:
-      if norm is not None:
-        cb.set_ticks(norm.boundaries[::2]) 
-      cb.formatter.set_powerlimits((-1, 1))
-      #cb.formatter.set_scientific(False)
+      hm = None
+  
+    # --- contour plot (can be in addition to color plot above)
+    if use_cont:
+      if rectangular_grid:
+        hc = ax.contour(xc, yc, data, conts, 
+                        colors=contcolor, linewidths=contlw, **ccrsdict)
+      else:
+        raise ValueError("::: Error: Triangular contour not supported yet. :::")
+      # ------ if there is a contour matching contthick it will be made thicker
+      try:
+        i0 = np.where(hc.levels==contthick)[0][0]
+        hc.collections[i0].set_linewidth(2.5*contlw)
+      except:
+        pass
+      hs.append(hc)
+  
+    # --- colorbar
+    if (cax!=0) and (hm is not None): 
+      # ------ axes for colorbar needs to be created
+      if cax == 1:
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        div = make_axes_locatable(ax)
+        cax = div.append_axes("right", size="10%", pad=0.1)
+      # ------ make actual colorbar
+      cb = plt.colorbar(mappable=hm, cax=cax, extend=extend)
+      # ------ prevent white lines if fig is saved as pdf
+      cb.solids.set_edgecolor("face")
+      # ------ use exponential notation for large colorbar ticks
+      cb.formatter.set_powerlimits((-3, 2))
+      # ------ colorbar ticks
+      if isinstance(cbticks, np.ndarray) or isinstance(cbticks, list):
+        cb.set_ticks(cbticks)
+      else:
+        if norm is not None:
+          cb.set_ticks(norm.boundaries[::2]) 
+        else:
+          cb.locator = ticker.MaxNLocator(nbins=5)
       cb.update_ticks()
-
-  if isinstance(cax, int) and cax==0:
-    pass
-  else:
-    cax.set_title(cbtitle)
-
-  # labels and ticks
-  if adjust_axlims:
-    ax.locator_params(nbins=5)
-    ax.set_xlim(x.min(), x.max())
-    ax.set_ylim(y.min(), y.max())
-  return hs 
+      # ------ colorbar title
+      cax.set_title(cbtitle)
+      # ------ add cb to list of handles
+      hs.append(cb)
+  
+    # --- axes labels and ticks
+    if adjust_axlims:
+      ax.locator_params(nbins=5)
+      if rectangular_grid: 
+        ax.set_xlim(x.min(), x.max())
+        ax.set_ylim(y.min(), y.max())
+      else:
+        ax.set_xlim(Tri.x.min(), Tri.x.max())
+        ax.set_ylim(Tri.y.min(), Tri.y.max())
+    return hs 
 
 # ================================================================================ 
 def trishade(Tri, data,
@@ -1744,6 +1787,7 @@ last change:
 ----------
 2018-03-08
   """
+  print("::: Warning pyic.trishade is outdated and pyic.shade should be used instead.")
   # mask 0 and negative values in case of log plot
   if logplot and isinstance(data, np.ma.MaskedArray):
     data[data<=0.0] = np.ma.masked
@@ -1774,8 +1818,8 @@ last change:
     cmap = getattr(plt.cm, cmap)
 
   if cincr>0.:
-    levs = np.arange(clim[0], clim[1]+cincr, cincr)
-    norm = matplotlib.colors.BoundaryNorm(boundaries=levs, ncolors=cmap.N)
+    clevs = np.arange(clim[0], clim[1]+cincr, cincr)
+    norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)
   else:
     norm = None
 
@@ -1883,25 +1927,28 @@ last change:
       pass
     hs.append(hc)
 
-  # colorbar
-  if ((cax is not None) and (cax!=0)) and (hm is not None): 
+  # --- colorbar
+  if (cax!=0) and (hm is not None): 
+    # ------ axes for colorbar needs to be created
     if cax == 1:
       from mpl_toolkits.axes_grid1 import make_axes_locatable
       div = make_axes_locatable(ax)
       cax = div.append_axes("right", size="10%", pad=0.1)
+    # ------ make actual colorbar
     cb = plt.colorbar(mappable=hm, cax=cax, extend=extend)
-    # this prevents white lines if fig is saved as pdf
+    # ------ prevent white lines if fig is saved as pdf
     cb.solids.set_edgecolor("face")
-    hs.append(cb)
-
+    # ------ use exponential notation for large colorbar ticks
+    cb.formatter.set_powerlimits((-3, 2))
+    # ------ colorbar ticks
     if norm is None:
-      # colobar ticks
-      cb.formatter.set_powerlimits((-3, 2))
       tick_locator = ticker.MaxNLocator(nbins=8)
       cb.locator = tick_locator
       cb.update_ticks()
     else:
       cb.set_ticks(norm.boundaries[::2]) 
+    # ------ add cb to list of handles
+    hs.append(cb)
 
   # labels and ticks
   if adjust_axlims:
