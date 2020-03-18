@@ -37,7 +37,7 @@ IcD = pyic.IconData(
 # --- specify time step
 it = np.argmin(np.abs(IcD.times-np.datetime64('2295-01-01T00:00:00')))
 # --- specify depth level
-iz = np.argmin(np.abs(IcD.depthc-4000.))
+iz = np.argmin(np.abs(IcD.depthc-1000.))
 
 # --- load data
 f = Dataset(IcD.flist_ts[it], 'r')
@@ -69,11 +69,11 @@ cax.set_title('$^o$C')
 print('triangular grid plot')
 
 ii+=1; ax=hca[ii]; cax=hcb[ii]
-pyic.trishade(IcD.Tri, to, ax=ax, cax=cax, clim='auto')
+#pyic.trishade(IcD.Tri, to, ax=ax, cax=cax, clim='auto')
+pyic.shade(IcD.Tri, to, ax=ax, cax=cax, clim='auto')
 ax.set_xlabel('longitude')
 ax.set_ylabel('latitude')
 ax.set_title('temperature original grid')
 cax.set_title('$^o$C')
 
 plt.show()
-
