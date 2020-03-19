@@ -774,7 +774,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
 
   # --- do plotting
   if use_tgrid:
-    hm = trishade(IcD.Tri, IaV.data, 
+    hm = shade(IcD.Tri, IaV.data, 
                       ax=ax, cax=cax, clim=clim, cincr=cincr, cmap=cmap,
                       transform=ccrs_proj,
                       logplot=logplot,
@@ -986,7 +986,7 @@ class IP_hor_sec_rect(object):
 
     data = getattr(IcD, var)
     if IcD.use_tgrid:
-      self.hpc = trishade(IcD.Tri, 
+      self.hpc = shade(IcD.Tri, 
                            data, ax=ax, cax=cax, 
                            clim=clim, cmap=cmap, transform=transform,
                            edgecolor=edgecolor,
