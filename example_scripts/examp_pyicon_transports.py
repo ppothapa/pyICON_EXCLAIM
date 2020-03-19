@@ -113,13 +113,15 @@ for kk in range(2):
 
 ax = hca[0]
 ax.set_title('vertical velocity [m/s]')
+xlim = [-180,180]
+ylim = [-90,90]
 pyic.plot_settings(ax, xlim, ylim, projection=ccrs_proj)
 
 # zoom to North Atlantic
 ax = hca[1]
 ax.set_title('North Atlantic zoom')
-ax.set_xlim(-80, 0)
-ax.set_ylim(30,70)
+xlim = [-80,0]
+ylim = [30,70]
 pyic.plot_settings(ax, xlim, ylim, projection=ccrs_proj)
 
 # ------ meridional overturning
