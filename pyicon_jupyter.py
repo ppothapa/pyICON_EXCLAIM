@@ -469,6 +469,8 @@ class hplot(object):
 # vplot
 # ------------------------------------------------------------ 
 class vplot(hplot):
+  output = widgets.Output()
+
   def __init__(self, IcD, log2vax=False, path_ckdtree='', logplot=False):
     # ------------------------------------------------------------ 
     # set parameters 
