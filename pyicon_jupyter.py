@@ -76,6 +76,8 @@ def my_slide(name='slider:', bnds=[0,10]):
 # hplot
 # ------------------------------------------------------------ 
 class hplot(object):
+  output = widgets.Output()
+
   def __init__(self, IcD, use_tgrid=False, path_ckdtree='', logplot=False):
     # ------------------------------------------------------------ 
     # set parameters 
@@ -130,7 +132,9 @@ class hplot(object):
     Box = HBox([d3, ts, bs])
     display(Box)
 
+    #print('hello world')
     a = interactive(self.update_fig, var=d2, iz=w1, step_snap=w2, rgrid_name=d3)
+    display(self.output)
     return
 
   # ------------------------------------------------------------ 
@@ -277,9 +281,10 @@ class hplot(object):
       self.fig = plt.gcf()
     return
 
+  @output.capture()
   def update_fig(self, var, iz, step_snap, rgrid_name):
-    print('hello world')
-    print(var,iz,step_snap)
+    #print('hello world')
+    #print(var,iz,step_snap,rgrid_name)
     # --- update self
     self.var = var
     self.iz = iz
@@ -292,8 +297,40 @@ class hplot(object):
       # grid of IcD needs to be updated as well since it is used by load_hsnap
       self.IcD.rgrid_name = self.rgrid_name
       self.IcD.rgrid_fpath = self.rgrid_fpath
-      self.IcD.load_grid()
-      self.initialize_plot(ax=self.ax, cax=self.cax, do_infostr=False)
+      self.IcD.load_rgrid()
+      #self.initialize_plot(ax=self.ax, cax=self.cax, do_infostr=False)
+
+      # synchronize with initialize_plot
+      # --- load data 
+      self.IaV.load_hsnap(fpath=self.IcD.flist_ts[self.step_snap], 
+                          it=self.IcD.its[self.step_snap], 
+                          iz=self.iz,
+                          step_snap = self.step_snap
+                         ) 
+      # --- interpolate data 
+      if not self.use_tgrid:
+        self.IaV.interp_to_rectgrid(fpath_ckdtree=self.rgrid_fpath)
+      # --- crop data
+
+      # --- remove old plot
+      self.mappable.remove()
+
+      # --- do plotting
+      #print(self.use_tgrid)
+      #print(self.IcD.lon.shape)
+      #print(self.IaV.data.shape)
+      (self.ax, self.cax, 
+       self.mappable,
+       self.Dstr
+      ) = pyic.hplot_base(
+                           self.IcD, self.IaV, 
+                           ax=self.ax, cax=self.cax,
+                           clim=self.clim, cmap=self.cmap,
+                           title='auto', 
+                           projection=self.projection,
+                           use_tgrid=self.use_tgrid,
+                           logplot=self.logplot,
+                          )
     else:
       # synchronize with initialize_plot
       # --- load data 
@@ -334,7 +371,7 @@ class hplot(object):
 
     # 'global ax' is needed to avoid flickering of the plots if they are actualized
     # with global ax display(ax.figure) can be used instead of display(self.ax.figure)
-    display(ax.figure)
+    #display(ax.figure)
     return
 
   def update_clim(self,w):
@@ -493,6 +530,7 @@ class vplot(hplot):
     display(Box)
 
     a = interactive(self.update_fig, var=d2, step_snap=w2, sec_name=d3)
+    display(self.output)
     return
   
   def w_sec(self):
@@ -554,9 +592,10 @@ class vplot(hplot):
     self.fig = plt.gcf()
     return
 
+  @output.capture()
   def update_fig(self, var, step_snap, sec_name):
-    print('hello world')
-    print(var, step_snap)
+    #print('hello world')
+    #print(var, step_snap, sec_name)
     # --- update self
     self.var = var
     self.step_snap = step_snap
