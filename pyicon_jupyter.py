@@ -634,5 +634,5 @@ class vplot(hplot):
 
   # 'global ax' is needed to avoid flickering of the plots if they are actualized
   # with global ax display(ax.figure) can be used instead of display(self.ax.figure)
-    display(ax.figure)
+    #display(ax.figure)
     return
