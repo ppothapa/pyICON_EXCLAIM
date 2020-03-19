@@ -19,6 +19,9 @@ General:
 * time averaging
 * netcdf writing
 * tool: plot_from_netcdf
+* move quickplots either to pyicon or to quickplot directory
+* rename and move pyicon_jupyter
+* further split pyicon_tb.py
 
 Quickplots:
 
