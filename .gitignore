@@ -8,3 +8,6 @@ __pycache__/
 
 # sphinx documentation
 doc/_build/
+
+# vim swap files
+*.swp
