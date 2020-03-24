@@ -15,17 +15,17 @@ Documentation can be found here: [documentation](https://modvis.dkrz.de/mh0033/m
 General:
 
 * examp: time series
-* make pyview working again
-* time averaging
+* DONE: make pyview working again
+* rename/move pyicon_jupyter to pyicon_view
+* rename/move quickplots to pyicon_monitoring either to pyicon or to quickplot directory
 * netcdf writing
+* time averaging
 * tool: plot_from_netcdf
-* move quickplots either to pyicon or to quickplot directory
-* rename and move pyicon_jupyter
 * further split pyicon_tb.py
-* improve arrange_axes
+* DONE: improve arrange_axes
 
 Quickplots:
 
 * time series
 * quick plots to compare simulations
-* different time levels
+* different time steps
