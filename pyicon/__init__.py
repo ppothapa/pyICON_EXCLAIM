@@ -11,3 +11,5 @@ from .pyicon_calc import *
 from .pyicon_tb import *
 from .pyicon_IconData import *
 from .pyicon_plotting import *
+
+from . import view
