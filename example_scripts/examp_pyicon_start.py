@@ -2,12 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 import sys
-from importlib import reload
 import pyicon as pyic
-reload(pyic)
-#import cartopy.crs as ccrs
-#import cartopy
-#from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
+import cartopy
 
 run = 'nib0004'
 runname = 'icon_08'
@@ -26,9 +22,6 @@ IcD = pyic.IconData(
                path_grid    = path_grid,
                gname        = gname,
                lev          = lev,
-               #path_ckdtree = path_ckdtree,
-               #section_name = '',
-               #fpath_fx     = fpath_fx,
                do_triangulation = True,
                omit_last_file   = False
               )
@@ -37,7 +30,7 @@ IcD = pyic.IconData(
 # --- specify time step
 it = np.argmin(np.abs(IcD.times-np.datetime64('2295-01-01T00:00:00')))
 # --- specify depth level
-iz = np.argmin(np.abs(IcD.depthc-1000.))
+iz = np.argmin(np.abs(IcD.depthc-100.))
 
 # --- load data
 f = Dataset(IcD.flist_ts[it], 'r')
@@ -53,27 +46,28 @@ lon, lat, toi = pyic.interp_to_rectgrid(to, fpath_ckdtree, coordinates='clat clo
 
 # --- here starts plotting
 plt.close('all')
+projection = None
+#projection = cartopy.crs.PlateCarree()
 
-hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, sasp=0.5)
+hca, hcb = pyic.arrange_axes(1,2, plot_cb=True, asp=0.5, fig_size_fac=1.7, 
+                             xlabel='longitude', ylabel='latitude', projection=projection)
 ii=-1
 
 print('rectangular grid plot')
 
 ii+=1; ax=hca[ii]; cax=hcb[ii]
-pyic.shade(lon, lat, toi, ax=ax, cax=cax, clim='auto')
-ax.set_xlabel('longitude')
-ax.set_ylabel('latitude')
+pyic.shade(lon, lat, toi, ax=ax, cax=cax, clim='auto', projection=projection)
 ax.set_title('temperature at %s and %.1fm depth'%(IcD.times[it], IcD.depthc[iz]))
 cax.set_title('$^o$C')
 
 print('triangular grid plot')
 
 ii+=1; ax=hca[ii]; cax=hcb[ii]
-#pyic.trishade(IcD.Tri, to, ax=ax, cax=cax, clim='auto')
-pyic.shade(IcD.Tri, to, ax=ax, cax=cax, clim='auto')
-ax.set_xlabel('longitude')
-ax.set_ylabel('latitude')
+pyic.shade(IcD.Tri, to, ax=ax, cax=cax, clim='auto', projection=projection)
 ax.set_title('temperature original grid')
 cax.set_title('$^o$C')
+
+#for ax in hca:
+#  pyic.plot_settings(ax=ax, projection=projection, template='global')
 
 plt.show()

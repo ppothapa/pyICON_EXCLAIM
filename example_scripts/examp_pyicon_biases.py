@@ -94,25 +94,26 @@ print('start plotting')
 plt.close('all')
 
 # --- horizontal avarages
-hca, hcb = pyic.arrange_axes(2,1, plot_cb=False, sasp=1.2, fig_size_fac=2.,
+hca, hcb = pyic.arrange_axes(2,1, plot_cb=False, asp=1.2, fig_size_fac=1.5,
                            sharex=False, sharey=True, 
                            xlabel="", ylabel="depth [m]",
+                           dfigt=0.5,
                           )
 ii=-1
 
 ii+=1; ax=hca[ii]; cax=hcb[ii]
 ax.plot(tbias_have, IcD.depthc)
-ax.set_title('hor. ave. temp. bias [$^o$C]')
+ax.set_title('hor. ave.\ntemp. bias [$^o$C]')
 
 ii+=1; ax=hca[ii]; cax=hcb[ii]
 ax.plot(sbias_have, IcD.depthc)
-ax.set_title('hor. ave. sal. bias [kg/m$^3$]')
+ax.set_title('hor. ave.\nsal. bias [kg/m$^3$]')
 
 for ax in hca:
   ax.set_ylim(6000,0)
 
 # --- zonal averages
-hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, sasp=0.5, fig_size_fac=2.,
+hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=0.5, fig_size_fac=1.5,
                            sharex=True, sharey=True, 
                            xlabel="latitude", ylabel="depth [m]",
                           )
@@ -134,7 +135,7 @@ for ax in hca:
 
 # --- vertical averages
 ccrs_proj = ccrs.PlateCarree()
-hca, hcb = pyic.arrange_axes(4,2, plot_cb=True, sasp=0.5, fig_size_fac=2.,
+hca, hcb = pyic.arrange_axes(4,2, plot_cb=True, asp=0.5, #fig_size_fac=2.,
                            sharex=True, sharey=True, 
                            xlabel="", ylabel="",
                            projection=ccrs_proj,

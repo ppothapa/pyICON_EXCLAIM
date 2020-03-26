@@ -65,7 +65,7 @@ plt.close("all")
 ccrs_proj = cartopy.crs.PlateCarree()
 
 # --- barotropic streamfunction
-hca, hcb = pyic.arrange_axes(1,2, plot_cb=True, sasp=0.5, fig_size_fac=2.,
+hca, hcb = pyic.arrange_axes(1,2, plot_cb=True, asp=0.5, fig_size_fac=1.5,
                                sharex=False, sharey=True, xlabel="", ylabel="",
                                projection=ccrs_proj,
                             )
@@ -101,7 +101,7 @@ ylim = [30,70]
 pyic.plot_settings(ax, xlim, ylim, projection=ccrs_proj)
 
 # --- vertical velocity
-hca, hcb = pyic.arrange_axes(1,2, plot_cb=True, sasp=0.5, fig_size_fac=2.,
+hca, hcb = pyic.arrange_axes(1,2, plot_cb=True, asp=0.5, fig_size_fac=1.5,
                                sharex=True, sharey=True, xlabel="", ylabel="", 
                                projection=ccrs_proj,
                             )
@@ -109,7 +109,7 @@ ii=-1
 
 for kk in range(2):
   ii+=1; ax=hca[ii]; cax=hcb[ii]
-  hm = pyic.trishade(IcD.Tri, wvel[iz,:], ax=ax, cax=cax, clim=2.5e-4, transform=ccrs_proj)
+  hm = pyic.shade(IcD.Tri, wvel[iz,:], ax=ax, cax=cax, clim=2.5e-4, transform=ccrs_proj)
 
 ax = hca[0]
 ax.set_title('vertical velocity [m/s]')
@@ -125,8 +125,10 @@ ylim = [30,70]
 pyic.plot_settings(ax, xlim, ylim, projection=ccrs_proj)
 
 # ------ meridional overturning
-hca, hcb = pyic.arrange_axes(2,2, plot_cb=[0,0,1,0], sasp=0.5, fig_size_fac=1.5,
-                           sharex=False, sharey=False, xlabel="latitude", ylabel="depth [m]", )
+hca, hcb = pyic.arrange_axes(2,2, plot_cb=[0,0,1,0], asp=0.5, fig_size_fac=1.5,
+                             dcbr=-0.2,
+                             sharex=False, sharey=False, xlabel="latitude", ylabel="depth [m]", 
+                            )
 ii=-1
 
 # remove 4th axes and center 3rd axes
