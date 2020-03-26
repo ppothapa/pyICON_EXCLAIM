@@ -246,10 +246,11 @@ class hplot(object):
       else:
         ccrs_proj = getattr(ccrs, self.projection)()
 
-      hca, hcb = pyic.arrange_axes(1,1, plot_cb=True, sasp=0.543, fig_size_fac=2.5,
-                                 sharex=False, sharey=False, xlabel="", ylabel="",
-                                 projection=ccrs_proj,
-                                )
+      hca, hcb = pyic.arrange_axes(1,1, plot_cb=True, asp=0.5, fig_size_fac=2.,
+                                   sharex=False, sharey=False, xlabel="", ylabel="",
+                                   projection=ccrs_proj,
+                                   dfigb=1.4,
+                                  )
       ii=-1
       ii+=1; ax=hca[ii]; cax=hcb[ii]
 
@@ -563,9 +564,10 @@ class vplot(hplot):
 
     # --- create axes
     if ax is None:
-      hca, hcb = pyic.arrange_axes(1,1, plot_cb=True, sasp=0.543, fig_size_fac=2.5,
-                                 sharex=False, sharey=False, xlabel="", ylabel="",
-                                )
+      hca, hcb = pyic.arrange_axes(1,1, plot_cb=True, asp=0.5, fig_size_fac=2.,
+                                   sharex=False, sharey=False, xlabel="", ylabel="",
+                                   dfigb=0.8,
+                                  )
       ii=-1
 
       ii+=1; ax=hca[ii]; cax=hcb[ii]

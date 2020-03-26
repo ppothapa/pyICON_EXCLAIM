@@ -1,2 +1,2 @@
 
-from .pyicon_jupyter import *
+from .pyicon_view import *
