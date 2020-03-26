@@ -227,7 +227,8 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     ax.set_yticklabels(2**ax.get_yticks())
   ax.set_facecolor('0.8')
   ax.set_xticks(np.linspace(np.round(xlim[0]),np.round(xlim[1]),7))
-  ax.set_yticks(np.arange(0,5000,1000.))
+  ax.set_yticks(np.arange(0,6000,1000.))
+  ax.set_ylim(0,5500)
   ax.xaxis.set_ticks_position('both')
   ax.yaxis.set_ticks_position('both')
 
@@ -240,7 +241,7 @@ def calc_conts(conts, clim, cincr, nclev):
     conts = np.array(conts)
   else:
     # calculate contours
-    # ------ decide wether contours should be calculated by cincr or nclev
+    # ------ decide whether contours should be calculated by cincr or nclev
     if cincr>0:
       conts = np.arange(clim[0], clim[1]+cincr, cincr)
     else:
@@ -276,18 +277,22 @@ def shade(
               adjust_axlims=True,
               bmp=None,
               transform=None,
+              projection=None,
               logplot=False,
               edgecolor='none',
            ):
     """ Convenient wrapper around pcolormesh, contourf, contour and their triangular versions.
     """
-    # --- decide wether regular or triangular plots should be made
+    # --- decide whether regular or triangular plots should be made
     if isinstance(datai, str) and datai=='auto':
       Tri = x
       datai = y
       rectangular_grid = False
     else:
       rectangular_grid = True
+
+    if projection is not None:
+      transform = projection
 
     # --- mask 0 and negative values in case of log plot
     data = 1.*datai
@@ -329,25 +334,30 @@ def shade(
       norm = None
       use_norm = False
   
-    # --- decide wether to use extra contour lines
+    # --- decide whether to use extra contour lines
     if conts is None:
       use_cont = False
     else:
       use_cont = True
       conts = calc_conts(conts, clim, cincr, nclev)
   
-    # --- decide wether to use pcolormesh or contourf plotting
-    if contfs is None:
-      # use pcolormesh and not contourf
-      use_contf = False
-      use_pcol  = True
+    # --- decide whether to use contourf or pcolormesh at all or just contour
+    if use_pcol:
+      # --- decide whether to use pcolormesh or contourf plotting
+      if contfs is None:
+        # use pcolormesh and not contourf
+        use_contf = False
+        use_pcol  = True
+      else:
+        # use contourf and not pcolormesh
+        use_contf = True
+        use_pcol  = False
+        contfs = calc_conts(contfs, clim, cincr, nclev)
     else:
-      # use contourf and not pcolormesh
-      use_contf = True
+      use_contf = False
       use_pcol  = False
-      contfs = calc_conts(contfs, clim, cincr, nclev)
   
-    # --- decide wether there should be black edges at colorbar
+    # --- decide whether there should be black edges at colorbar
     if isinstance(cbdrawedges, str) and cbdrawedges=='auto':
       if use_norm or use_contf:
         cbdrawedges = True
@@ -929,6 +939,7 @@ def arrange_axes(nx,ny,
                  projection = None,
                  # aspect ratio of axes
                  asp = 1.,
+                 sasp = 0.,  # for compability with older version of arrange_axes
                  # width and height of axes
                  wax = 'auto',
                  hax = 4.,
@@ -944,7 +955,7 @@ def arrange_axes(nx,ny,
                  daxb = 1.2, # reset to zero if sharex==True
                  # space around colorbars (left, right, top, bottom) 
                  dcbl = -0.5,
-                 dcbr = 1.2,
+                 dcbr = 1.4,
                  dcbt = 0.0,
                  dcbb = 0.5,
                  # width and height of colorbars
@@ -981,6 +992,10 @@ def arrange_axes(nx,ny,
 
   # factor to convert cm into inch
   cm2inch = 0.3937
+
+  if sasp!=0:
+    print('::: Warning: You are using keyword ``sasp`` for setting the aspect ratio but you should switch to use ``asp`` instead.:::')
+    asp = 1.*sasp
 
   # --- set hcb in case it is auto
   if isinstance(wax, str) and wax=='auto':
