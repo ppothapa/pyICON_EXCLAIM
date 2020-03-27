@@ -148,10 +148,22 @@ def interp_to_rectgrid(data, fpath_ckdtree, coordinates='clat clon'):
   ddnpz = np.load(fpath_ckdtree)
   lon = ddnpz['lon'] 
   lat = ddnpz['lat'] 
-  data = apply_ckdtree(data, fpath_ckdtree, coordinates=coordinates)
-  data = data.reshape([lat.size, lon.size])
-  data[data==0.] = np.ma.masked
-  return lon, lat, data
+  datai = apply_ckdtree(data, fpath_ckdtree, coordinates=coordinates)
+  if datai.ndim==1:
+    datai = datai.reshape([lat.size, lon.size])
+  else:
+    datai = datai.reshape([data.shape[0], lat.size, lon.size])
+  datai[datai==0.] = np.ma.masked
+  return lon, lat, datai
+
+def interp_to_section(data, fpath_ckdtree, coordinates='clat clon'):
+  ddnpz = np.load(fpath_ckdtree)
+  lon_sec = ddnpz['lon_sec'] 
+  lat_sec = ddnpz['lat_sec'] 
+  dist_sec = ddnpz['dist_sec'] 
+  datai = apply_ckdtree(data, fpath_ckdtree, coordinates=coordinates)
+  datai[datai==0.] = np.ma.masked
+  return lon_sec, lat_sec, dist_sec, datai
 
 def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdtree=''):
 
