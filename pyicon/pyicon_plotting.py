@@ -221,14 +221,13 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   ax.set_title(title)
   ax.set_xlabel(xstr)
   ax.set_ylabel(ylabel)
+  ax.set_xticks(np.linspace(np.round(xlim[0]),np.round(xlim[1]),7))
+  ax.set_yticks(np.arange(0,6500,1000.))
   ax.set_xlim(xlim)
   ax.set_ylim(ylim)
   if log2vax:
     ax.set_yticklabels(2**ax.get_yticks())
   ax.set_facecolor('0.8')
-  ax.set_xticks(np.linspace(np.round(xlim[0]),np.round(xlim[1]),7))
-  ax.set_yticks(np.arange(0,6000,1000.))
-  ax.set_ylim(0,5500)
   ax.xaxis.set_ticks_position('both')
   ax.yaxis.set_ticks_position('both')
 
