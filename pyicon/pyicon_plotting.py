@@ -27,7 +27,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                adjust_axlims=True,
                projection='none', use_tgrid='auto',
                logplot=False,
-               sasp=0.5,
+               asp=0.5,
                fig_size_fac=2.,
                crs_features=True,
               ):
@@ -81,7 +81,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   # --- make axes and colorbar (taken from shade)
   if ax == 'auto':
       #fig, ax = plt.subplots(subplot_kw={'projection': ccrs_proj}) 
-    hca, hcb = arrange_axes(1,1, plot_cb=True, sasp=sasp, fig_size_fac=fig_size_fac,
+    hca, hcb = arrange_axes(1,1, plot_cb=True, asp=asp, fig_size_fac=fig_size_fac,
                                  projection=ccrs_proj,
                                 )
     ax = hca[0]
@@ -143,7 +143,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                xvar='lat',
                log2vax=False,
                logplot=False,
-               sasp=0.5,
+               asp=0.5,
                fig_size_fac=2.0,
               ):
   """
@@ -181,7 +181,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
 
   # --- make axes and colorbar (taken from shade)
   if ax == 'auto':
-    hca, hcb = arrange_axes(1,1, plot_cb=True, sasp=sasp, fig_size_fac=fig_size_fac,
+    hca, hcb = arrange_axes(1,1, plot_cb=True, asp=asp, fig_size_fac=fig_size_fac,
                            )
     ax = hca[0]
     cax = hcb[0]

@@ -5,11 +5,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 from ipdb import set_trace as mybreak
-from importlib import reload
+#from importlib import reload
 import json
 #sys.path.append('/home/mpim/m300602/pyicon')
 import pyicon as pyic
-reload(pyic)
+import pyicon.quickplots as pyicqp
+#reload(pyic)
 import cartopy
 import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
@@ -23,22 +24,22 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 #path_ckdtree = '/Users/nbruggemann/work/icon_playground/icon_ckdtree/'
 
 # ------ r2b4
-#exec(open("./config_qp/conf-icon_08-nib002.py").read())
-#exec(open("./config_qp/conf-mac-icon_08-nib0002.py").read())
+#exec(open("../../config_qp/conf-icon_08-nib002.py").read())
+#exec(open("../../config_qp/conf-mac-icon_08-nib0002.py").read())
 
 # ------ r2b6
-#exec(open("./config_qp/conf-icon_08-nib003.py").read())
+#exec(open("../../config_qp/conf-icon_08-nib003.py").read())
 # does not work so far. diff. grid file
-#exec(open("./config_qp/conf-ocean_omip_long_r2b6_19224-YVF.py").read()) 
+#exec(open("../../config_qp/conf-ocean_omip_long_r2b6_19224-YVF.py").read()) 
 
 # ------ r2b8
-#exec(open("./config_qp/conf-ocean_era51h_r2b8_19074-AMK.py").read())
+#exec(open("../../config_qp/conf-ocean_era51h_r2b8_19074-AMK.py").read())
 
 # ------ r2b6
-exec(open("./config_qp/conf-icon_08-nib0004.py").read())
-#exec(open("./config_qp/conf-icon_08-nib0006.py").read())
+exec(open("../../config_qp/conf-icon_08-nib0004.py").read())
+#exec(open("../../config_qp/conf-icon_08-nib0006.py").read())
 
-path_qp = './all_qps/qp-'+runname+'-'+run+'/'
+path_qp = '../../all_qps/qp-'+runname+'-'+run+'/'
 if not os.path.exists(path_qp):
   os.makedirs(path_qp)
 
@@ -49,7 +50,7 @@ if not os.path.exists(path_pics):
 
 shutil.copyfile('./qp_css.css', path_qp+'qp_css.css')
 
-qp = pyic.QuickPlotWebsite(
+qp = pyicqp.QuickPlotWebsite(
   title='%s | %s' % (runname, run), 
   author=os.environ.get('USER'),
   date=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -162,7 +163,7 @@ Ddict = dict(
 # ---
 fig_name = 'mld_jan'
 if fig_name in fig_names:
-  FigInf = pyic.qp_hplot(fpath=path_data+fname, var='mld', depth=0, it=0,
+  FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mld', depth=0, it=0,
                       clim=[0,5000.], cincr=250., cmap='cmo.deep',
                       IcD=IcD, **Ddict)
   save_fig('Mixed layer depth January', path_pics, fig_name, FigInf)
@@ -170,7 +171,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'mld_jul'
 if fig_name in fig_names:
-  FigInf = pyic.qp_hplot(fpath=path_data+fname, var='mld', depth=0, it=6,
+  FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mld', depth=0, it=6,
                       clim=[0,5000.], cincr=250., cmap='cmo.deep',
                       IcD=IcD, **Ddict)
   save_fig('Mixed layer depth July', path_pics, fig_name, FigInf)
@@ -178,7 +179,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'sst'
 if fig_name in fig_names:
-  FigInf = pyic.qp_hplot(fpath=path_data+fname, var='to', depth=0, it=0,
+  FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='to', depth=0, it=0,
                       clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
                       IcD=IcD, **Ddict)
   #save_fig('Sea surface temperature', path_pics, fig_name, FigInf)
@@ -187,7 +188,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'sss'
 if fig_name in fig_names:
-  FigInf = pyic.qp_hplot(fpath=path_data+fname, var='so', depth=0, it=0,
+  FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='so', depth=0, it=0,
                       clim=[32.,37], cincr=0.25, cmap='cmo.haline',
                       IcD=IcD, **Ddict)
   #save_fig('Sea surface salinity', path_pics, fig_name, FigInf)
@@ -196,7 +197,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'ssh'
 if fig_name in fig_names:
-  FigInf = pyic.qp_hplot(fpath=path_data+fname, var='zos', depth=0, it=0,
+  FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='zos', depth=0, it=0,
                       clim=2, cincr=0.2, cmap='RdBu_r',
                       IcD=IcD, **Ddict)
   #save_fig('Sea surface height', path_pics, fig_name, FigInf)
@@ -207,14 +208,14 @@ fig_name = 'ice'
 if fig_name in fig_names:
   proj_1 = 'NorthPolarStereo'
   proj_2 = 'SouthPolarStereo'
-  hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, sasp=1., fig_size_fac=2.,
+  hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=1., fig_size_fac=2.,
                sharex=True, sharey=True, xlabel="", ylabel="",
                projection=[getattr(ccrs,proj_1)(), getattr(ccrs,proj_2)()],
                               )
   ii=-1
   
   ii+=1; ax=hca[ii]; cax=hcb[ii]
-  FigInf = pyic.qp_hplot(fpath=path_data+fname, var='hi', depth=0, it=0,
+  FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='hi', depth=0, it=0,
                          clim=[0,6], cincr=0.5, cmap='cmo.ice_r',
                          xlim=[-180, 180], ylim=[60,90],
                          ax=ax, cax=cax,
@@ -227,7 +228,7 @@ if fig_name in fig_names:
   ax.set_extent([-180, 180, 60, 90], ccrs.PlateCarree())
 
   ii+=1; ax=hca[ii]; cax=hcb[ii]
-  FigInf = pyic.qp_hplot(fpath=path_data+fname, var='hi', depth=0, it=0,
+  FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='hi', depth=0, it=0,
                          clim=[0,3], cincr=0.25, cmap='cmo.ice_r',
                          xlim=[-180, 180], ylim=[-90,-50],
                          ax=ax, cax=cax,
@@ -283,7 +284,7 @@ if fig_name in fig_names:
   IaV.data = tbias[0,:]
   IaV.interp_to_rectgrid(fpath_ckdtree)
   pyic.hplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
-                  projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], sasp=0.5)
+                  projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], asp=0.5)
   FigInf = dict(long_name=IaV.long_name)
   save_fig('Tbias: surface', path_pics, fig_name, FigInf)
 
@@ -294,7 +295,7 @@ if fig_name in fig_names:
   IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(tbias, basin='global', 
                              fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
   pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
-                  sasp=0.5)
+                  asp=0.5)
   FigInf = dict(long_name=IaV.long_name)
   save_fig('Tbias: global zon. ave.', path_pics, fig_name, FigInf)
 
@@ -305,7 +306,7 @@ if fig_name in fig_names:
   IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(tbias, basin='atl', 
                              fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
   pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
-                  sasp=0.5)
+                  asp=0.5)
   FigInf = dict(long_name=IaV.long_name)
   save_fig('Tbias: Atlantic zon. ave.', path_pics, fig_name, FigInf)
 
@@ -316,7 +317,7 @@ if fig_name in fig_names:
   IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(tbias, basin='indopac', 
                              fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
   pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
-                  sasp=0.5)
+                  asp=0.5)
   FigInf = dict(long_name=IaV.long_name)
   save_fig('Tbias: Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
 
@@ -327,7 +328,7 @@ if fig_name in fig_names:
   IaV.data = sbias[0,:]
   IaV.interp_to_rectgrid(fpath_ckdtree)
   pyic.hplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
-                  projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], sasp=0.5)
+                  projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], asp=0.5)
   FigInf = dict(long_name=IaV.long_name)
   save_fig('Sbias: surface', path_pics, fig_name, FigInf)
 
@@ -338,7 +339,7 @@ if fig_name in fig_names:
   IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(sbias, basin='global', 
                              fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
   pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
-                  sasp=0.5)
+                  asp=0.5)
   FigInf = dict(long_name=IaV.long_name)
   save_fig('Sbias: global zon. ave.', path_pics, fig_name, FigInf)
 
@@ -349,7 +350,7 @@ if fig_name in fig_names:
   IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(sbias, basin='atl', 
                              fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
   pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
-                  sasp=0.5)
+                  asp=0.5)
   FigInf = dict(long_name=IaV.long_name)
   save_fig('Sbias: Atlantic zon. ave.', path_pics, fig_name, FigInf)
 
@@ -360,7 +361,7 @@ if fig_name in fig_names:
   IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(sbias, basin='indopac', 
                              fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
   pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2,
-                  sasp=0.5)
+                  asp=0.5)
   FigInf = dict(long_name=IaV.long_name)
   save_fig('Sbias: Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
 
@@ -371,7 +372,7 @@ if fig_name in fig_names:
 ## ---
 #fig_name = 'vort'
 #if fig_name in fig_names:
-#  FigInf = pyic.qp_hplot(fpath=path_data+fname, var='vort', depth=0, it=0,
+#  FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='vort', depth=0, it=0,
 #                      clim=1e-4, cincr=-1., cmap='RdBu_r',
 #                      **Ddict)
 #  FigInf['fpath'] = path_pics+fig_name+'.png'
@@ -393,7 +394,7 @@ Ddict = dict(
 # ---
 fig_name = 'temp30w'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname, var='to', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='to', it=0,
                       clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
                       IcD=IcD, **Ddict)
   save_fig('Temperature at 30W', path_pics, fig_name, FigInf)
@@ -401,7 +402,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'salt30w'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname, var='so', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='so', it=0,
                       clim=[32., 37.], cincr=0.25, cmap='cmo.haline',
                       IcD=IcD, **Ddict)
   save_fig('Salinity at 30W', path_pics, fig_name, FigInf)
@@ -409,7 +410,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'dens30w'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname, var='rhopot', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='rhopot', it=0,
                       clim=[1024., 1029.], cincr=0.2, cmap='cmo.dense',
                       IcD=IcD, **Ddict)
   save_fig('Density at 30W', path_pics, fig_name, FigInf)
@@ -424,7 +425,7 @@ Ddict = dict(
 # ---
 fig_name = 'temp_gzave'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname, var='to', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='to', it=0,
                       clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
                       sec_name='zave:glob:%s'%rgrid_name,
                       IcD=IcD, **Ddict)
@@ -433,7 +434,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'temp_azave'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname, var='to', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='to', it=0,
                       clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
                       sec_name='zave:atl:%s'%rgrid_name,
                       IcD=IcD, **Ddict)
@@ -442,7 +443,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'temp_ipzave'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname, var='to', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='to', it=0,
                       clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
                       sec_name='zave:indopac:%s'%rgrid_name,
                       IcD=IcD, **Ddict)
@@ -451,7 +452,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'salt_gzave'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname, var='so', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='so', it=0,
                       clim=[32.,37.], cincr=0.25, cmap='cmo.haline',
                       sec_name='zave:glob:%s'%rgrid_name,
                       IcD=IcD, **Ddict)
@@ -460,7 +461,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'salt_azave'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname, var='so', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='so', it=0,
                       clim=[32.,37.], cincr=0.25, cmap='cmo.haline',
                       sec_name='zave:atl:%s'%rgrid_name,
                       IcD=IcD, **Ddict)
@@ -469,7 +470,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'salt_ipzave'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname, var='so', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='so', it=0,
                       clim=[32.,37.], cincr=0.25, cmap='cmo.haline',
                       sec_name='zave:indopac:%s'%rgrid_name,
                       IcD=IcD, **Ddict)
@@ -515,7 +516,7 @@ Ddict = dict(
 # ---
 fig_name = 'amoc'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname_moc, var='atlantic_moc', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname_moc, var='atlantic_moc', it=0,
                       var_fac=1e-9,
                       clim=24, cincr=2., cmap='RdBu_r',
                       IcD=IcD_moc, **Ddict)
@@ -524,7 +525,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'pmoc'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname_moc, var='pacific_moc', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname_moc, var='pacific_moc', it=0,
                       var_fac=1e-9,
                       clim=24, cincr=2., cmap='RdBu_r',
                       IcD=IcD_moc, **Ddict)
@@ -533,7 +534,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'gmoc'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname_moc, var='global_moc', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname_moc, var='global_moc', it=0,
                       var_fac=1e-9,
                       clim=24, cincr=2., cmap='RdBu_r',
                       IcD=IcD_moc, **Ddict)
@@ -552,7 +553,7 @@ Ddict = dict(
 # ---
 fig_name = 'tke30w'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname, var='tke', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='tke', it=0,
                       clim=[-8,0], cincr=-1., cmap='plasma',
                       logplot=True,
                       **Ddict)
@@ -561,7 +562,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'iwe30w'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname, var='iwe', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='iwe', it=0,
                       clim=[-8,0], cincr=-1., cmap='plasma',
                       logplot=True,
                       **Ddict)
@@ -570,7 +571,7 @@ if fig_name in fig_names:
 # ---
 fig_name = 'kv30w'
 if fig_name in fig_names:
-  FigInf = pyic.qp_vplot(fpath=path_data+fname, var='K_tracer_h_to', it=0,
+  FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='K_tracer_h_to', it=0,
                       clim=[-8,0], cincr=-1., cmap='plasma',
                       logplot=True,
                       **Ddict)

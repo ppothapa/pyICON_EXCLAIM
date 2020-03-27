@@ -1,3 +1,23 @@
+import sys, glob, os
+import json
+# --- calculations
+import numpy as np
+# --- reading data 
+from netCDF4 import Dataset, num2date
+import datetime
+# --- plotting
+import matplotlib.pyplot as plt
+import matplotlib
+from matplotlib import ticker
+#import my_toolbox as my
+import cartopy
+import cartopy.crs as ccrs
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
+import cmocean
+# --- debugging
+from ipdb import set_trace as mybreak  
+import pyicon as pyic
+
 # ================================================================================ 
 # Quick Plots
 # ================================================================================ 
@@ -12,7 +32,7 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               xlim=[-180,180], ylim=[-90,90], projection='none',
               crs_features=True,
               adjust_axlims=False,
-              sasp=0.543,
+              asp=0.543,
               title='auto', xlabel='', ylabel='',
               verbose=1,
               ax='auto', cax='auto',
@@ -71,7 +91,7 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
   (ax, cax, 
    mappable,
    Dstr
-  ) = hplot_base(
+  ) = pyic.hplot_base(
               IcD, IaV, 
               ax=ax, cax=cax,
               clim=clim, cmap=cmap, cincr=cincr,
@@ -82,7 +102,7 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               crs_features=crs_features,
               #use_tgrid=IcD.use_tgrid,
               logplot=logplot,
-              sasp=sasp,
+              asp=asp,
              )
 
 
@@ -99,7 +119,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
               var_fac=1.,
               clim='auto', cincr=-1., cmap='auto',
               xlim=[-180,180], ylim=[-90,90], projection='none',
-              sasp=0.543,
+              asp=0.543,
               title='auto', xlabel='', ylabel='',
               verbose=1,
               ax='auto', cax='auto',
@@ -147,7 +167,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
   elif sec_name.startswith('zave'):
     basin      = sec_name.split(':')[1]
     rgrid_name = sec_name.split(':')[2]
-    IaV.lat_sec, IaV.data = zonal_average(
+    IaV.lat_sec, IaV.data = pyic.zonal_average(
                                    fpath_data=IcD.flist_ts[step_snap], 
                                    var=var, basin=basin, it=it,
                                    fpath_fx=IcD.fpath_fx, 
@@ -169,7 +189,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
   (ax, cax, 
    mappable,
    Dstr
-  ) = vplot_base(
+  ) = pyic.vplot_base(
                  IcD, IaV, 
                  ax=ax, cax=cax,
                  clim=clim, cmap=cmap, cincr=cincr,

@@ -18,8 +18,7 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import cmocean
 # --- debugging
 from ipdb import set_trace as mybreak  
-from importlib import reload
-#from file2 import *
+#from importlib import reload
 
 """
 pyicon
