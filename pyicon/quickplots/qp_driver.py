@@ -102,7 +102,7 @@ def save_fig(title, path_pics, fig_name, FigInf):
   with open(path_pics+fig_name+'.json', 'w') as fj:
     json.dump(FigInf, fj, sort_keys=True, indent=4)
   if close_figs:
-    plt.close()
+    plt.close('all')
   return
 plt.close('all')
 
