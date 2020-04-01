@@ -514,6 +514,80 @@ def load_hsnap(fpath, var, it=0, iz=0, fpath_ckdtree=''):
   data[data==0.] = np.ma.masked
   return data
 
+def time_average(IcD, var, t1, t2='none', iz='all', always_use_loop=False):
+
+  # --- if t2=='none' set t2=t1 and no time average will be applied
+  if isinstance(t2, str) and t2=='none':
+    t2 = t1
+
+  # --- convert to datetime64 objects if necessary
+  if isinstance(t1, str):
+    t1 = np.datetime64(t1)
+  if isinstance(t2, str):
+    t2 = np.datetime64(t2)
+  #if not (isinstance(t1, np.datetime64) & isinstance(t2, np.datetime64)): 
+  #  raise ValueError('::: Error: Both t1 and t2 have to be numpy.datetime64 objects. :::')
+
+  # --- determine averaging interval
+  #if t1==t2:
+  #  # --- if t2==1 no time average will be applied
+  # !!! This can be dangerous if wrong file is given where t1 is in time frame.
+  #  it_ave = np.array([np.argmin(np.abs(IcD.times-t1))])
+  #else:
+  it_ave = np.where( (IcD.times>=t1) & (IcD.times<=t2) )[0]
+
+  if it_ave.size==0:
+    raise ValueError(f'::: Could not find any time steps in interval t1={t1} and t2={t2}! :::')
+
+  # --- get dimensions to allocate data
+  f = Dataset(IcD.flist_ts[0], 'r')
+  # FIXME: If == ('time', 'lat', 'lon') works well use it everywhere
+  if f.variables[var].dimensions == ('time', 'lat', 'lon'):
+    nt, nc, nx = f.variables[var].shape
+    nz = 0
+  elif f.variables[var].ndim==3:
+    nt, nz, nc = f.variables[var].shape
+  elif f.variables[var].ndim==2: # for 2D variables like zos and mld
+    nt, nc = f.variables[var].shape
+    nz = 0
+  elif f.variables[var].ndim==4: # is the case for moc data
+    nt, nz, nc, ndummy = f.variables[var].shape 
+  f.close()
+
+  # --- set iz to all levels
+  if isinstance(iz,str) and iz=='all':
+    iz = np.arange(nz)
+  #else:
+  #  iz = np.array([iz])
+
+  # --- if all data is coming from one file take faster approach
+  fpaths = np.unique(IcD.flist_ts[it_ave])
+  if (fpaths.size==1) and not always_use_loop:
+    f = Dataset(fpaths[0], 'r')
+    if nz>0:
+      data_ave = f.variables[var][IcD.its[it_ave],iz,:].mean(axis=0)
+    else:
+      data_ave = f.variables[var][IcD.its[it_ave],:].mean(axis=0)
+    f.close()
+  # --- otherwise loop ovar all files is needed
+  else:
+    # --- allocate data
+    if isinstance(iz,int) or nz==0:
+      data_ave = np.ma.zeros((nc))
+    else:
+      data_ave = np.ma.zeros((iz.size,nc))
+
+    # --- average by looping over all files and time steps
+    for l in it_ave:
+      f = Dataset(IcD.flist_ts[l], 'r')
+      if nz>0:
+        data_ave += f.variables[var][IcD.its[l],iz,:]/it_ave.size
+      else:
+        data_ave += f.variables[var][IcD.its[l],:]/it_ave.size
+      f.close()
+  print(f'pyicon.time_average: var={var}: it_ave={it_ave}')
+  return data_ave, it_ave
+
 def timing(ts, string=''):
   if ts[0]==0:
     ts = np.array([datetime.datetime.now()])
