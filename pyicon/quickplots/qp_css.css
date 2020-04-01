@@ -10,9 +10,11 @@ div#header, header
     width: 100%;
     border-bottom: 1px solid #aaa;
     /*border-style: solid;*/
+    height: 150px;
     margin-top: -222px;
     margin-left: -50px;
     padding-left: 50px;
+    z-index: 5;
     }
 
 .title /* Pandoc title header (h1.title) */
@@ -41,6 +43,27 @@ body {
   margin-top: 100px;
 }
 */
+
+#ctn {
+  position: relative;
+  /*border: solid 1px green;*/
+  height: 40px;
+}
+
+#ctn a {
+  position: absolute;
+  left: 0px;
+  top: -130px;
+  /*border: solid 1px red;*/
+}
+
+#ctn .target-label {
+  position: absolute;
+  left: 0px;
+  /* anchor offset + header height + header padding + header margins */
+  top: 0px;
+  margin: 0;
+}
 
 div#TOC {
     position: fixed;
