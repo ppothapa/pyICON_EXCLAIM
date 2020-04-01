@@ -21,6 +21,7 @@ from ipdb import set_trace as mybreak
 from importlib import reload
 
 def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
+               contfs=None,
                ax='auto', cax=0,
                title='auto', xlabel='', ylabel='',
                xlim='auto', ylim='auto',
@@ -89,22 +90,24 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
 
   # --- do plotting
   if use_tgrid:
-    hm = shade(IcD.Tri, IaV.data, 
-                      ax=ax, cax=cax, clim=clim, cincr=cincr, cmap=cmap,
-                      transform=ccrs_proj,
-                      logplot=logplot,
-                      adjust_axlims=adjust_axlims,
-                 )
+    hm = shade(IcD.Tri, IaV.data, ax=ax, cax=cax, 
+               clim=clim, cincr=cincr, cmap=cmap,
+               contfs=contfs,
+               transform=ccrs_proj,
+               logplot=logplot,
+               adjust_axlims=adjust_axlims,
+              )
     if isinstance(xlim, str) and (xlim=='auto'):
       xlim = [IcD.clon.min(), IcD.clon.max()]
     if isinstance(ylim, str) and (ylim=='auto'):
       ylim = [IcD.clat.min(), IcD.clat.max()]
   else:
-    hm = shade(IcD.lon, IcD.lat, IaV.data,
-                      ax=ax, cax=cax, clim=clim, cincr=cincr, cmap=cmap,
-                      transform=ccrs_proj,
-                      logplot=logplot,
-                      adjust_axlims=adjust_axlims,
+    hm = shade(IcD.lon, IcD.lat, IaV.data, ax=ax, cax=cax, 
+               clim=clim, cincr=cincr, cmap=cmap,
+               contfs=contfs,
+               transform=ccrs_proj,
+               logplot=logplot,
+               adjust_axlims=adjust_axlims,
               )
     if isinstance(xlim, str) and (xlim=='auto'):
       xlim = [IcD.lon.min(), IcD.lon.max()]
@@ -137,6 +140,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   return ax, cax, mappable, Dstr
 
 def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
+               contfs=None,
                ax='auto', cax=0,
                title='auto', xlabel='', ylabel='',
                xlim='auto', ylim='auto',
@@ -206,9 +210,10 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     depth = np.log(depth)/np.log(2) 
   ylabel = 'depth [m]'
 
-  hm = shade(x, depth, IaV.data,
-                    ax=ax, cax=cax, clim=clim, cmap=cmap, cincr=cincr,
-                    logplot=logplot,
+  hm = shade(x, depth, IaV.data, ax=ax, cax=cax, 
+             clim=clim, cincr=cincr, cmap=cmap,
+             contfs=contfs,
+             logplot=logplot,
             )
   if isinstance(xlim, str) and (xlim=='auto'):
     xlim = [x.min(), x.max()]
@@ -1246,7 +1251,7 @@ def arrange_axes(nx,ny,
   return hca, hcb
 
 # ================================================================================ 
-def axlab(hca, figstr=[], posx=[-0.0], posy=[1.08], fontdict=None):
+def axlab(hca, figstr=[], posx=[-0.00], posy=[1.05], fontdict=None):
   """
 input:
 ----------
@@ -1267,22 +1272,23 @@ last change:
     for nn, ax in enumerate(hca):
       figstr[nn] = "(%s)" % (lett[nn])
   
-  #if len(posx)==1:
-  #  posx = posx*len(hca)
-  #if len(posy)==1:
-  #  posy = posy*len(hca)
-  #
-  ## draw text
-  #for nn, ax in enumerate(hca):
-  #  ht = hca[nn].text(posx[nn], posy[nn], figstr[nn], 
-  #                    transform = hca[nn].transAxes, 
-  #                    horizontalalignment = 'right',
-  #                    fontdict=fontdict)
-  #  # add text handle to axes to give possibility of changing text properties later
-  #  # e.g. by hca[nn].axlab.set_fontsize(8)
-  #  hca[nn].axlab = ht
+  if len(posx)==1:
+    posx = posx*len(hca)
+  if len(posy)==1:
+    posy = posy*len(hca)
+  
+  # draw text
   for nn, ax in enumerate(hca):
-    ax.set_title(figstr[nn], loc='left', fontsize=10)
+    ht = hca[nn].text(posx[nn], posy[nn], figstr[nn], 
+                      transform = hca[nn].transAxes, 
+                      horizontalalignment = 'right',
+                      fontdict=fontdict)
+    # add text handle to axes to give possibility of changing text properties later
+    # e.g. by hca[nn].axlab.set_fontsize(8)
+    hca[nn].axlab = ht
+#  for nn, ax in enumerate(hca):
+#    #ax.set_title(figstr[nn]+'\n', loc='left', fontsize=10)
+#    ax.set_title(figstr[nn], loc='left', fontsize=10)
   return hca
 
 def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', 
