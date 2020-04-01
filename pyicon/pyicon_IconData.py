@@ -502,6 +502,20 @@ class IconVariable(object):
       self.interp_to_rectgrid(fpath_ckdtree)
       self.isinterpolated = True
     return
+
+  def time_average(self, IcD, t1, t2, iz='all', always_use_loop=False, fpath_ckdtree=''):
+    self.t1 = t1
+    self.t2 = t2
+    self.iz = iz
+    self.data, self.it_ave = time_average(IcD, self.name, t1, t2, iz, always_use_loop)
+    self.mask = self.data.mask
+
+    if fpath_ckdtree=='':
+      self.isinterpolated = False
+    else:
+      self.interp_to_rectgrid(fpath_ckdtree)
+      self.isinterpolated = True
+    return
   
   def load_vsnap(self, fpath, fpath_ckdtree, it=0, step_snap=0):
     self.step_snap = step_snap
@@ -556,15 +570,12 @@ class IconVariable(object):
   def interp_to_rectgrid(self, fpath_ckdtree):
     if self.isinterpolated:
       raise ValueError('::: Variable %s is already interpolated. :::'%self.name)
-
-    #ddnpz = np.load(fpath_ckdtree)
-    ##dckdtree = ddnpz['dckdtree']
-    ##ickdtree = ddnpz['ickdtree'] 
-    #self.lon = ddnpz['lon'] 
-    #self.lat = ddnpz['lat'] 
-    #self.data = apply_ckdtree(self.data, fpath_ckdtree, coordinates=self.coordinates)
-    #self.data = self.data.reshape([self.lat.size, self.lon.size])
-    #self.data[self.data==0.] = np.ma.masked
     self.lon, self.lat, self.data = interp_to_rectgrid(self.data, fpath_ckdtree, coordinates=self.coordinates)
+    return
+
+  def interp_to_section(self, fpath_ckdtree):
+    if self.isinterpolated:
+      raise ValueError('::: Variable %s is already interpolated. :::'%self.name)
+    self.lon_sec, self.lat_sec, self.dist_sec, self.data = interp_to_section(self.data, fpath_ckdtree, coordinates=self.coordinates)
     return
 
