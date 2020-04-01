@@ -5,17 +5,18 @@ import shutil
 from importlib import reload
 import datetime
 import pyicon as pyic                                                                    
+import pyicon.quickplots as pyicqp 
 reload(pyic)
 
-path_qps = './all_qps/'
+path_qps = '../../all_qps/'
 flist = glob.glob(path_qps+'*/qp_index.html')
 flist.sort()
 
 for fpath in flist:
   name = fpath.split('/')[-2][3:]
-  print(name)
+  print(fpath, name)
 
-qp = pyic.QuickPlotWebsite(
+qp = pyicqp.QuickPlotWebsite(
   title='List of all simulations',
   author=os.environ.get('USER'),
   date=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -28,9 +29,13 @@ qp = pyic.QuickPlotWebsite(
 shutil.copyfile('./qp_css.css', path_qps+'qp_css.css')
 
 text = ''
+# --- add link to pyicon docu
+text += '<p><li><a href="pyicon_doc/html/index.html">pyicon documentation</a></>'
+
+# --- add link to experiments
 for fpath in flist:
   name = fpath.split('/')[-2][3:]
-  fpath = fpath.replace('all_qps/','')
+  fpath = fpath.replace(path_qps,'')
   #print(name)
   text += '<p>'
   text += '<li><a href=\"'+fpath+'\">'+name+'</a>'
