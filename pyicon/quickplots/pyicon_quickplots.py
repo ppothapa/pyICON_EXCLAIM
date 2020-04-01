@@ -26,10 +26,13 @@ import pyicon as pyic
 # Horizontal plots
 # --------------------------------------------------------------------------------
 def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
+              t1='needs_to_be_specified', t2='none',
               rgrid_name="orig",
               path_ckdtree="",
               clim='auto', cincr=-1., cmap='auto',
+              contfs=None,
               xlim=[-180,180], ylim=[-90,90], projection='none',
+              use_tgrid=False,
               crs_features=True,
               adjust_axlims=False,
               asp=0.543,
@@ -38,7 +41,6 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               ax='auto', cax='auto',
               logplot=False,
               ):
-
 
   for fp in [fpath]:
     if not os.path.exists(fp):
@@ -69,15 +71,20 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
   IaV = IcD.vars[var]
   step_snap = it
 
+  # --- seems to be necessary for RUBY
+  if IaV.coordinates=='':
+    IaV.coordinates = 'clat clon'
+
   # synchronize with Jupyter update_fig
   # --- load data 
-  IaV.load_hsnap(fpath=IcD.flist_ts[step_snap], 
-                      it=IcD.its[step_snap], 
-                      iz=iz,
-                      step_snap = step_snap
-                     ) 
+  #IaV.load_hsnap(fpath=IcD.flist_ts[step_snap], 
+  #                    it=IcD.its[step_snap], 
+  #                    iz=iz,
+  #                    step_snap = step_snap
+  #                   ) 
+  IaV.time_average(IcD, t1, t2, iz=iz)
   # --- interpolate data 
-  if not IcD.use_tgrid:
+  if not use_tgrid:
     IaV.interp_to_rectgrid(fpath_ckdtree=IcD.rgrid_fpath)
   # --- crop data
 
@@ -95,15 +102,22 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               IcD, IaV, 
               ax=ax, cax=cax,
               clim=clim, cmap=cmap, cincr=cincr,
+              contfs=contfs,
               xlim=xlim, ylim=ylim,
               adjust_axlims=adjust_axlims,
               title='auto', 
               projection=projection,
               crs_features=crs_features,
-              #use_tgrid=IcD.use_tgrid,
+              use_tgrid=use_tgrid,
               logplot=logplot,
               asp=asp,
              )
+
+  # --- contour labels
+  if contfs=='auto':
+    Cl = ax.clabel(mappable, colors='k', fontsize=6, fmt='%.1f', inline=False)
+    for txt in Cl:
+      txt.set_bbox(dict(facecolor='white', edgecolor='none', pad=0))
 
 
   # --- output
@@ -114,11 +128,13 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
   return FigInf
 
 def qp_vplot(fpath, var, IcD='none', it=0,
+              t1='needs_to_be_specified', t2='none',
               sec_name="specify_sec_name",
               path_ckdtree="",
               var_fac=1.,
               clim='auto', cincr=-1., cmap='auto',
-              xlim=[-180,180], ylim=[-90,90], projection='none',
+              contfs='auto',
+              xlim=[-90,90], ylim=[6000,0], projection='none',
               asp=0.543,
               title='auto', xlabel='', ylabel='',
               verbose=1,
@@ -150,40 +166,64 @@ def qp_vplot(fpath, var, IcD='none', it=0,
                    #rgrid_name   = rgrid_name
                    omit_last_file = False,
                   )
-  else:
-    print('Using given IcD!')
+  #else:
+  #  print('Using given IcD!')
 
   IaV = IcD.vars[var]
   step_snap = it
 
+  # --- seems to be necessary for RUBY
+  if IaV.coordinates=='':
+    IaV.coordinates = 'clat clon'
+
   # --- load data
   # FIXME: MOC and ZAVE cases could go into load_vsnap
   if sec_name.endswith('moc'):
-    IaV.load_moc(
-                   fpath=IcD.flist_ts[step_snap], 
-                   it=IcD.its[step_snap], 
-                   step_snap = step_snap
-                  ) 
+    #IaV.load_moc(
+    #               fpath=IcD.flist_ts[step_snap], 
+    #               it=IcD.its[step_snap], 
+    #               step_snap = step_snap
+    #              ) 
+    IaV.time_average(IcD, t1, t2, iz='all')
+    IaV.data = IaV.data[:,:,0]/1e9 # MOC in nc-file as dim (nt,nz,ny,ndummy=1)
+    f = Dataset(IcD.flist_ts[0], 'r')
+    IaV.lat_sec = f.variables['lat'][:]
+    IaV.depth = f.variables['depth'][:]
+    f.close()
+    IaV.mask = IaV.data==0.
+    IaV.data[IaV.mask] = np.ma.masked
   elif sec_name.startswith('zave'):
     basin      = sec_name.split(':')[1]
     rgrid_name = sec_name.split(':')[2]
-    IaV.lat_sec, IaV.data = pyic.zonal_average(
-                                   fpath_data=IcD.flist_ts[step_snap], 
-                                   var=var, basin=basin, it=it,
-                                   fpath_fx=IcD.fpath_fx, 
+    #IaV.lat_sec, IaV.data = pyic.zonal_average(
+    #                               fpath_data=IcD.flist_ts[step_snap], 
+    #                               var=var, basin=basin, it=it,
+    #                               fpath_fx=IcD.fpath_fx, 
+    #                               fpath_ckdtree=IcD.rgrid_fpaths[
+    #                                 np.where(IcD.rgrid_names==rgrid_name)[0][0]]
+    #                                     )
+    IaV.time_average(IcD, t1, t2, iz='all')
+    IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(
+                                   IaV.data, 
+                                   basin=basin, coordinates=IaV.coordinates,
+                                   fpath_fx=IcD.fpath_fx,
                                    fpath_ckdtree=IcD.rgrid_fpaths[
-                                     np.where(IcD.rgrid_names==rgrid_name)[0][0]]
-                                         )
+                                     np.where(IcD.rgrid_names==rgrid_name)[0][0]],
+                                                      )
   else:
     sec_fpath = IcD.sec_fpaths[np.where(IcD.sec_names==sec_name)[0][0] ]
-    IaV.load_vsnap(
-                   fpath=IcD.flist_ts[step_snap], 
-                   fpath_ckdtree=sec_fpath,
-                   it=IcD.its[step_snap], 
-                   step_snap = step_snap
-                  ) 
+    #IaV.load_vsnap(
+    #               fpath=IcD.flist_ts[step_snap], 
+    #               fpath_ckdtree=sec_fpath,
+    #               it=IcD.its[step_snap], 
+    #               step_snap = step_snap
+    #              ) 
+    IaV.time_average(IcD, t1, t2, iz='all')
+    # --- interpolate data 
+    if not IcD.use_tgrid:
+      IaV.interp_to_section(fpath_ckdtree=sec_fpath)
 
-  IaV.data *= var_fac
+    IaV.data *= var_fac
 
   # --- do plotting
   (ax, cax, 
@@ -193,17 +233,70 @@ def qp_vplot(fpath, var, IcD='none', it=0,
                  IcD, IaV, 
                  ax=ax, cax=cax,
                  clim=clim, cmap=cmap, cincr=cincr,
+                 contfs=contfs,
                  title='auto', 
                  log2vax=log2vax,
                  logplot=logplot,
                 )
 
+  # --- contour labels
+  if contfs=='auto':
+    Cl = ax.clabel(mappable, colors='k', fontsize=6, fmt='%.1f', inline=False)
+    for txt in Cl:
+      txt.set_bbox(dict(facecolor='white', edgecolor='none', pad=0))
+
+  # ---
+  ax.set_xlim(xlim)
+  ax.set_ylim(ylim)
 
   # --- output
   FigInf = dict()
   FigInf['fpath'] = fpath
   FigInf['long_name'] = IaV.long_name
   #FigInf['IcD'] = IcD
+  return FigInf
+
+def qp_timeseries(IcD, fpath, vars_plot, 
+                  fac_data=1, title='', units='',
+                  t1='none', t2='none',
+                 ): 
+  flist = glob.glob(IcD.path_data+fpath)
+  flist.sort()
+  times, flist_ts, its = pyic.get_timesteps(flist)
+
+  hca, hcb = pyic.arrange_axes(1,1, plot_cb=False, asp=0.5, fig_size_fac=2.,
+               sharex=True, sharey=True, xlabel="time [years]", ylabel="",)
+  ii=-1
+  ii+=1; ax=hca[ii]; cax=hcb[ii]
+
+  for var in vars_plot:
+    data = np.array([])
+    for nn, fpath in enumerate(flist):
+      f = Dataset(fpath, 'r')
+      data_file = f.variables[var][:,0,0]
+      data = np.concatenate((data, data_file))
+      f.close()
+    ax.plot(times, data*fac_data, label=var)
+  ax.grid(True)
+  if len(vars_plot)==1:
+    f = Dataset(fpath, 'r')
+    if units=='':
+      units = f.variables[var].units
+      units = f' [{units}]'
+    if title=='':
+      long_name = f.variables[var].long_name
+      title = long_name+units
+    f.close()
+  ax.set_title(title)
+  if len(vars_plot)>1:
+    ax.legend()
+
+  if not (isinstance(t1,str) and t1=='none'):
+    ax.axvline(t1, color='k')
+  if not (isinstance(t2,str) and t2=='none'):
+    ax.axvline(t2, color='k')
+
+  FigInf = dict()
   return FigInf
 
 ##def qp_hor_plot(fpath, var, IC='none', iz=0, it=0,
@@ -354,7 +447,11 @@ qp.write_to_file()
     # --- add to main
     href = title.replace(' ', '-')
     self.main += '\n'
-    self.main += "<h1 id=\"{href}\">{title}</h1>\n".format(title=title, href=href)
+    #self.main += f"<h1 id=\"{href}\">{title}</h1>\n"
+    self.main += f"  <div id=\"ctn\">"
+    self.main += f"    <a name=\"{href}\">&nbsp;</a>"
+    self.main += f"    <h1 class=\"target-label\">{title}</h2>"
+    self.main += f"  </div>"
     # --- add to toc
     if self.first_add_section_call:
       self.first_add_section_call = False
@@ -364,16 +461,19 @@ qp.write_to_file()
 """
     else:
       self.toc += '</ul></li> \n'
-    self.toc += '<li><a href="#{href}">{title}</a><ul>\n'.format(title=title, href=href)
+    self.toc += f'<li><a href="#{href}">{title}</a><ul>\n'
     return
 
   def add_subsection(self, title='Subsection'):
     # --- add to main
     href = title.replace(' ', '-')
-    #self.main += '\n'
-    self.main += "  <h2 id=\"{href}\">{title}</h2>\n".format(title=title, href=href)
+    #self.main += f"  <h2 id=\"{href}\">{title}</h2>\n"
+    self.main += f"  <div id=\"ctn\">"
+    self.main += f"    <a name=\"{href}\">&nbsp;</a>"
+    self.main += f"    <h2 class=\"target-label\">{title}</h2>"
+    self.main += f"  </div>"
     # --- add to toc
-    self.toc += '<li><a href="#{href}">{title}</a></li>\n'.format(title=title, href=href)
+    self.toc += f'<li><a href="#{href}">{title}</a></li>\n'
     return
 
   def add_paragraph(self, text=''):
@@ -384,7 +484,7 @@ qp.write_to_file()
     return
    
   def add_fig(self, fpath, width="1000"):
-    self.main += '    <div class="figure"> <img src="{fpath}" width="{width}" /> </div>'.format(fpath=fpath, width=width)
+    self.main += f'    <div class="figure"> <img src="{fpath}" width="{width}" /> </div>'
     self.main += '\n'
     return
   
