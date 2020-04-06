@@ -183,11 +183,14 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     clim = [IaV.data.min(), IaV.data.max()]
 
   # --- colormaps 
-  if cmap.startswith('cmo'):
-    cmap = cmap.split('.')[-1]
-    cmap = getattr(cmocean.cm, cmap)
-  else:
-    cmap = getattr(plt.cm, cmap)
+  try:
+    if cmap.startswith('cmo'):
+      cmap = cmap.split('.')[-1]
+      cmap = getattr(cmocean.cm, cmap)
+    else:
+      cmap = getattr(plt.cm, cmap)
+  except:
+    pass # assume that cmap is already a colormap
 
   # --- annotations (title etc.) 
   if title=='auto':
