@@ -31,6 +31,8 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                asp=0.5,
                fig_size_fac=2.,
                crs_features=True,
+               do_plot_settings=True,
+               land_facecolor='0.7',
               ):
   """
   IaV variable needs the following attributes
@@ -60,11 +62,14 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     clim = [IaV.data.min(), IaV.data.max()]
 
   # --- colormaps 
-  if cmap.startswith('cmo'):
-    cmap = cmap.split('.')[-1]
-    cmap = getattr(cmocean.cm, cmap)
-  else:
-    cmap = getattr(plt.cm, cmap)
+  try:
+    if cmap.startswith('cmo'):
+      cmap = cmap.split('.')[-1]
+      cmap = getattr(cmocean.cm, cmap)
+    else:
+      cmap = getattr(plt.cm, cmap)
+  except:
+    pass # assume that cmap is already a colormap
 
   # --- annotations (title etc.) 
   if title=='auto':
@@ -123,20 +128,27 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   ax.set_xlim(xlim)
   ax.set_ylim(ylim)
 
-  if (projection!='none') and (crs_features):
-  #if projection=='PlateCarree':
-  #if False:
-    ax.coastlines()
-    ax.add_feature(cartopy.feature.LAND, zorder=0, facecolor='0.9')
-    ax.set_xticks(np.linspace(np.round(xlim[0]),np.round(xlim[1]),7), crs=ccrs_proj)
-    ax.set_yticks(np.linspace(np.round(ylim[0]),np.round(ylim[1]),7), crs=ccrs_proj)
-    lon_formatter = LongitudeFormatter()
-    lat_formatter = LatitudeFormatter()
-    ax.xaxis.set_major_formatter(lon_formatter)
-    ax.yaxis.set_major_formatter(lat_formatter)
-    #ax.stock_img()
-  ax.xaxis.set_ticks_position('both')
-  ax.yaxis.set_ticks_position('both')
+  if xlim==[-180.,180.] and ylim==[-90.,90.]:
+    template = 'global'
+  else:
+    template = 'none'
+  if do_plot_settings:
+    plot_settings(ax, template=template, projection=ccrs_proj, land_facecolor=land_facecolor)
+
+  #if (projection!='none') and (crs_features):
+  ##if projection=='PlateCarree':
+  ##if False:
+  #  ax.coastlines()
+  #  ax.add_feature(cartopy.feature.LAND, zorder=0, facecolor='0.9')
+  #  ax.set_xticks(np.linspace(np.round(xlim[0]),np.round(xlim[1]),7), crs=ccrs_proj)
+  #  ax.set_yticks(np.linspace(np.round(ylim[0]),np.round(ylim[1]),7), crs=ccrs_proj)
+  #  lon_formatter = LongitudeFormatter()
+  #  lat_formatter = LatitudeFormatter()
+  #  ax.xaxis.set_major_formatter(lon_formatter)
+  #  ax.yaxis.set_major_formatter(lat_formatter)
+  #  #ax.stock_img()
+  #ax.xaxis.set_ticks_position('both')
+  #ax.yaxis.set_ticks_position('both')
   return ax, cax, mappable, Dstr
 
 def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
@@ -149,6 +161,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                logplot=False,
                asp=0.5,
                fig_size_fac=2.0,
+               do_plot_settings=True,
               ):
   """
   IaV variable needs the following attributes
@@ -1362,9 +1375,10 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto',
     ax.yaxis.set_major_formatter(cartopy.mpl.ticker.LatitudeFormatter())
     #for tick in ax.xaxis.get_ticklabels()+ax.yaxis.get_ticklabels():
     #  tick.set_fontsize(8)
-    feature = cartopy.feature.LAND
-    #feature = feature.with_scale(coastlines_resolution)
-    ax.add_feature(feature, zorder=land_zorder, facecolor=land_facecolor)
+    if isinstance(land_facecolor, str) and land_facecolor!='none':
+      feature = cartopy.feature.LAND
+      #feature = feature.with_scale(coastlines_resolution)
+      ax.add_feature(feature, zorder=land_zorder, facecolor=land_facecolor)
     if isinstance(coastlines_color, str) and coastlines_color!='none':
       #ax.coastlines(color=coastlines_color, resolution=coastlines_resolution)
       feature = cartopy.feature.COASTLINE
