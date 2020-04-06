@@ -80,7 +80,7 @@ class IconData(object):
       self.run = run
 
     # --- check if all important files and paths exist
-    for pname in ['path_data', 'path_ckdtree', 'fpath_tgrid', 'fpath_fx']:
+    for pname in ['path_data', 'path_ckdtree', 'fpath_tgrid']: #, 'fpath_fx']:
       fp = getattr(self, pname)
       if not os.path.exists(fp):
         raise ValueError('::: Error: Cannot find %s: %s! :::' % (pname, fp))
@@ -116,6 +116,7 @@ class IconData(object):
     if self.sec_names.size==0:
       print('::: Warning: Could not find any section-npz-file in %s. :::' 
                         % (self.path_sections))
+      section_name = 'no_section_found'
 
     # --- find section grid ckdtrees for this grid
     rgrid_fpaths = np.array(
@@ -215,10 +216,13 @@ class IconData(object):
       except:
         coordinates = ''
       shape = fi.variables[var].shape
-      if (self.nz in shape) or ((self.nz+1) in shape):
-        is3d = True
+      if hasattr(self, 'nz'):
+        if (self.nz in shape) or ((self.nz+1) in shape):
+          is3d = True
+        else:
+          is3d = False 
       else:
-        is3d = False 
+        is3d = False
       #print(var, fi.variables[var].shape, is3d)
       IV = IconVariable(var, units=units, long_name=long_name, is3d=is3d, coordinates=coordinates)
       #print('%s: units = %s, long_name = %s'%(IV.name,IV.units,IV.long_name))
@@ -252,6 +256,8 @@ class IconData(object):
       # take first of list
       self.sec_fpath = self.sec_fpaths[0]
       self.sec_name  = self.sec_names[0]
+    elif sec_name=='no_section_found':
+      print('::: Warning: no section found.:::')
     else:
       if sec_name in self.sec_names:
         self.sec_fpath = self.sec_fpaths[
@@ -503,11 +509,11 @@ class IconVariable(object):
       self.isinterpolated = True
     return
 
-  def time_average(self, IcD, t1, t2, iz='all', always_use_loop=False, fpath_ckdtree=''):
+  def time_average(self, IcD, t1, t2, it_ave=[], iz='all', always_use_loop=False, fpath_ckdtree=''):
     self.t1 = t1
     self.t2 = t2
     self.iz = iz
-    self.data, self.it_ave = time_average(IcD, self.name, t1, t2, iz, always_use_loop)
+    self.data, self.it_ave = time_average(IcD, self.name, t1, t2, it_ave, iz, always_use_loop)
     self.mask = self.data.mask
 
     if fpath_ckdtree=='':
