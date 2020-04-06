@@ -16,7 +16,7 @@ path_sections = path_ckdtree + 'sections/'
 all_grids = [
   'global_1.0',
   'global_0.3',
-  'global_0.1',
+#  'global_0.1',
             ]
 
 all_secs = [
@@ -29,16 +29,22 @@ all_secs = [
 #all_secs = []
 
 gnames = []
+path_tgrids = []
+
 # r2b9
-gnames += ['icon_grid_0015_R02B09_G']
+#gnames += ['icon_grid_0015_R02B09_G']
+#path_tgrids += ['/pool/data/ICON/grids/public/mpim/0015/']
+# r2b6
+gnames += ['icon_grid_0013_R02B04_G']
+path_tgrids += ['/pool/data/ICON/grids/public/mpim/0013/']
 
 if not os.path.exists(path_rgrid): 
   os.makedirs(path_rgrid)
 if not os.path.exists(path_sections): 
   os.makedirs(path_sections)
 
-for gname in gnames:
-  print(gname)
+for gname, path_tgrid in zip(gnames, path_tgrids):
+  print(path_tgrid, gname)
 
   # --- grids
   sname = 'global_1.0'
