@@ -27,8 +27,11 @@ import pyicon as pyic
 # --------------------------------------------------------------------------------
 def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               t1='needs_to_be_specified', t2='none',
+              it_ave=[],
               rgrid_name="orig",
               path_ckdtree="",
+              var_fac = 1.,
+              var_add = 0.,
               clim='auto', cincr=-1., cmap='auto',
               contfs=None,
               xlim=[-180,180], ylim=[-90,90], projection='none',
@@ -36,26 +39,30 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               crs_features=True,
               adjust_axlims=False,
               asp=0.543,
-              title='auto', xlabel='', ylabel='',
+              title='auto', units='',
+              xlabel='', ylabel='',
               verbose=1,
               ax='auto', cax='auto',
               logplot=False,
+              do_plot_settings=True,
+              land_facecolor='0.7',
               ):
 
-  for fp in [fpath]:
-    if not os.path.exists(fp):
-      raise ValueError('::: Error: Cannot find file %s! :::' % (fp))
+  #for fp in [fpath]:
+  #  if not os.path.exists(fp):
+  #    raise ValueError('::: Error: Cannot find file %s! :::' % (fp))
 
-  # get fname and path_data from fpath
-  fname = fpath.split('/')[-1]
-  path_data = ''
-  for el in fpath.split('/')[1:-1]:
-    path_data += '/'
-    path_data += el
-  path_data += '/'
 
   # --- set-up grid and region if not given to function
   if isinstance(IcD,str) and IcD=='none':
+    # get fname and path_data from fpath
+    fname = fpath.split('/')[-1]
+    path_data = ''
+    for el in fpath.split('/')[1:-1]:
+      path_data += '/'
+      path_data += el
+    path_data += '/'
+
     IcD = IconData(
                    fname   = fname,
                    path_data    = path_data,
@@ -63,8 +70,8 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
                    rgrid_name   = rgrid_name,
                    omit_last_file = False,
                   )
-  else:
-    print('Using given IcD!')
+  #else:
+  #  print('Using given IcD!')
 
   if depth!=-1e33:
     iz = np.argmin((IcD.depthc-depth)**2)
@@ -82,11 +89,17 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
   #                    iz=iz,
   #                    step_snap = step_snap
   #                   ) 
-  IaV.time_average(IcD, t1, t2, iz=iz)
+  IaV.time_average(IcD, t1, t2, it_ave, iz=iz)
   # --- interpolate data 
   if not use_tgrid:
     IaV.interp_to_rectgrid(fpath_ckdtree=IcD.rgrid_fpath)
   # --- crop data
+
+  IaV.data *= var_fac
+  IaV.data += var_add
+
+  if units!='':
+    IaV.units = units
 
   # --- cartopy projection
   if projection=='none':
@@ -105,12 +118,14 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               contfs=contfs,
               xlim=xlim, ylim=ylim,
               adjust_axlims=adjust_axlims,
-              title='auto', 
+              title=title, 
               projection=projection,
               crs_features=crs_features,
               use_tgrid=use_tgrid,
               logplot=logplot,
               asp=asp,
+              do_plot_settings=do_plot_settings,
+              land_facecolor=land_facecolor,
              )
 
   # --- contour labels
@@ -129,6 +144,7 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
 
 def qp_vplot(fpath, var, IcD='none', it=0,
               t1='needs_to_be_specified', t2='none',
+              it_ave=[],
               sec_name="specify_sec_name",
               path_ckdtree="",
               var_fac=1.,
@@ -142,23 +158,23 @@ def qp_vplot(fpath, var, IcD='none', it=0,
               logplot=False,
               log2vax=False,
               mode_load='normal',
+              do_plot_settings=True,
               ):
 
-
-  for fp in [fpath]:
-    if not os.path.exists(fp):
-      raise ValueError('::: Error: Cannot find file %s! :::' % (fp))
-
-  # get fname and path_data from fpath
-  fname = fpath.split('/')[-1]
-  path_data = ''
-  for el in fpath.split('/')[1:-1]:
-    path_data += '/'
-    path_data += el
-  path_data += '/'
+  #for fp in [fpath]:
+  #  if not os.path.exists(fp):
+  #    raise ValueError('::: Error: Cannot find file %s! :::' % (fp))
 
   # --- load data set
   if isinstance(IcD,str) and IcD=='none':
+    # get fname and path_data from fpath
+    fname = fpath.split('/')[-1]
+    path_data = ''
+    for el in fpath.split('/')[1:-1]:
+      path_data += '/'
+      path_data += el
+    path_data += '/'
+
     IcD = IconData(
                    fname   = fname,
                    path_data    = path_data,
@@ -184,7 +200,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
     #               it=IcD.its[step_snap], 
     #               step_snap = step_snap
     #              ) 
-    IaV.time_average(IcD, t1, t2, iz='all')
+    IaV.time_average(IcD, t1, t2, it_ave, iz='all')
     IaV.data = IaV.data[:,:,0]/1e9 # MOC in nc-file as dim (nt,nz,ny,ndummy=1)
     f = Dataset(IcD.flist_ts[0], 'r')
     IaV.lat_sec = f.variables['lat'][:]
@@ -202,7 +218,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
     #                               fpath_ckdtree=IcD.rgrid_fpaths[
     #                                 np.where(IcD.rgrid_names==rgrid_name)[0][0]]
     #                                     )
-    IaV.time_average(IcD, t1, t2, iz='all')
+    IaV.time_average(IcD, t1, t2, it_ave, iz='all')
     IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(
                                    IaV.data, 
                                    basin=basin, coordinates=IaV.coordinates,
@@ -218,7 +234,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
     #               it=IcD.its[step_snap], 
     #               step_snap = step_snap
     #              ) 
-    IaV.time_average(IcD, t1, t2, iz='all')
+    IaV.time_average(IcD, t1, t2, it_ave, iz='all')
     # --- interpolate data 
     if not IcD.use_tgrid:
       IaV.interp_to_section(fpath_ckdtree=sec_fpath)
@@ -234,9 +250,10 @@ def qp_vplot(fpath, var, IcD='none', it=0,
                  ax=ax, cax=cax,
                  clim=clim, cmap=cmap, cincr=cincr,
                  contfs=contfs,
-                 title='auto', 
+                 title=title, 
                  log2vax=log2vax,
                  logplot=logplot,
+                 do_plot_settings=do_plot_settings,
                 )
 
   # --- contour labels
@@ -259,10 +276,22 @@ def qp_vplot(fpath, var, IcD='none', it=0,
 def qp_timeseries(IcD, fpath, vars_plot, 
                   fac_data=1, title='', units='',
                   t1='none', t2='none',
+                  ave_freq=0,
+                  omit_last_file=True,
                  ): 
   flist = glob.glob(IcD.path_data+fpath)
   flist.sort()
+  if omit_last_file:
+    flist = flist[:-1]
   times, flist_ts, its = pyic.get_timesteps(flist)
+  if ave_freq>0:
+    nskip = times.size%ave_freq
+    if nskip>0:
+      times = times[:-nskip]
+    nresh = int(times.size/ave_freq)
+    times = np.reshape(times, (nresh, ave_freq)).transpose()
+    #times_ave = times.mean(axis=0)
+    times = times[int(ave_freq/2),:] # get middle of ave_freq
 
   hca, hcb = pyic.arrange_axes(1,1, plot_cb=False, asp=0.5, fig_size_fac=2.,
                sharex=True, sharey=True, xlabel="time [years]", ylabel="",)
@@ -276,6 +305,16 @@ def qp_timeseries(IcD, fpath, vars_plot,
       data_file = f.variables[var][:,0,0]
       data = np.concatenate((data, data_file))
       f.close()
+    #print(f'{var}: {data.size}')
+    # --- apply time averaging
+    if ave_freq>0:
+      if nskip>0:
+        data = data[:-nskip]
+      #if times.size%ave_freq != 0:
+      #  raise ValueError(f'::: Time series has wrong size: {times.size} for ave_req={ave_freq}! :::')
+      print(f'{var}: {data.size} {times.size}')
+      data = np.reshape(data, (nresh, ave_freq)).transpose()
+      data = data.mean(axis=0)
     ax.plot(times, data*fac_data, label=var)
   ax.grid(True)
   if len(vars_plot)==1:
@@ -402,6 +441,17 @@ qp.write_to_file()
 
     self.main = ""
     self.toc = ""
+    if 'timeaverages' in title:
+      links = """
+&emsp; <a href="../index.html">list simulations</a>
+"""
+    elif 'simulations' in title:
+      links = ""
+    else:
+      links = """
+&emsp; <a href="../qp_index.html">list time averages</a>
+&emsp; <a href="../../index.html">list simulations</a>
+"""
 
     self.header = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -422,7 +472,9 @@ qp.write_to_file()
 <div id="header">
 <h1 class="title">{title}</h1>
 <p> {author} | {date} | {path_data} </p>
-<p> {info} </>
+<p> {info} 
+{links}
+</p>
 </div>
 
 """.format(author=self.author, title=self.title, 
@@ -430,6 +482,7 @@ qp.write_to_file()
            path_data=self.path_data,
            info=self.info,
            fpath_css=self.fpath_css, 
+           links=links,
           )
 
 #<div id="header">
