@@ -514,27 +514,22 @@ def load_hsnap(fpath, var, it=0, iz=0, fpath_ckdtree=''):
   data[data==0.] = np.ma.masked
   return data
 
-def time_average(IcD, var, t1, t2='none', iz='all', always_use_loop=False):
+def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use_loop=False):
+  it_ave = np.array(it_ave)
+  # --- if no it_ave is given use t1 and t2 to determine averaging indices it_ave
+  if it_ave.size==0:
+    # --- if t2=='none' set t2=t1 and no time average will be applied
+    if isinstance(t2, str) and t2=='none':
+      t2 = t1
 
-  # --- if t2=='none' set t2=t1 and no time average will be applied
-  if isinstance(t2, str) and t2=='none':
-    t2 = t1
+    # --- convert to datetime64 objects if necessary
+    if isinstance(t1, str):
+      t1 = np.datetime64(t1)
+    if isinstance(t2, str):
+      t2 = np.datetime64(t2)
 
-  # --- convert to datetime64 objects if necessary
-  if isinstance(t1, str):
-    t1 = np.datetime64(t1)
-  if isinstance(t2, str):
-    t2 = np.datetime64(t2)
-  #if not (isinstance(t1, np.datetime64) & isinstance(t2, np.datetime64)): 
-  #  raise ValueError('::: Error: Both t1 and t2 have to be numpy.datetime64 objects. :::')
-
-  # --- determine averaging interval
-  #if t1==t2:
-  #  # --- if t2==1 no time average will be applied
-  # !!! This can be dangerous if wrong file is given where t1 is in time frame.
-  #  it_ave = np.array([np.argmin(np.abs(IcD.times-t1))])
-  #else:
-  it_ave = np.where( (IcD.times>=t1) & (IcD.times<=t2) )[0]
+    # --- determine averaging interval
+    it_ave = np.where( (IcD.times>=t1) & (IcD.times<=t2) )[0]
 
   if it_ave.size==0:
     raise ValueError(f'::: Could not find any time steps in interval t1={t1} and t2={t2}! :::')
@@ -631,11 +626,12 @@ def conv_gname(gname):
 def identify_grid(path_grid, fpath_data):
   """ Identifies ICON grid in depending on clon.size in fpath_data.
   
-  r2b4: 160km:    15117: OceanOnly_Icos_0158km_etopo40.nc
-  r2b6:  40km:   327680: OCEANINP_pre04_LndnoLak_039km_editSLOHH2017_G.nc
-  r2b8:  10km:  3729001: OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min.nc
-  r2b9:   5km: 14886338: OceanOnly_IcosSymmetric_4932m_rotatedZ37d_modified_srtm30_1min.nc
-  r2b9a:  5km: 20971520: /pool/data/ICON/grids/public/mpim/0015/icon_grid_0015_R02B09_G.nc
+  r2b4:  160km:    15117: OceanOnly_Icos_0158km_etopo40.nc
+  r2b4a: 160km:    20480: /pool/data/ICON/grids/public/mpim/0013/icon_grid_0013_R02B04_G.nc
+  r2b6:   40km:   327680: OCEANINP_pre04_LndnoLak_039km_editSLOHH2017_G.nc
+  r2b8:   10km:  3729001: OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min.nc
+  r2b9:    5km: 14886338: OceanOnly_IcosSymmetric_4932m_rotatedZ37d_modified_srtm30_1min.nc
+  r2b9a:   5km: 20971520: /pool/data/ICON/grids/public/mpim/0015/icon_grid_0015_R02B09_G.nc
   """
   
   Dgrid_list = dict()
@@ -646,7 +642,14 @@ def identify_grid(path_grid, fpath_data):
   Dgrid_list[grid_name]['long_name'] = 'OceanOnly_Icos_0158km_etopo40'
   Dgrid_list[grid_name]['size'] = 15117
   Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
-  
+ 
+  grid_name = 'r2b4a'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '160km'
+  Dgrid_list[grid_name]['long_name'] = 'icon_grid_0013_R02B04_G'
+  Dgrid_list[grid_name]['size'] = 20480
+  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+
   grid_name = 'r2b6old'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
   Dgrid_list[grid_name]['res'] = '40km'
