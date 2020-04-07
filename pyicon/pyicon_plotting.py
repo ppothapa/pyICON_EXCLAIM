@@ -348,7 +348,16 @@ def shade(
     # --- norm
     if cincr>0.:
       clevs = np.arange(clim[0], clim[1]+cincr, cincr)
-      norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)
+      #norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)
+      nlev = clevs.size
+      # --- expanded norm and cmap
+      norm_e = matplotlib.colors.BoundaryNorm(boundaries=np.arange(0,nlev+2,1), ncolors=cmap.N)
+      cmap_e = matplotlib.colors.ListedColormap(cmap(norm_e(np.arange(0,nlev+1,1))))
+      # --- actuall cmap with over and under values
+      cmap = matplotlib.colors.ListedColormap(cmap(norm_e(np.arange(1,nlev,1))))        
+      #norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)
+      cmap.set_under(cmap_e(norm_e(0)))
+      cmap.set_over(cmap_e(norm_e(nlev)))
       use_norm = True
     else:
       norm = None
