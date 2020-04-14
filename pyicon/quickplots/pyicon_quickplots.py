@@ -46,6 +46,7 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               logplot=False,
               do_plot_settings=True,
               land_facecolor='0.7',
+              do_mask=False,
               ):
 
   #for fp in [fpath]:
@@ -82,7 +83,6 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
   if IaV.coordinates=='':
     IaV.coordinates = 'clat clon'
 
-  # synchronize with Jupyter update_fig
   # --- load data 
   #IaV.load_hsnap(fpath=IcD.flist_ts[step_snap], 
   #                    it=IcD.its[step_snap], 
@@ -90,6 +90,17 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
   #                    step_snap = step_snap
   #                   ) 
   IaV.time_average(IcD, t1, t2, it_ave, iz=iz)
+
+  # --- mask data
+  if do_mask:
+    IaV.data = np.ma.array(IaV.data)
+    if IaV.coordinates=='clat clon':
+      IaV.data[IcD.wet_c[iz,:]==0] = np.ma.masked
+    elif IaV.coordinates=='elat elon':
+      IaV.data[IcD.wet_e[iz,:]==0] = np.ma.masked
+    else:
+      raise ValueError("::: Error: Unknownc coordinates for mask!:::")
+
   # --- interpolate data 
   if not use_tgrid:
     IaV.interp_to_rectgrid(fpath_ckdtree=IcD.rgrid_fpath)
