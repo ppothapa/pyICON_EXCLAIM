@@ -40,6 +40,7 @@ class IconData(object):
                load_variable_info    = True,
                calc_coeff            = True,
                time_mode             = 'num2date',
+               model_type            = 'oce',
               ):
 
 
@@ -100,6 +101,8 @@ class IconData(object):
     self.lat_reg = lat_reg
     self.use_tgrid = use_tgrid
     self.fname = fname
+
+    self.model_type = model_type
 
     # --- find regular grid ckdtrees for this grid
     sec_fpaths = np.array(
@@ -299,33 +302,39 @@ class IconData(object):
     """ Load certain variables from self.fpath_fx which are typically related to a specification of the vertical grid.
     """
 
-    # --- vertical levels
-    f = Dataset(self.fpath_fx, 'r')
-    #self.clon = f.variables['clon'][:] * 180./np.pi
-    #self.clat = f.variables['clat'][:] * 180./np.pi
-    self.depthc = f.variables['depth'][:]
-    self.depthi = f.variables['depth_2'][:]
-    self.nz = self.depthc.size
+    if self.model_type=='oce':
+      # --- vertical levels
+      f = Dataset(self.fpath_fx, 'r')
+      #self.clon = f.variables['clon'][:] * 180./np.pi
+      #self.clat = f.variables['clat'][:] * 180./np.pi
+      self.depthc = f.variables['depth'][:]
+      self.depthi = f.variables['depth_2'][:]
+      self.nz = self.depthc.size
 
-    # --- the variables prism_thick_flat_sfc_c seem to be corrupted in fx file
-    self.prism_thick_flat_sfc_c = f.variables['prism_thick_flat_sfc_c'][:] # delete this later
-    self.prism_thick_c = f.variables['prism_thick_flat_sfc_c'][:]
-    self.prism_thick_e = f.variables['prism_thick_flat_sfc_e'][:]
-    self.constantPrismCenters_Zdistance = f.variables['constantPrismCenters_Zdistance'][:]
-    self.dzw           = self.prism_thick_c
-    self.dze           = self.prism_thick_e
-    self.dzt           = self.constantPrismCenters_Zdistance
+      # --- the variables prism_thick_flat_sfc_c seem to be corrupted in fx file
+      self.prism_thick_flat_sfc_c = f.variables['prism_thick_flat_sfc_c'][:] # delete this later
+      self.prism_thick_c = f.variables['prism_thick_flat_sfc_c'][:]
+      self.prism_thick_e = f.variables['prism_thick_flat_sfc_e'][:]
+      self.constantPrismCenters_Zdistance = f.variables['constantPrismCenters_Zdistance'][:]
+      self.dzw           = self.prism_thick_c
+      self.dze           = self.prism_thick_e
+      self.dzt           = self.constantPrismCenters_Zdistance
 
-    self.dolic_c = f.variables['dolic_c'][:]-1
-    self.dolic_e = f.variables['dolic_e'][:]-1
-    self.wet_c = f.variables['wet_c'][:]
+      self.dolic_c = f.variables['dolic_c'][:]-1
+      self.dolic_e = f.variables['dolic_e'][:]-1
+      self.wet_c = f.variables['wet_c'][:]
+      self.wet_e = f.variables['wet_e'][:]
 
-    #self.wet_e = f.variables['wet_e'][:]
-    #for var in f.variables.keys():
-    #  print(var)
-    #  print(f.variables[var][:].max())
-    #mybreak()
-    f.close()
+      #self.wet_e = f.variables['wet_e'][:]
+      #for var in f.variables.keys():
+      #  print(var)
+      #  print(f.variables[var][:].max())
+      #mybreak()
+      f.close()
+    elif self.model_type=='atm':
+      pass
+    else:
+      raise ValueError('::: Error: Unknown model_type %s'%model_type)
     return
 
   def load_rgrid(self, lon_reg='all', lat_reg='all'):
