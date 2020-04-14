@@ -528,8 +528,9 @@ def shade(
       if isinstance(cbticks, np.ndarray) or isinstance(cbticks, list):
         cb.set_ticks(cbticks)
       else:
-        if norm is not None:
-          cb.set_ticks(norm.boundaries[::2]) 
+        if use_norm:
+          #cb.set_ticks(norm.boundaries[::2]) 
+          cb.set_ticks(clevs[::2])
         else:
           cb.locator = ticker.MaxNLocator(nbins=5)
       cb.update_ticks()
