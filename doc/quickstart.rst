@@ -14,3 +14,4 @@ or by using ipython::
 
 If you prefer to use notebooks, you can also start a Jupyter Python session and try one of the notebooks in ``notebook``. 
 A beginner example is ``examp_pyicon_start.ipynb``.
+You can find the notebooks `here <https://gitlab.dkrz.de/m300602/pyicon/-/tree/develop/notebooks>`_.
