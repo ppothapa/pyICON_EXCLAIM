@@ -63,7 +63,7 @@ projection = 'PlateCarree'
 fig_names = []
 #fig_names += ['sst']
 #fig_names += ['mld_jan', 'mld_jul', 'sst', 'sss', 'ssh']
-fig_names += ['mld_mar', 'mld_sep', 'sst', 'sss', 'ssh']
+fig_names += ['mld_mar', 'mld_sep', 'sst', 'sss', 'ssh', 'ssh_variance']
 fig_names += ['ice_concentration_nh', 'ice_thickness_nh', 'snow_thickness_nh',] 
 fig_names += ['ice_concentration_sh', 'ice_thickness_sh', 'snow_thickness_sh',]
 fig_names += ['temp30w', 'salt30w', 'dens30w']
@@ -73,6 +73,7 @@ fig_names += ['temp_gzave', 'temp_azave', 'temp_ipzave']
 fig_names += ['salt_gzave', 'salt_azave', 'salt_ipzave']
 fig_names += ['salt_gzave', 'salt_azave', 'salt_ipzave']
 fig_names += ['bstr', 'amoc', 'pmoc', 'gmoc']
+fig_names += ['ke_100m', 'ke_2000m']
 fig_names += ['heat_flux', 'freshwater_flux']
 fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume', 'ts_ice_extent',]
 fig_names += ['atm_2m_temp','atm_sea_level_pressure',]
@@ -81,20 +82,25 @@ fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_c
 
 #fig_names += ['tke30w', 'iwe30w', 'kv30w']
 
-fig_names = []
+#fig_names = []
 #fig_names += ['ts_amoc']
 #fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume', 'ts_ice_extent',]
 #fig_names += ['mld_mar', 'mld_sep']
 #fig_names = ['sst_bias']
 #fig_names = ['sss']
+#fig_names = ['ssh_variance']
 #fig_names += ['amoc']
-fig_names += ['ice_concentration_nh', 'ice_thickness_nh', 'snow_thickness_nh',] 
-fig_names += ['ice_concentration_sh', 'ice_thickness_sh', 'snow_thickness_sh',]
+#fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
+#fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
+#fig_names += ['ice_concentration_nh', 'ice_thickness_nh', 'snow_thickness_nh',] 
+#fig_names += ['ice_concentration_sh', 'ice_thickness_sh', 'snow_thickness_sh',]
 #fig_names += ['bstr']
+#fig_names += ['ke_100m', 'ke_2000m']
 #fig_names += ['atm_sea_level_pressure']
 #fig_names += ['atm_2m_temp','atm_sea_level_pressure',]
 #fig_names += ['atm_zonal_wind_stress',]
 #fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover']
+#fig_names += ['atm_tas_abias']
 
 #fig_names += ['vort']
 fig_names = np.array(fig_names)
@@ -104,7 +110,7 @@ fig_names = np.array(fig_names)
 # Function to save figures
 # -------------------------------------------------------------------------------- 
 close_figs = True
-def save_fig(title, path_pics, fig_name, FigInf):
+def save_fig(title, path_pics, fig_name, FigInf=dict()):
   FigInf['name']  = fig_name+'.png'
   FigInf['fpath'] = path_pics+FigInf['name']
   FigInf['title'] = title
@@ -112,13 +118,20 @@ def save_fig(title, path_pics, fig_name, FigInf):
   plt.savefig(FigInf['fpath'], dpi=300)
   with open(path_pics+fig_name+'.json', 'w') as fj:
     json.dump(FigInf, fj, sort_keys=True, indent=4)
-  if close_figs:
-    plt.close('all')
+  #if close_figs:
+  #  plt.close('all')
   return
-plt.close('all')
+#plt.close('all')
 
 #rgrid_name = 'global_1.0'
 rgrid_name = 'global_0.3'
+
+def indfind(array, vals):
+  vals = np.array(vals)
+  inds = np.zeros(vals.size, dtype=int)
+  for nn, val in enumerate(vals):
+    inds[nn] = np.argmin(np.abs(array-val))
+  return inds
 
 # -------------------------------------------------------------------------------- 
 # Load all necessary data sets (can take a while)
@@ -212,10 +225,12 @@ if do_atmosphere_plots:
                  do_triangulation = True,
                  omit_last_file = False,
                  load_vertical_grid = False,
+                 model_type   = 'atm',
                  time_mode = 'float2date',
                 )
   
 print('Done reading datasets')
+[k100, k500, k800, k1000, k2000, k3000] = indfind(IcD.depthc, [100., 500., 800., 1000., 2000., 3000.])
 
 # -------------------------------------------------------------------------------- 
 # timing
@@ -294,6 +309,7 @@ for tave_int in tave_ints:
                              title='mixed layer depth March [m]',
                              #clim=[0,5000.], cincr=250., cmap=PyicCmaps().WhiteBlueGreenYellowRed,
                              clim=[0,5000.], cincr=250., cmap='RdYlBu_r',
+                             do_mask=True,
                              IcD=IcD_monthly, **Ddict)
     save_fig('Mixed layer depth March', path_pics, fig_name, FigInf)
   
@@ -304,6 +320,7 @@ for tave_int in tave_ints:
                              it_ave=it_ave_sep,
                              title='mixed layer depth September [m]',
                              clim=[0,5000.], cincr=250., cmap='RdYlBu_r',
+                             do_mask=True,
                              IcD=IcD_monthly, **Ddict)
     save_fig('Mixed layer depth September', path_pics, fig_name, FigInf)
 
@@ -336,6 +353,22 @@ for tave_int in tave_ints:
                              IcD=IcD, **Ddict)
     #save_fig('Sea surface height', path_pics, fig_name, FigInf)
     save_fig('SSH', path_pics, fig_name, FigInf)
+
+  # ---
+  fig_name = 'ssh_variance'
+  if fig_name in fig_names:
+    zos, it_ave          = pyic.time_average(IcD, 'zos',        t1=t1, t2=t2)
+    zos_square, it_ave   = pyic.time_average(IcD, 'zos_square', t1=t1, t2=t2)
+    zos_var = np.sqrt(zos_square-zos**2)
+    IaV = pyic.IconVariable('zos_var', 'm', 'ssh variance')
+    IaV.data = zos_var
+    IaV.interp_to_rectgrid(fpath_ckdtree)
+    pyic.hplot_base(IcD, IaV, clim=[-2,0], cincr=0.2, cmap='RdYlBu_r',
+                    projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
+                    logplot=True,
+                    title='log$_{10}$(ssh variance) [m]',
+                    )
+    save_fig('SSH variance', path_pics, fig_name)
   
   # ---
   fig_name = 'ice_concentration_nh'
@@ -640,7 +673,7 @@ for tave_int in tave_ints:
   fname = '%s%s_%s.nc' % (run, oce_def, tstep)
   calc_bias = False
   for fig_name in fig_names:
-    if 'bias' in fig_name: 
+    if '_bias' in fig_name: 
       calc_bias = True
   if calc_bias:
     fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
@@ -727,7 +760,7 @@ for tave_int in tave_ints:
     IaV = pyic.IconVariable('salt_bias', 'g/kg', 'salinity bias')
     IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(sbias, basin='global', 
                                fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
-    pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2, contfs='auto',
+    pyic.vplot_base(IcD, IaV, clim=2., cmap='RdBu_r', cincr=0.2, contfs='auto',
                     asp=0.5)
     FigInf = dict(long_name=IaV.long_name)
     save_fig('Sbias: global zon. ave.', path_pics, fig_name, FigInf)
@@ -738,7 +771,7 @@ for tave_int in tave_ints:
     IaV = pyic.IconVariable('salt_bias', 'g/kg', 'salinity bias')
     IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(sbias, basin='atl', 
                                fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
-    pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2, contfs='auto',
+    pyic.vplot_base(IcD, IaV, clim=2., cmap='RdBu_r', cincr=0.2, contfs='auto',
                     asp=0.5, xlim=[-30,90])
     FigInf = dict(long_name=IaV.long_name)
     save_fig('Sbias: Atlantic zon. ave.', path_pics, fig_name, FigInf)
@@ -749,7 +782,7 @@ for tave_int in tave_ints:
     IaV = pyic.IconVariable('salt_bias', 'g/kg', 'salinity bias')
     IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(sbias, basin='indopac', 
                                fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
-    pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.2, contfs='auto',
+    pyic.vplot_base(IcD, IaV, clim=2., cmap='RdBu_r', cincr=0.2, contfs='auto',
                     asp=0.5, xlim=[-30,65])
     FigInf = dict(long_name=IaV.long_name)
     save_fig('Sbias: Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
@@ -877,6 +910,35 @@ for tave_int in tave_ints:
   # -------------------------------------------------------------------------------- 
   # Transports
   # -------------------------------------------------------------------------------- 
+  fig_name = 'ke_100m'
+  if fig_name in fig_names:
+    u, it_ave   = pyic.time_average(IcD, 'u', t1=t1, t2=t2, iz=k100)
+    v, it_ave   = pyic.time_average(IcD, 'v', t1=t1, t2=t2, iz=k100)
+    ke = 0.5*(u**2+v**2)
+    IaV = pyic.IconVariable('ke', 'm^2/s^2', 'kinetic energy')
+    IaV.data = ke
+    IaV.interp_to_rectgrid(fpath_ckdtree)
+    pyic.hplot_base(IcD, IaV, clim=[-7,0], cincr=0.5, cmap='RdYlBu_r',
+                    projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
+                    logplot=True,
+                    title='log$_{10}$(kinetic energy) at %dm [m$^2$/s$^2$]'%(IcD.depthc[k100])
+                    )
+    save_fig('Kinetic energy 100m', path_pics, fig_name)
+
+  fig_name = 'ke_2000m'
+  if fig_name in fig_names:
+    u, it_ave   = pyic.time_average(IcD, 'u', t1=t1, t2=t2, iz=k2000)
+    v, it_ave   = pyic.time_average(IcD, 'v', t1=t1, t2=t2, iz=k2000)
+    ke = 0.5*(u**2+v**2)
+    IaV = pyic.IconVariable('ke', 'm^2/s^2', 'kinetic energy')
+    IaV.data = ke
+    IaV.interp_to_rectgrid(fpath_ckdtree)
+    pyic.hplot_base(IcD, IaV, clim=[-7,0], cincr=0.5, cmap='RdYlBu_r',
+                    projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
+                    logplot=True,
+                    title='log$_{10}$(kinetic energy) at %dm [m$^2$/s$^2$]'%(IcD.depthc[k2000])
+                    )
+    save_fig('Kinetic energy 2000m', path_pics, fig_name)
   
   # ---
   fig_name = 'bstr'
@@ -1111,6 +1173,12 @@ for tave_int in tave_ints:
     projection=projection,
               )
 
+  ## ---
+  #if do_atmosphere_plots:
+  #  pfull, it_ave = pyic.time_average(IcD_atm3d, 'pfull', t1, t2, iz='all')
+  #sys.exit()
+
+
   # ---
   fig_name = 'atm_2m_temp'
   if fig_name in fig_names:
@@ -1122,6 +1190,42 @@ for tave_int in tave_ints:
                              land_facecolor='none',
                              IcD=IcD_atm2d, **Ddict)
     save_fig('2m temperature', path_pics, fig_name, FigInf)
+
+#  #calc_bias = False
+#  #for fig_name in fig_names:
+#  #  if 'bias' in fig_name: 
+#  #    calc_bias = True
+#  calc_bias=True
+#  if calc_bias:
+#    fpath_ckdtree = IcD_atm2d.rgrid_fpath_dict[rgrid_name]
+#  
+#    fpath_atm_ref = '/pool/data/ICON/post/r2b4_amip/ERA-Interim/ERAin_r2b4_atm_phy_1979_2008_MAM.nc'
+#    f = Dataset(fpath_atm_ref, 'r')
+#    tas_ref = f.variables['tas'][0,:]
+#    clon = f.variables['clon'][:] * 180./np.pi
+#    clat = f.variables['clat'][:] * 180./np.pi
+#    f.close()
+#  
+#    tas, it_ave = pyic.time_average(IcD_atm2d, 'tas', t1, t2, iz='all')
+#  
+#    tbias = tas-tas_ref
+#  
+#  # ---
+#  fig_name = 'atm_tas_abias'
+#  if fig_name in fig_names:
+#    IaV = pyic.IconVariable('tas_bias', 'deg C', 'surface temperature bias')
+#    IaV.data = tas_ref
+#    #IaV.data = tbias
+#    #IaV.interp_to_rectgrid(fpath_ckdtree)
+#    #pyic.hplot_base(IcD, IaV, clim=5., cmap='RdBu_r', cincr=0.5,
+#    pyic.hplot_base(IcD_atm2d, IaV, clim='auto', cmap='RdBu_r', 
+#                    use_tgrid=True,
+#                    projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+#                    asp=0.5)
+#    FigInf = dict(long_name=IaV.long_name)
+#    plt.show()
+#    sys.exit()
+#    save_fig('2m temperature bias', path_pics, fig_name, FigInf)
 
   # ---
   fig_name = 'atm_sea_level_pressure'
@@ -1146,6 +1250,17 @@ for tave_int in tave_ints:
                              clim=[-200.,200.], cincr=25.0, cmap='RdYlBu_r',
                              IcD=IcD_atm2d, **Ddict)
     save_fig('zonal wind stress', path_pics, fig_name, FigInf)
+
+  # ---
+  fig_name = 'atm_meridional_wind_stress'
+  if fig_name in fig_names:
+    FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='tauv', it=0,
+                             t1=t1, t2=t2,
+                             var_fac=1e3,
+                             units='mN/m$^2$',
+                             clim=[-200.,200.], cincr=25.0, cmap='RdYlBu_r',
+                             IcD=IcD_atm2d, **Ddict)
+    save_fig('meridional wind stress', path_pics, fig_name, FigInf)
 
   # ---
   fig_name = 'atm_column_water_vapour'
@@ -1188,7 +1303,7 @@ for tave_int in tave_ints:
   
   plist = []
   plist += ['sec:Upper ocean']
-  plist += ['ssh', 'sst', 'sss', 'mld_mar', 'mld_sep'] 
+  plist += ['ssh', 'ssh_variance', 'sst', 'sss', 'mld_mar', 'mld_sep'] 
   #plist += ['ice']
   plist += ['sec:Ice']
   plist += ['ice_concentration_nh', 'ice_thickness_nh', 'snow_thickness_nh',] 
@@ -1196,15 +1311,15 @@ for tave_int in tave_ints:
   plist += ['sec:Sections']
   plist += ['temp30w', 'salt30w', 'dens30w']
   plist += ['sec:Zonal averages']
-  plist += ['temp_gzave', 'salt_gzave', 'temp_azave', 'salt_azave', 
-            'temp_ipzave', 'salt_ipzave']
+  plist += ['temp_gzave', 'temp_azave', 'temp_ipzave']
+  plist += ['salt_gzave', 'salt_azave', 'salt_ipzave']
   plist += ['sec:Transports']
   plist += ['bstr', 'amoc', 'pmoc', 'gmoc']
+  plist += ['ke_100m', 'ke_2000m']
   plist += ['heat_flux', 'freshwater_flux']
   plist += ['sec:Biases']
-  plist += ['sst_bias', 'sss_bias']
-  plist += ['temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
-  plist += ['salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
+  plist += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
+  plist += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
   plist += ['sec:Time series']
   plist += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume', 'ts_ice_extent',]
   plist += ['sec:Atmosphere']
@@ -1245,9 +1360,9 @@ for tave_int in tave_ints:
 print("Executing qp_link_all.py")
 os.system(f"python qp_link_all.py {path_qp}/../")
 
-# --------------------------------------------------------------------------------
-# show figures
-# --------------------------------------------------------------------------------
-if fig_names.size<3:
-  plt.show()
+### --------------------------------------------------------------------------------
+### show figures
+### --------------------------------------------------------------------------------
+##if fig_names.size<3:
+##  plt.show()
 print('All done!')
