@@ -11,6 +11,8 @@ Pyicon is a python post-processing and visualization toolbox for ICON with a foc
 
 Pyicon is developed by the Max Planck Institute for Meterology and the University of Hamburg within the DFG-project TRR181 - Energy Transfers in Atmosphere and Ocean.
 
+Pyicon is hosted here: `<https://gitlab.dkrz.de/m300602/pyicon/>`_
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:

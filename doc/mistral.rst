@@ -1,29 +1,29 @@
 Mistral specific
 ----------------
 
-pyicon compatible python environment
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. pyicon compatible python environment
+.. ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. 
+.. A pyicon compatible python environment can be loaded by::
+.. 
+..   source /path/to/pyicon/tools/conda_act_mistral_pyicon_env.sh
+.. 
+.. Switch to such a pyicon compatible python environment in every shell session where you want to execute python scripts that use pyicon.
 
-A pyicon compatible python environment can be loaded by::
+Start Jupyter session on Mistral
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  source pyicon/tools/conda_act_mistral_pyicon_env.sh
-
-Switch to pyicon compatible python environment
-
-Start Jupyter session for Mistral
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To use Jupyter on the DKRZ cluster you find valuable information `here <https://www.dkrz.de/up/systems/mistral/programming/jupyter-notebook>`_.
+To use Jupyter on the DKRZ cluster, you can find valuable information `here <https://www.dkrz.de/up/systems/mistral/programming/jupyter-notebook>`_.
 
 DKRZ also provides a `script <https://gitlab.dkrz.de/k202009/ssh_scripts/raw/master/start-jupyter?inline=false>`_ to easily setup a Jupyter session.
 
 Download this script and use it with::
 
-  ./start-jupyter -u username -i /home/mpim/m300602/bin/myactcondenv.sh
+  ./start-jupyter -u username -i /path/to/pyicon/tools/conda_act_mistral_pyicon_env.sh
 
-JupyterLab session can be started with ``-c lab`` option::
+JupyterLab session can be started with ``-c lab`` option (note that pyicon_view does not work with JupyterLab)::
 
-  ./start-jupyter -u username -c lab -i /home/mpim/m300602/bin/myactcondenv.sh
+  ./start-jupyter -u username -c lab -i /path/to/pyicon/tools/conda_act_mistral_pyicon_env.sh
 
 Grid files on Mistral
 ^^^^^^^^^^^^^^^^^^^^^
@@ -32,15 +32,19 @@ At the moment, a collection of grid files and ckdtrees for different ICON grids 
 
   /mnt/lustre01/work/mh0033/m300602/icon/grids 
 
-In general, grid files will be archived here::
+In general, ocean triangular grid files are archived here::
 
-  /pool/data/ICON/oes/input/r0003/
+  /pool/data/ICON/oes/input/
 
-An even larger collection of grids can be found here::
+and atmospheric grid files are archived here::
+ 
+ /pool/data/ICON/grids/public/mpim/ 
+
+An even larger collection of ocean grids can be found here::
 
   /pool/data/ICON/oes/grids/
 
-ICON SMT grids are in::
+E.g. ICON SMT grids can be found in::
 
   /pool/data/ICON/oes/grids/OceanOnly
 
