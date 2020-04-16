@@ -7,7 +7,7 @@ Mistral environment
 Log into Mistral and go to a directory where you want to install pyicon (this can be in your home directory or on work).
 Download pyicon by::
   
-  git clone git@gitlab.dkrz.de:m300602/pyicon.git
+  git clone https://gitlab.dkrz.de/m300602/pyicon.git
 
 The easiest way to use pyicon on Mistral is to use a pre-installed environment. 
 Therefore execute the following command (do not forget to change ``/path/to/pyicon/`` to the path where you downloaded pyicon)::
@@ -62,7 +62,7 @@ General installation instructions
 
 Download pyicon by::
   
-  git clone git@gitlab.dkrz.de:m300602/pyicon.git
+  git clone https://gitlab.dkrz.de/m300602/pyicon.git
 
 .. So far, the following is not supported yet::
 
