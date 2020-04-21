@@ -158,6 +158,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                xlim='auto', ylim='auto',
                xvar='lat',
                log2vax=False,
+               vertaxtype='linear',
                logplot=False,
                asp=0.5,
                fig_size_fac=2.0,
@@ -177,6 +178,10 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     * mappable
   """
   Dstr = dict()
+
+  # --- for backward compatibility
+  if log2vax:
+    vertaxtype = 'log2'
 
   # --- color limits and color map
   if isinstance(clim,str) and clim=='auto':
@@ -208,7 +213,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
 
   nz = IaV.data.shape[0]
 
-  # --- do plotting
+  # --- horizontal axes
   if xvar=='lon':
     x = IaV.lon_sec
     xstr = 'longitude'
@@ -218,15 +223,25 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   elif xvar=='dist':
     x = IaC.dist_sec/1e3
     xstr = 'distance [km]'
-  if nz==IcD.depthc.size:
-    depth = IcD.depthc
-  else: 
-    depth = IcD.depthi
-  if log2vax:
-    depth = np.log(depth)/np.log(2) 
-  ylabel = 'depth [m]'
 
-  hm = shade(x, depth, IaV.data, ax=ax, cax=cax, 
+  # --- vertical axes
+  if IcD.model_type=='oce':
+    if nz==IcD.depthc.size:
+      z = IcD.depthc
+    else: 
+      z = IcD.depthi
+    ylabel = 'depth [m]'
+  elif IcD.model_type=='atm':
+    z = IcD.plevc/100.
+    ylabel = 'pressure [hPa]'
+
+  if vertaxtype=='log2':
+    z = np.log(depth)/np.log(2) 
+  elif vertaxtype=='log10':
+    z = np.log(depth)/np.log(10) 
+
+  # --- do plotting
+  hm = shade(x, z, IaV.data, ax=ax, cax=cax, 
              clim=clim, cincr=cincr, cmap=cmap,
              contfs=contfs,
              logplot=logplot,
@@ -234,7 +249,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   if isinstance(xlim, str) and (xlim=='auto'):
     xlim = [x.min(), x.max()]
   if isinstance(ylim, str) and (ylim=='auto'):
-    ylim = [depth.max(), depth.min()]
+    ylim = [z.max(), z.min()]
 
   mappable = hm[0]
 
@@ -243,11 +258,16 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   ax.set_xlabel(xstr)
   ax.set_ylabel(ylabel)
   ax.set_xticks(np.linspace(np.round(xlim[0]),np.round(xlim[1]),7))
-  ax.set_yticks(np.arange(0,6500,1000.))
+  if IcD.model_type=='oce':
+    ax.set_yticks(np.arange(0,6500,1000.))
+  elif IcD.model_type=='atm':
+    ax.set_yticks(np.arange(0,1100,100.))
   ax.set_xlim(xlim)
   ax.set_ylim(ylim)
-  if log2vax:
+  if vertaxtype=='log2':
     ax.set_yticklabels(2**ax.get_yticks())
+  elif vertaxtype=='log10':
+    ax.set_yticklabels(10**ax.get_yticks())
   ax.set_facecolor('0.8')
   ax.xaxis.set_ticks_position('both')
   ax.yaxis.set_ticks_position('both')
@@ -1373,12 +1393,17 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto',
   # --- minor ticks
   if (isinstance(x_minor_tick_diff,str) and x_minor_tick_diff!='auto'):
     x_minor_tick_diff = (xticks[1]-xticks[0])/5.
+    #xminorticks = np.linspace(xlim[0], xlim[1], (xticks.size-1)*2+xticks.size)
+  xminorticks = np.arange(xlim[0], xlim[1]+x_minor_tick_diff, x_minor_tick_diff)
   if (isinstance(y_minor_tick_diff,str) and y_minor_tick_diff!='auto'):
     y_minor_tick_diff = (yticks[1]-yticks[0])/5.
+  yminorticks = np.arange(ylim[0], ylim[1]+y_minor_tick_diff, y_minor_tick_diff)
   if not (isinstance(x_minor_tick_diff,str) and x_minor_tick_diff!='none'):
-    ax.xaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(x_minor_tick_diff))
+    #ax.xaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(x_minor_tick_diff))
+    ax.set_xticks(xminorticks, minor=True)
   if not (isinstance(y_minor_tick_diff,str) and y_minor_tick_diff!='none'):
-    ax.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(y_minor_tick_diff))
+    #ax.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(y_minor_tick_diff))
+    ax.set_yticks(yminorticks, minor=True)
 
   # --- cartopy specific stuff
   if not projection is None: 
