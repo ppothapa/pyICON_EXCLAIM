@@ -2,6 +2,8 @@ import sys, glob, os
 import shutil
 import datetime
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 from ipdb import set_trace as mybreak
@@ -48,6 +50,7 @@ t2 = 'auto'
 
 # ------ r2b8
 #exec(open("../../config_qp/conf-ocean_era51h_r2b8_19074-AMK.py").read())
+#exec(open("../../config_qp/conf-exp.ocean_ncep6h_r2b8_20096-FZA.py").read())
 
 # ------ r2b6
 #exec(open("../../config_qp/conf-icon_08-nib0004.py").read())
@@ -79,6 +82,8 @@ fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hf
 fig_names += ['atm_2m_temp','atm_sea_level_pressure',]
 fig_names += ['atm_zonal_wind_stress',]
 fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover']
+fig_names += ['atm_temp_zave', 'atm_u_zave', 'atm_v_zave', 'atm_rel_hum_zave']
+fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave']
 
 #fig_names += ['tke30w', 'iwe30w', 'kv30w']
 
@@ -101,7 +106,9 @@ fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_c
 #fig_names += ['atm_zonal_wind_stress',]
 #fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover']
 #fig_names += ['atm_tas_abias']
-
+#fig_names += ['atm_temp_zave', 'atm_u_zave', 'atm_v_zave', 'atm_rel_hum_zave']
+#fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave']
+#fig_names += ['atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave']
 #fig_names += ['vort']
 fig_names = np.array(fig_names)
 #fig_names = fig_names[fig_names!='ice']
@@ -121,7 +128,7 @@ def save_fig(title, path_pics, fig_name, FigInf=dict()):
   #if close_figs:
   #  plt.close('all')
   return
-#plt.close('all')
+plt.close('all')
 
 #rgrid_name = 'global_1.0'
 rgrid_name = 'global_0.3'
@@ -228,6 +235,7 @@ if do_atmosphere_plots:
                  model_type   = 'atm',
                  time_mode = 'float2date',
                 )
+  fpath_ckdtree_atm = IcD_atm3d.rgrid_fpath_dict[rgrid_name]
   
 print('Done reading datasets')
 [k100, k500, k800, k1000, k2000, k3000] = indfind(IcD.depthc, [100., 500., 800., 1000., 2000., 3000.])
@@ -1174,10 +1182,10 @@ for tave_int in tave_ints:
               )
 
   ## ---
-  #if do_atmosphere_plots:
-  #  pfull, it_ave = pyic.time_average(IcD_atm3d, 'pfull', t1, t2, iz='all')
-  #sys.exit()
-
+  if do_atmosphere_plots:
+    IcD_atm3d.plevc = np.array([100000,92500,85000,77500,70000,60000,50000,40000,30000,25000,20000,15000,10000,7000,5000,3000,1000])
+    pfull, it_ave = pyic.time_average(IcD_atm3d, 'pfull', t1, t2, iz='all')
+    icall, ind_lev, fac = pyic.calc_vertical_interp_weights(pfull, IcD_atm3d.plevc)
 
   # ---
   fig_name = 'atm_2m_temp'
@@ -1295,6 +1303,95 @@ for tave_int in tave_ints:
                              land_facecolor='none',
                              IcD=IcD_atm2d, **Ddict)
     save_fig('total cloud cover', path_pics, fig_name, FigInf)
+
+  # ---
+  fig_name = 'atm_temp_zave'
+  if fig_name in fig_names:
+    data, it_ave = pyic.time_average(IcD_atm3d, 'ta', t1, t2, iz='all')
+    IaV = pyic.IconVariable('temp', 'deg C', 'zonally averaged temperature')
+    IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
+    IaV.data += -273.15
+    pyic.vplot_base(IcD_atm3d, IaV, clim=[-80., 30.], cincr=5, contfs='auto',
+                    cmap='RdYlBu_r',
+                    asp=0.5)
+    save_fig('temperature', path_pics, fig_name)
+
+  # ---
+  fig_name = 'atm_u_zave'
+  if fig_name in fig_names:
+    data, it_ave = pyic.time_average(IcD_atm3d, 'ua', t1, t2, iz='all')
+    IaV = pyic.IconVariable('ua', 'm/s', 'zon. ave. zonal velocity')
+    IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
+    pyic.vplot_base(IcD_atm3d, IaV, clim=30., cincr=5, contfs='auto',
+                    asp=0.5)
+    save_fig('zonal velocity', path_pics, fig_name)
+
+  # ---
+  fig_name = 'atm_v_zave'
+  if fig_name in fig_names:
+    data, it_ave = pyic.time_average(IcD_atm3d, 'va', t1, t2, iz='all')
+    IaV = pyic.IconVariable('va', 'm/s', 'zon. ave. meridional velocity')
+    IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
+    pyic.vplot_base(IcD_atm3d, IaV, clim=4., cincr=0.4, contfs='auto',
+                    asp=0.5)
+    save_fig('meridional velocity', path_pics, fig_name)
+
+  # ---
+  fig_name = 'atm_rel_hum_zave'
+  if fig_name in fig_names:
+    data, it_ave = pyic.time_average(IcD_atm3d, 'hur', t1, t2, iz='all')
+    IaV = pyic.IconVariable('hur', '%', 'zon. ave. relative humidity')
+    IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
+    IaV.data *= 100.
+    pyic.vplot_base(IcD_atm3d, IaV, clim=[0,100.], cincr=10., contfs='auto',
+                    asp=0.5)
+    save_fig('relative humidity', path_pics, fig_name)
+
+  # ---
+  fig_name = 'atm_cloud_cover_zave'
+  if fig_name in fig_names:
+    data, it_ave = pyic.time_average(IcD_atm3d, 'cl', t1, t2, iz='all')
+    IaV = pyic.IconVariable('cl', '%', 'zon. ave. cloud cover')
+    IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
+    IaV.data *= 100.
+    pyic.vplot_base(IcD_atm3d, IaV, clim=[0,25.], cincr=2.5, contfs='auto',
+                    asp=0.5)
+    save_fig('cloud cover', path_pics, fig_name)
+
+  # ---
+  fig_name = 'atm_cloud_water_zave'
+  if fig_name in fig_names:
+    data, it_ave = pyic.time_average(IcD_atm3d, 'clw', t1, t2, iz='all')
+    IaV = pyic.IconVariable('clw', 'mg/kg', 'zon. ave. cloud water')
+    IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
+    IaV.data *= 1000.
+    clw = IaV.data
+    pyic.vplot_base(IcD_atm3d, IaV, clim=[0,25.], cincr=2., contfs='auto',
+                    asp=0.5)
+    save_fig('cloud water', path_pics, fig_name)
+
+  # ---
+  fig_name = 'atm_cloud_ice_zave'
+  if fig_name in fig_names:
+    data, it_ave = pyic.time_average(IcD_atm3d, 'cli', t1, t2, iz='all')
+    IaV = pyic.IconVariable('cli', 'mg/kg', 'zon. ave. cloud ice')
+    IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
+    IaV.data *= 1000.
+    cli = IaV.data
+    pyic.vplot_base(IcD_atm3d, IaV, clim=[0,25.], cincr=2., contfs='auto',
+                    asp=0.5)
+    save_fig('cloud ice', path_pics, fig_name)
+
+  # ---
+  fig_name = 'atm_cloud_water_ice_zave'
+  if fig_name in fig_names:
+    lat_sec = IaV.lat_sec
+    IaV = pyic.IconVariable('clw_cli', 'mg/kg', 'zon. ave. cloud water+ice')
+    IaV.data = clw+cli
+    IaV.lat_sec = lat_sec 
+    pyic.vplot_base(IcD_atm3d, IaV, clim=[0,25.], cincr=2., contfs='auto',
+                    asp=0.5)
+    save_fig('cloud water+ice', path_pics, fig_name)
   
   # --------------------------------------------------------------------------------
   # Website
@@ -1322,10 +1419,13 @@ for tave_int in tave_ints:
   plist += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
   plist += ['sec:Time series']
   plist += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume', 'ts_ice_extent',]
-  plist += ['sec:Atmosphere']
+  plist += ['sec:Atmosphere surface']
   plist += ['atm_2m_temp','atm_sea_level_pressure',]
   plist += ['atm_zonal_wind_stress',]
   plist += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover']
+  plist += ['sec:Atmosphere zonal averages']
+  plist += ['atm_temp_zave', 'atm_u_zave', 'atm_v_zave', 'atm_rel_hum_zave']
+  plist += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave']
   
   print('Make QP website for the following figures:')
   for plot in plist:
