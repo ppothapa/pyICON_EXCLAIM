@@ -4,6 +4,7 @@
 # script to working conda environment
 path_conda_bin="/home/mpim/m300602/miniconda2/bin/"
 # name of working conda environment
+#conda_env="pyicon_env"
 conda_env="myenv_py3"
 
 # --- add pyicon to PYTHONPATH
@@ -17,7 +18,7 @@ echo ""
 
 # --- activate conda environment
 echo "Activate conda environment by:"
-echo "${path_conda_bin}/activate myenv_py3"
+echo "${path_conda_bin}/activate ${conda_env}"
 source ${path_conda_bin}/activate ${conda_env}
 echo ""
 
