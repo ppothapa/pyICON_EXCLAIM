@@ -1337,11 +1337,15 @@ last change:
 #    ax.set_title(figstr[nn], loc='left', fontsize=10)
   return hca
 
-def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', 
+def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', xlocs=None, ylocs=None,
                      ticks_position='both', template='none', 
                      x_minor_tick_diff='none', y_minor_tick_diff='none',
                      # cartopy specific settings
                      projection=None, 
+                     do_xylim=True,
+                     do_xyticks=True,
+                     do_xyminorticks=True,
+                     do_gridlines=False,
                      coastlines_color='k', coastlines_resolution='110m',
                      land_zorder=2, land_facecolor='0.7'):
 
@@ -1351,6 +1355,8 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto',
     ylim = [-90,90]
     xticks = np.arange(-120,121,60.)
     yticks = np.arange(-60,61,30.)
+    xlocs = np.arange(-180,181,60.)
+    ylocs = np.arange(-90,91,30.)
     x_minor_tick_diff = 20.
     y_minor_tick_diff = 10.
   elif template=='na':
@@ -1362,48 +1368,61 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto',
     pass
   elif template=='zlat_noso':
     pass
-
-  # --- xlim, ylim
-  if isinstance(xlim,str) and xlim=='none':
-    xlim = ax.get_xlim()
+  elif template=='none':
+    pass
   else:
-    ax.set_xlim(xlim)
-  if isinstance(ylim,str) and ylim=='none':
-    ylim = ax.get_ylim()
-  else:
-    ax.set_ylim(ylim)
+    raise ValueError('::: Error: Uknown template %s'%template)
   
   # --- xticks, yticks
   if isinstance(xticks,str) and xticks=='auto':
     xticks = np.linspace(xlim[0],xlim[1],5) 
   if isinstance(yticks,str) and yticks=='auto':
     yticks = np.linspace(ylim[0],ylim[1],5) 
-    
-  if projection is None:
-    ax.set_xticks(xticks)
-    ax.set_yticks(yticks)
-  else:
-    ax.set_xticks(xticks, crs=projection)
-    ax.set_yticks(yticks, crs=projection)
+  if do_xyticks:
+    if projection is None:
+      ax.set_xticks(xticks)
+      ax.set_yticks(yticks)
+    else:
+      ax.set_xticks(xticks, crs=ccrs.PlateCarree())
+      ax.set_yticks(yticks, crs=ccrs.PlateCarree())
   
-  if ticks_position=='both':
-    ax.xaxis.set_ticks_position('both')
-    ax.yaxis.set_ticks_position('both')
-
+    if ticks_position=='both':
+      ax.xaxis.set_ticks_position('both')
+      ax.yaxis.set_ticks_position('both')
+  
+  if do_gridlines:
+    if not projection is None:
+      ax.gridlines(xlocs=xlocs, ylocs=ylocs)
+    else:
+      ax.grid(True)
+    
   # --- minor ticks
-  if (isinstance(x_minor_tick_diff,str) and x_minor_tick_diff!='auto'):
-    x_minor_tick_diff = (xticks[1]-xticks[0])/5.
-    #xminorticks = np.linspace(xlim[0], xlim[1], (xticks.size-1)*2+xticks.size)
-  xminorticks = np.arange(xlim[0], xlim[1]+x_minor_tick_diff, x_minor_tick_diff)
-  if (isinstance(y_minor_tick_diff,str) and y_minor_tick_diff!='auto'):
-    y_minor_tick_diff = (yticks[1]-yticks[0])/5.
-  yminorticks = np.arange(ylim[0], ylim[1]+y_minor_tick_diff, y_minor_tick_diff)
-  if not (isinstance(x_minor_tick_diff,str) and x_minor_tick_diff!='none'):
-    #ax.xaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(x_minor_tick_diff))
-    ax.set_xticks(xminorticks, minor=True)
-  if not (isinstance(y_minor_tick_diff,str) and y_minor_tick_diff!='none'):
-    #ax.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(y_minor_tick_diff))
-    ax.set_yticks(yminorticks, minor=True)
+  if do_xyminorticks:
+    if (isinstance(x_minor_tick_diff,str) and x_minor_tick_diff!='auto'):
+      x_minor_tick_diff = (xticks[1]-xticks[0])/5.
+      #xminorticks = np.linspace(xlim[0], xlim[1], (xticks.size-1)*2+xticks.size)
+    xminorticks = np.arange(xlim[0], xlim[1]+x_minor_tick_diff, x_minor_tick_diff)
+    if (isinstance(y_minor_tick_diff,str) and y_minor_tick_diff!='auto'):
+      y_minor_tick_diff = (yticks[1]-yticks[0])/5.
+    yminorticks = np.arange(ylim[0], ylim[1]+y_minor_tick_diff, y_minor_tick_diff)
+    if not (isinstance(x_minor_tick_diff,str) and x_minor_tick_diff!='none'):
+      #ax.xaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(x_minor_tick_diff))
+      ax.set_xticks(xminorticks, minor=True)
+    if not (isinstance(y_minor_tick_diff,str) and y_minor_tick_diff!='none'):
+      #ax.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(y_minor_tick_diff))
+      ax.set_yticks(yminorticks, minor=True)
+        
+  # --- xlim, ylim
+  if isinstance(xlim,str) and xlim=='none':
+    xlim = ax.get_xlim()
+  if isinstance(ylim,str) and ylim=='none':
+    ylim = ax.get_ylim()
+  if do_xylim:
+    if projection is None:
+      ax.set_xlim(xlim)
+      ax.set_ylim(ylim)
+    else:
+      ax.set_extent([xlim[0],xlim[1],ylim[0],ylim[1]], crs=ccrs.PlateCarree())
 
   # --- cartopy specific stuff
   if not projection is None: 
@@ -1422,5 +1441,7 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto',
       feature = cartopy.feature.COASTLINE
       #feature = feature.with_scale(coastlines_resolution)
       ax.add_feature(feature, zorder=land_zorder, edgecolor=coastlines_color)
+    if template=='global':
+      ax.set_global()
   return
 
