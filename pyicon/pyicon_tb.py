@@ -534,7 +534,7 @@ def derive_section_points(p1, p2, npoints=101,):
     lat_sec = np.linspace(p1[1],p2[1],npoints)
   else:
     lon_sec = np.linspace(p1[0],p2[0],npoints)
-    lat_sec = (p2[1]-p1[1])/(p2[0]-p1[0])*(xsec-p1[0])+p1[1]
+    lat_sec = (p2[1]-p1[1])/(p2[0]-p1[0])*(lon_sec-p1[0])+p1[1]
   dist_sec = haversine_dist(lon_sec[0], lat_sec[0], lon_sec, lat_sec)
   return lon_sec, lat_sec, dist_sec
 
