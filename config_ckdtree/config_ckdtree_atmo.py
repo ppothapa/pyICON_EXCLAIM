@@ -34,7 +34,7 @@ path_tgrids = []
 # r2b9
 #gnames += ['icon_grid_0015_R02B09_G']
 #path_tgrids += ['/pool/data/ICON/grids/public/mpim/0015/']
-# r2b6
+# r2b4
 gnames += ['icon_grid_0013_R02B04_G']
 path_tgrids += ['/pool/data/ICON/grids/public/mpim/0013/']
 

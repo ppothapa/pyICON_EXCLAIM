@@ -1,0 +1,22 @@
+name: pyicon_env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.7
+  - numpy
+  - scipy
+  - netcdf4
+  - matplotlib
+  - cartopy
+  - ipdb
+  - conda-build
+  - ipympl      # interactive plots in jupyterlab
+  - nodejs      # interactive plots in jupyterlab
+  - ipython     # for pyicon_view
+  - jupyter     # for pyicon_view
+  - jupyterlab  # optional
+  - cmocean     # optional
+  - mpi4py      # not used by pyicon so far
+  - seawater    # not used by pyicon so far
+  - xarray      # not used by pyicon so far
+  - dask        # not used by pyicon so far

@@ -22,6 +22,10 @@ from importlib import reload
 
 def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                contfs=None,
+               conts=None,
+               contcolor='k',
+               contthick=0.,
+               contlw=1.,
                ax='auto', cax=0,
                title='auto', xlabel='', ylabel='',
                xlim='auto', ylim='auto',
@@ -98,6 +102,10 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     hm = shade(IcD.Tri, IaV.data, ax=ax, cax=cax, 
                clim=clim, cincr=cincr, cmap=cmap,
                contfs=contfs,
+               conts=conts,
+               contcolor=contcolor,
+               contthick=contthick,
+               contlw=contlw,
                transform=ccrs_proj,
                logplot=logplot,
                adjust_axlims=adjust_axlims,
@@ -110,6 +118,9 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     hm = shade(IcD.lon, IcD.lat, IaV.data, ax=ax, cax=cax, 
                clim=clim, cincr=cincr, cmap=cmap,
                contfs=contfs,
+               conts=conts,
+               contcolor=contcolor,
+               contthick=contthick,
                transform=ccrs_proj,
                logplot=logplot,
                adjust_axlims=adjust_axlims,
@@ -153,11 +164,16 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
 
 def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                contfs=None,
+               conts=None,
+               contcolor='k',
+               contthick=0.,
+               contlw=1.,
                ax='auto', cax=0,
                title='auto', xlabel='', ylabel='',
                xlim='auto', ylim='auto',
                xvar='lat',
                log2vax=False,
+               vertaxtype='linear',
                logplot=False,
                asp=0.5,
                fig_size_fac=2.0,
@@ -177,6 +193,10 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     * mappable
   """
   Dstr = dict()
+
+  # --- for backward compatibility
+  if log2vax:
+    vertaxtype = 'log2'
 
   # --- color limits and color map
   if isinstance(clim,str) and clim=='auto':
@@ -208,7 +228,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
 
   nz = IaV.data.shape[0]
 
-  # --- do plotting
+  # --- horizontal axes
   if xvar=='lon':
     x = IaV.lon_sec
     xstr = 'longitude'
@@ -218,23 +238,37 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   elif xvar=='dist':
     x = IaC.dist_sec/1e3
     xstr = 'distance [km]'
-  if nz==IcD.depthc.size:
-    depth = IcD.depthc
-  else: 
-    depth = IcD.depthi
-  if log2vax:
-    depth = np.log(depth)/np.log(2) 
-  ylabel = 'depth [m]'
 
-  hm = shade(x, depth, IaV.data, ax=ax, cax=cax, 
+  # --- vertical axes
+  if IcD.model_type=='oce':
+    if nz==IcD.depthc.size:
+      z = IcD.depthc
+    else: 
+      z = IcD.depthi
+    ylabel = 'depth [m]'
+  elif IcD.model_type=='atm':
+    z = IcD.plevc/100.
+    ylabel = 'pressure [hPa]'
+
+  if vertaxtype=='log2':
+    z = np.log(depth)/np.log(2) 
+  elif vertaxtype=='log10':
+    z = np.log(depth)/np.log(10) 
+
+  # --- do plotting
+  hm = shade(x, z, IaV.data, ax=ax, cax=cax, 
              clim=clim, cincr=cincr, cmap=cmap,
              contfs=contfs,
+             conts=conts,
+             contcolor=contcolor,
+             contthick=contthick,
+             contlw=contlw,
              logplot=logplot,
             )
   if isinstance(xlim, str) and (xlim=='auto'):
     xlim = [x.min(), x.max()]
   if isinstance(ylim, str) and (ylim=='auto'):
-    ylim = [depth.max(), depth.min()]
+    ylim = [z.max(), z.min()]
 
   mappable = hm[0]
 
@@ -243,11 +277,16 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   ax.set_xlabel(xstr)
   ax.set_ylabel(ylabel)
   ax.set_xticks(np.linspace(np.round(xlim[0]),np.round(xlim[1]),7))
-  ax.set_yticks(np.arange(0,6500,1000.))
+  if IcD.model_type=='oce':
+    ax.set_yticks(np.arange(0,6500,1000.))
+  elif IcD.model_type=='atm':
+    ax.set_yticks(np.arange(0,1100,100.))
   ax.set_xlim(xlim)
   ax.set_ylim(ylim)
-  if log2vax:
+  if vertaxtype=='log2':
     ax.set_yticklabels(2**ax.get_yticks())
+  elif vertaxtype=='log10':
+    ax.set_yticklabels(10**ax.get_yticks())
   ax.set_facecolor('0.8')
   ax.xaxis.set_ticks_position('both')
   ax.yaxis.set_ticks_position('both')
@@ -281,12 +320,12 @@ def shade(
               rasterized=True,
               clim=[None, None],
               extend='both',
+              contfs=None,
               conts=None,
               nclev='auto',
               #cint='auto', # old: use cincr now
               contcolor='k',
               contthick=0.,
-              contfs=None,
               contlw=1.,
               use_pcol=True,
               cbticks='auto',
@@ -1317,11 +1356,15 @@ last change:
 #    ax.set_title(figstr[nn], loc='left', fontsize=10)
   return hca
 
-def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', 
+def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', xlocs=None, ylocs=None,
                      ticks_position='both', template='none', 
                      x_minor_tick_diff='none', y_minor_tick_diff='none',
                      # cartopy specific settings
                      projection=None, 
+                     do_xylim=True,
+                     do_xyticks=True,
+                     do_xyminorticks=True,
+                     do_gridlines=False,
                      coastlines_color='k', coastlines_resolution='110m',
                      land_zorder=2, land_facecolor='0.7'):
 
@@ -1331,6 +1374,8 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto',
     ylim = [-90,90]
     xticks = np.arange(-120,121,60.)
     yticks = np.arange(-60,61,30.)
+    xlocs = np.arange(-180,181,60.)
+    ylocs = np.arange(-90,91,30.)
     x_minor_tick_diff = 20.
     y_minor_tick_diff = 10.
   elif template=='na':
@@ -1342,43 +1387,61 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto',
     pass
   elif template=='zlat_noso':
     pass
-
-  # --- xlim, ylim
-  if isinstance(xlim,str) and xlim=='none':
-    xlim = ax.get_xlim()
+  elif template=='none':
+    pass
   else:
-    ax.set_xlim(xlim)
-  if isinstance(ylim,str) and ylim=='none':
-    ylim = ax.get_ylim()
-  else:
-    ax.set_ylim(ylim)
+    raise ValueError('::: Error: Uknown template %s'%template)
   
   # --- xticks, yticks
   if isinstance(xticks,str) and xticks=='auto':
     xticks = np.linspace(xlim[0],xlim[1],5) 
   if isinstance(yticks,str) and yticks=='auto':
     yticks = np.linspace(ylim[0],ylim[1],5) 
-    
-  if projection is None:
-    ax.set_xticks(xticks)
-    ax.set_yticks(yticks)
-  else:
-    ax.set_xticks(xticks, crs=projection)
-    ax.set_yticks(yticks, crs=projection)
+  if do_xyticks:
+    if projection is None:
+      ax.set_xticks(xticks)
+      ax.set_yticks(yticks)
+    else:
+      ax.set_xticks(xticks, crs=ccrs.PlateCarree())
+      ax.set_yticks(yticks, crs=ccrs.PlateCarree())
   
-  if ticks_position=='both':
-    ax.xaxis.set_ticks_position('both')
-    ax.yaxis.set_ticks_position('both')
-
+    if ticks_position=='both':
+      ax.xaxis.set_ticks_position('both')
+      ax.yaxis.set_ticks_position('both')
+  
+  if do_gridlines:
+    if not projection is None:
+      ax.gridlines(xlocs=xlocs, ylocs=ylocs)
+    else:
+      ax.grid(True)
+    
   # --- minor ticks
-  if (isinstance(x_minor_tick_diff,str) and x_minor_tick_diff!='auto'):
-    x_minor_tick_diff = (xticks[1]-xticks[0])/5.
-  if (isinstance(y_minor_tick_diff,str) and y_minor_tick_diff!='auto'):
-    y_minor_tick_diff = (yticks[1]-yticks[0])/5.
-  if not (isinstance(x_minor_tick_diff,str) and x_minor_tick_diff!='none'):
-    ax.xaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(x_minor_tick_diff))
-  if not (isinstance(y_minor_tick_diff,str) and y_minor_tick_diff!='none'):
-    ax.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(y_minor_tick_diff))
+  if do_xyminorticks:
+    if (isinstance(x_minor_tick_diff,str) and x_minor_tick_diff!='auto'):
+      x_minor_tick_diff = (xticks[1]-xticks[0])/5.
+      #xminorticks = np.linspace(xlim[0], xlim[1], (xticks.size-1)*2+xticks.size)
+    xminorticks = np.arange(xlim[0], xlim[1]+x_minor_tick_diff, x_minor_tick_diff)
+    if (isinstance(y_minor_tick_diff,str) and y_minor_tick_diff!='auto'):
+      y_minor_tick_diff = (yticks[1]-yticks[0])/5.
+    yminorticks = np.arange(ylim[0], ylim[1]+y_minor_tick_diff, y_minor_tick_diff)
+    if not (isinstance(x_minor_tick_diff,str) and x_minor_tick_diff!='none'):
+      #ax.xaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(x_minor_tick_diff))
+      ax.set_xticks(xminorticks, minor=True)
+    if not (isinstance(y_minor_tick_diff,str) and y_minor_tick_diff!='none'):
+      #ax.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(y_minor_tick_diff))
+      ax.set_yticks(yminorticks, minor=True)
+        
+  # --- xlim, ylim
+  if isinstance(xlim,str) and xlim=='none':
+    xlim = ax.get_xlim()
+  if isinstance(ylim,str) and ylim=='none':
+    ylim = ax.get_ylim()
+  if do_xylim:
+    if projection is None:
+      ax.set_xlim(xlim)
+      ax.set_ylim(ylim)
+    else:
+      ax.set_extent([xlim[0],xlim[1],ylim[0],ylim[1]], crs=ccrs.PlateCarree())
 
   # --- cartopy specific stuff
   if not projection is None: 
@@ -1397,5 +1460,7 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto',
       feature = cartopy.feature.COASTLINE
       #feature = feature.with_scale(coastlines_resolution)
       ax.add_feature(feature, zorder=land_zorder, edgecolor=coastlines_color)
+    if template=='global':
+      ax.set_global()
   return
 

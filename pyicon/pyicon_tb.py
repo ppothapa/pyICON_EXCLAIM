@@ -165,6 +165,35 @@ def interp_to_section(data, fpath_ckdtree, coordinates='clat clon'):
   datai[datai==0.] = np.ma.masked
   return lon_sec, lat_sec, dist_sec, datai
 
+def calc_vertical_interp_weights(zdata, levs):
+  """ Calculate vertical interpolation weights and indices.
+
+Call example:
+icall, ind_lev, fac = calc_vertical_interp_weights(zdata, levs)
+
+Afterwards do interpolation like this:
+datai = data[ind_lev,icall]*fac+data[ind_lev-1,icall]*(1.-fac)
+  """
+  nza = zdata.shape[0]
+  # --- initializations
+  ind_lev = np.zeros((levs.size,zdata.shape[1]),dtype=int)
+  icall = np.arange(zdata.shape[1],dtype=int)
+  icall = icall[np.newaxis,:]
+  fac = np.ma.zeros((levs.size,zdata.shape[1]))
+  for k, lev in enumerate(levs):
+    #print(f'k = {k}')
+    # --- find level below critical level
+    ind_lev[k,:] = (zdata<levs[k]).sum(axis=0)-1
+    ind_lev[k,ind_lev[k,:]==(nza-1)]=-1
+    # --- zdata below and above lev 
+    zd1 = zdata[ind_lev[k,:]-1,icall]
+    zd2 = zdata[ind_lev[k,:],icall]
+    # --- linear interpolation to get weight
+    fac[k,:] = (1.-0.)/(zd2-zd1)*(levs[k]-zd1)+0 
+  # --- mask values which are out of range
+  fac[ind_lev==-1] = np.ma.masked 
+  return icall, ind_lev, fac
+
 def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdtree=''):
 
   for fp in [fpath_data, fpath_fx, fpath_ckdtree]:
@@ -274,6 +303,13 @@ def zonal_average_3d_data(data3d, basin='global', it=0, coordinates='clat clon',
     # --- do zonal average
     data_zave[k,:] = datai.mean(axis=1)
   return lat_sec, data_zave
+
+def zonal_average_atmosphere(data3d, ind_lev, fac, fpath_ckdtree='', coordinates='clat clon',):
+    icall = np.arange(data3d.shape[1],dtype=int)
+    datavi = data3d[ind_lev,icall]*fac+data3d[ind_lev-1,icall]*(1.-fac)
+    lon, lat, datavihi = interp_to_rectgrid(datavi, fpath_ckdtree, coordinates=coordinates)
+    data_zave = datavihi.mean(axis=2)
+    return lat, data_zave
 
 def zonal_section_3d_data(data3d, fpath_ckdtree, coordinates):
   """
