@@ -1,6 +1,7 @@
-name: pyicon_env
+name: pyicon_env2
 channels:
   - conda-forge
+  - defaults
 dependencies:
   - python=3.7
   - numpy
