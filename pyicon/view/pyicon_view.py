@@ -92,7 +92,10 @@ class hplot(object):
     # --- grid
     self.use_tgrid = use_tgrid
     self.path_ckdtree = path_ckdtree
-    self.rgrid_name  = self.IcD.rgrid_names[0]
+    if 'global_0.3' in self.IcD.rgrid_names:
+      self.rgrid_name = 'global_0.3'
+    else:
+      self.rgrid_name  = self.IcD.rgrid_names[0]
     self.sec_name = ''
     self.rgrid_fpath = self.IcD.rgrid_fpaths[np.where(self.IcD.rgrid_names==self.rgrid_name)[0][0] ]
     self.sec_fpath = ''
@@ -266,7 +269,9 @@ class hplot(object):
                          projection=self.projection,
                          use_tgrid=self.use_tgrid,
                          logplot=self.logplot,
+                         do_plot_settings=False,
                         )
+    pyic.plot_settings(self.ax, template='global')
     if do_infostr:
       # --- set info strings
       self.hrstr = self.ax.text(0.05, 0.14, 'asdf', 
@@ -331,7 +336,9 @@ class hplot(object):
                            projection=self.projection,
                            use_tgrid=self.use_tgrid,
                            logplot=self.logplot,
+                           do_plot_settings=False,
                           )
+      pyic.plot_settings(self.ax, template='global')
     else:
       # synchronize with initialize_plot
       # --- load data 
