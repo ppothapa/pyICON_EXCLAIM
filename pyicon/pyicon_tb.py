@@ -388,6 +388,9 @@ def ckdtree_section(p1, p2, npoints=101,
                  gname='',
                  tgname='',
                  n_nearest_neighbours=1,
+                 load_cgrid=True,
+                 load_egrid=True,
+                 load_vgrid=True,
                  ):
   """
   """
