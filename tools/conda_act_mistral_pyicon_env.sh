@@ -5,7 +5,12 @@
 path_conda_bin="/home/mpim/m300602/miniconda2/bin/"
 # name of working conda environment
 #conda_env="pyicon_env"
-conda_env="myenv_py3"
+#conda_env="pyicon_env2"
+#conda_env="pyicon_env3"
+#conda_env="pyicon_env4"
+#conda_env="pyicon_py37"
+conda_env="pyicon_py38"
+#conda_env="myenv_py3"
 
 # --- add pyicon to PYTHONPATH
 PYICON_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"
