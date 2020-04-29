@@ -138,7 +138,7 @@ class IconData(object):
                         % (self.path_rectgrids))
 
     # --- choose rgrid and section
-    # (do we need this?)
+    # (do we need this? - yes, we load the rgrid later on)
     self.set_rgrid(rgrid_name)
     self.set_section(section_name)
 
@@ -236,22 +236,22 @@ class IconData(object):
 
   def set_rgrid(self, rgrid_name):
     if rgrid_name=="":
-      # take first of list
+      rgrid_name = 'global_0.3'
+      if not rgrid_name in self.rgrid_names:
+        # if default does not exist, take first of list
+        rgrid_name  = rgrid_names[0]
+    if rgrid_name in self.rgrid_names:
+      self.rgrid_fpath = self.rgrid_fpaths[
+        np.where(self.rgrid_names==rgrid_name)[0][0] ]
+      self.rgrid_name  = rgrid_name
+    else: 
       self.rgrid_fpath = self.rgrid_fpaths[0]
       self.rgrid_name  = self.rgrid_names[0]
-    else:
-      if rgrid_name in self.rgrid_names:
-        self.rgrid_fpath = self.rgrid_fpaths[
-          np.where(self.rgrid_names==rgrid_name)[0][0] ]
-        self.rgrid_name  = rgrid_name
-      else: 
-        self.rgrid_fpath = self.rgrid_fpaths[0]
-        self.rgrid_name  = self.rgrid_names[0]
-        print('::: Error: %s could not be found. :::' 
-              % (rgrid_name))
-        print('You could have chosen one from:')
-        print(self.rgrid_names)
-        raise ValueError('::: Stopping! :::')
+      print('::: Error: %s could not be found. :::' 
+            % (rgrid_name))
+      print('You could have chosen one from:')
+      print(self.rgrid_names)
+      raise ValueError('::: Stopping! :::')
     return
 
   def set_section(self, sec_name):
@@ -478,14 +478,8 @@ class IconData(object):
     return
 
   def mask_big_triangles(self):
-    self.mask_bt = (
-        (np.abs(  self.vlon[self.vertex_of_cell[:,0]] 
-                - self.vlon[self.vertex_of_cell[:,1]])>180.)
-      | (np.abs(  self.vlon[self.vertex_of_cell[:,0]] 
-                - self.vlon[self.vertex_of_cell[:,2]])>180.)
-                  )
-    self.Tri.set_mask(self.mask_bt)
-    self.maskTri = self.mask_bt
+    self.Tri, self.maskTri = mask_big_triangles(self.vlon, self.vertex_of_cell, 
+                                                self.Tri)
     return
 
 class IconVariable(object):
