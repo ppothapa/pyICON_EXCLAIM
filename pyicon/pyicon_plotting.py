@@ -144,7 +144,8 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   else:
     template = 'none'
   if do_plot_settings:
-    plot_settings(ax, template=template, projection=ccrs_proj, land_facecolor=land_facecolor)
+    mybreak()
+    plot_settings(ax, template=template, land_facecolor=land_facecolor)
 
   #if (projection!='none') and (crs_features):
   ##if projection=='PlateCarree':
@@ -1358,9 +1359,9 @@ last change:
 
 def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', xlocs=None, ylocs=None,
                      ticks_position='both', template='none', 
-                     x_minor_tick_diff='none', y_minor_tick_diff='none',
+                     x_minor_tick_diff='auto', y_minor_tick_diff='auto',
                      # cartopy specific settings
-                     projection=None, 
+                     projection=None,  # not necessary
                      do_xylim=True,
                      do_xyticks=True,
                      do_xyminorticks=True,
@@ -1391,64 +1392,72 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', xl
     pass
   else:
     raise ValueError('::: Error: Uknown template %s'%template)
-  
-  # --- xticks, yticks
-  if isinstance(xticks,str) and xticks=='auto':
-    xticks = np.linspace(xlim[0],xlim[1],5) 
-  if isinstance(yticks,str) and yticks=='auto':
-    yticks = np.linspace(ylim[0],ylim[1],5) 
-  if do_xyticks:
-    if projection is None:
-      ax.set_xticks(xticks)
-      ax.set_yticks(yticks)
-    else:
-      ax.set_xticks(xticks, crs=ccrs.PlateCarree())
-      ax.set_yticks(yticks, crs=ccrs.PlateCarree())
-  
-    if ticks_position=='both':
-      ax.xaxis.set_ticks_position('both')
-      ax.yaxis.set_ticks_position('both')
-  
-  if do_gridlines:
-    if not projection is None:
-      ax.gridlines(xlocs=xlocs, ylocs=ylocs)
-    else:
-      ax.grid(True)
-    
-  # --- minor ticks
-  if do_xyminorticks:
-    if (isinstance(x_minor_tick_diff,str) and x_minor_tick_diff!='auto'):
-      x_minor_tick_diff = (xticks[1]-xticks[0])/5.
-      #xminorticks = np.linspace(xlim[0], xlim[1], (xticks.size-1)*2+xticks.size)
-    xminorticks = np.arange(xlim[0], xlim[1]+x_minor_tick_diff, x_minor_tick_diff)
-    if (isinstance(y_minor_tick_diff,str) and y_minor_tick_diff!='auto'):
-      y_minor_tick_diff = (yticks[1]-yticks[0])/5.
-    yminorticks = np.arange(ylim[0], ylim[1]+y_minor_tick_diff, y_minor_tick_diff)
-    if not (isinstance(x_minor_tick_diff,str) and x_minor_tick_diff!='none'):
-      #ax.xaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(x_minor_tick_diff))
-      ax.set_xticks(xminorticks, minor=True)
-    if not (isinstance(y_minor_tick_diff,str) and y_minor_tick_diff!='none'):
-      #ax.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(y_minor_tick_diff))
-      ax.set_yticks(yminorticks, minor=True)
-        
-  # --- xlim, ylim
+
   if isinstance(xlim,str) and xlim=='none':
     xlim = ax.get_xlim()
   if isinstance(ylim,str) and ylim=='none':
     ylim = ax.get_ylim()
-  if do_xylim:
-    if projection is None:
-      ax.set_xlim(xlim)
-      ax.set_ylim(ylim)
-    else:
-      ax.set_extent([xlim[0],xlim[1],ylim[0],ylim[1]], crs=ccrs.PlateCarree())
+  if isinstance(xticks,str) and xticks=='auto':
+    xticks = np.linspace(xlim[0],xlim[1],5) 
+  if isinstance(yticks,str) and yticks=='auto':
+    yticks = np.linspace(ylim[0],ylim[1],5) 
+  if (isinstance(x_minor_tick_diff,str) and x_minor_tick_diff=='auto'):
+    x_minor_tick_diff = (xticks[1]-xticks[0])/5.
+    #xminorticks = np.linspace(xlim[0], xlim[1], (xticks.size-1)*2+xticks.size)
+  xminorticks = np.arange(xlim[0], xlim[1]+x_minor_tick_diff, x_minor_tick_diff)
+  if (isinstance(y_minor_tick_diff,str) and y_minor_tick_diff=='auto'):
+    y_minor_tick_diff = (yticks[1]-yticks[0])/5.
+  yminorticks = np.arange(ylim[0], ylim[1]+y_minor_tick_diff, y_minor_tick_diff)
 
-  # --- cartopy specific stuff
-  if not projection is None: 
+  # --- decide whether to use cartopy
+  if isinstance(ax, cartopy.mpl.geoaxes.GeoAxesSubplot):
+    use_cartopy = True
+    projection = ax.projection
+  else:
+    use_cartopy = False
+    projection = None
+
+  # !!! This needs to be set before minor ticks are set
+  if use_cartopy:
     #ax.xaxis.set_major_formatter(cartopy.mpl.ticker.LongitudeFormatter(degree_symbol=''))
     #ax.yaxis.set_major_formatter(cartopy.mpl.ticker.LatitudeFormatter(degree_symbol=''))
     ax.xaxis.set_major_formatter(cartopy.mpl.ticker.LongitudeFormatter())
     ax.yaxis.set_major_formatter(cartopy.mpl.ticker.LatitudeFormatter())
+  
+  # --- xticks, yticks
+  if do_xyticks and not use_cartopy:
+    ax.set_xticks(xticks)
+    ax.set_yticks(yticks)
+  elif do_xyticks and use_cartopy:
+    ax.set_xticks(xticks, crs=ccrs.PlateCarree())
+    ax.set_yticks(yticks, crs=ccrs.PlateCarree())
+  
+  if do_xyticks and ticks_position=='both':
+    ax.xaxis.set_ticks_position('both')
+    ax.yaxis.set_ticks_position('both')
+  
+  # --- gridlines
+  if do_gridlines and not use_cartopy:
+    ax.grid(True)
+  elif do_gridlines and use_cartopy:
+    ax.gridlines(xlocs=xlocs, ylocs=ylocs)
+    
+  # --- minor ticks
+  if do_xyminorticks:
+    #ax.xaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(x_minor_tick_diff))
+    ax.set_xticks(xminorticks, minor=True)
+    #ax.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(y_minor_tick_diff))
+    ax.set_yticks(yminorticks, minor=True)
+        
+  # --- xlim, ylim
+  if do_xylim and not use_cartopy:
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+  elif do_xylim and use_cartopy:
+    ax.set_extent([xlim[0],xlim[1],ylim[0],ylim[1]], crs=ccrs.PlateCarree())
+
+  # --- cartopy specific stuff
+  if use_cartopy: 
     #for tick in ax.xaxis.get_ticklabels()+ax.yaxis.get_ticklabels():
     #  tick.set_fontsize(8)
     if isinstance(land_facecolor, str) and land_facecolor!='none':
@@ -1460,7 +1469,7 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', xl
       feature = cartopy.feature.COASTLINE
       #feature = feature.with_scale(coastlines_resolution)
       ax.add_feature(feature, zorder=land_zorder, edgecolor=coastlines_color)
-    if template=='global':
-      ax.set_global()
+    #if template=='global':
+    #  ax.set_global()
   return
 
