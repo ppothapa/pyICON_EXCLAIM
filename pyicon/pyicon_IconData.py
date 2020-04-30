@@ -478,7 +478,7 @@ class IconData(object):
     return
 
   def mask_big_triangles(self):
-    self.Tri, self.maskTri = mask_big_triangles(self.vlon, self.vertex_of_cell, 
+    self.Tri, self.mask_bt = mask_big_triangles(self.vlon, self.vertex_of_cell, 
                                                 self.Tri)
     return
 
