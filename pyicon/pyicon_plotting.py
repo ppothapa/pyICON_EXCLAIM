@@ -144,7 +144,6 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   else:
     template = 'none'
   if do_plot_settings:
-    mybreak()
     plot_settings(ax, template=template, land_facecolor=land_facecolor)
 
   #if (projection!='none') and (crs_features):
