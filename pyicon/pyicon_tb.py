@@ -81,7 +81,7 @@ class pyicon_configure(object):
     return
 
 #def icon_to_regular_grid(data, shape, distances=None, \
-#                  inds=None, radius_of_influence=100e3):
+#                  inds=None, radius_of_influence=1000e3):
 #  """
 #  """
 #  data_interpolated = apply_ckdtree(data, distances=distances, inds=inds, 
@@ -90,7 +90,7 @@ class pyicon_configure(object):
 #  return data_interpolated
 #
 #def icon_to_section(data, distances=None, \
-#                  inds=None, radius_of_influence=100e3):
+#                  inds=None, radius_of_influence=1000e3):
 #  """
 #  """
 #  data_interpolated = apply_ckdtree(data, distances=distances, inds=inds, 
@@ -100,7 +100,7 @@ class pyicon_configure(object):
 """
 Routines to apply interpolation weights
 """
-def apply_ckdtree_base(data, inds, distances, radius_of_influence=100e3):
+def apply_ckdtree_base(data, inds, distances, radius_of_influence=1000e3):
   if distances.ndim == 1:
     #distances_ma = np.ma.masked_greater(distances, radius_of_influence)
     if data.ndim==1:
@@ -119,11 +119,10 @@ def apply_ckdtree_base(data, inds, distances, radius_of_influence=100e3):
     elif data.ndim==2:
       data_interpolated = np.ma.sum(weights[np.newaxis,:,:] * data[:,inds], axis=2) / np.ma.sum(weights[np.newaxis,:,:], axis=2)
       #data_interpolated[:,distances>=radius_of_influence] = np.nan
-    data_interpolated = np.ma.masked_invalid(data_interpolated)
-
+  data_interpolated = np.ma.masked_invalid(data_interpolated)
   return data_interpolated
 
-def apply_ckdtree(data, fpath_ckdtree, coordinates='clat clon', radius_of_influence=100e3):
+def apply_ckdtree(data, fpath_ckdtree, coordinates='clat clon', radius_of_influence=1000e3):
   """
   * credits
     function modified from pyfesom (Nikolay Koldunov)
