@@ -85,8 +85,10 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   # --- cartopy projection
   if projection=='none':
     ccrs_proj = None
+    ccrs_transform = None
   else:
     ccrs_proj = getattr(ccrs, projection)()
+    ccrs_transform = ccrs.PlateCarree()
 
   # --- make axes and colorbar (taken from shade)
   if ax == 'auto':
@@ -106,7 +108,8 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                contcolor=contcolor,
                contthick=contthick,
                contlw=contlw,
-               transform=ccrs_proj,
+               #transform=ccrs_proj,
+               transform=ccrs_transform,
                logplot=logplot,
                adjust_axlims=adjust_axlims,
               )
@@ -121,7 +124,8 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                conts=conts,
                contcolor=contcolor,
                contthick=contthick,
-               transform=ccrs_proj,
+               #transform=ccrs_proj,
+               transform=ccrs_transform,
                logplot=logplot,
                adjust_axlims=adjust_axlims,
               )
