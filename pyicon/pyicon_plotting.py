@@ -21,6 +21,7 @@ from ipdb import set_trace as mybreak
 from importlib import reload
 
 def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
+               clevs=None,
                contfs=None,
                conts=None,
                contcolor='k',
@@ -103,6 +104,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   if use_tgrid:
     hm = shade(IcD.Tri, IaV.data, ax=ax, cax=cax, 
                clim=clim, cincr=cincr, cmap=cmap,
+               clevs=clevs,
                contfs=contfs,
                conts=conts,
                contcolor=contcolor,
@@ -120,6 +122,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   else:
     hm = shade(IcD.lon, IcD.lat, IaV.data, ax=ax, cax=cax, 
                clim=clim, cincr=cincr, cmap=cmap,
+               clevs=clevs,
                contfs=contfs,
                conts=conts,
                contcolor=contcolor,
@@ -167,6 +170,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   return ax, cax, mappable, Dstr
 
 def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
+               clevs=None,
                contfs=None,
                conts=None,
                contcolor='k',
@@ -262,6 +266,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   # --- do plotting
   hm = shade(x, z, IaV.data, ax=ax, cax=cax, 
              clim=clim, cincr=cincr, cmap=cmap,
+             clevs=clevs,
              contfs=contfs,
              conts=conts,
              contcolor=contcolor,
@@ -324,6 +329,7 @@ def shade(
               rasterized=True,
               clim=[None, None],
               extend='both',
+              clevs=None,
               contfs=None,
               conts=None,
               nclev='auto',
@@ -356,6 +362,17 @@ def shade(
 
     if projection is not None:
       transform = projection
+
+
+    # --- decide whether pcolormesh or contourf plot
+    if contfs is None:
+      use_pcol = True
+      use_contf = False
+    else:
+      use_pcol = False
+      use_contf = True
+    #if use_pcol and use_contf:
+    #  raise ValueError('::: Error: Only one of use_pcol or use_contf can be True. :::')
 
     # --- mask 0 and negative values in case of log plot
     data = 1.*datai
@@ -391,6 +408,15 @@ def shade(
     # --- norm
     if cincr>0.:
       clevs = np.arange(clim[0], clim[1]+cincr, cincr)
+      use_norm = True
+    elif use_pcol and clevs is not None:
+      clevs = np.array(clevs)
+      use_norm = True
+    else:
+      norm = None
+      use_norm = False
+      
+    if use_norm:
       #norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)
       nlev = clevs.size
       # --- expanded norm and cmap
@@ -401,10 +427,6 @@ def shade(
       #norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)
       cmap.set_under(cmap_e(norm_e(0)))
       cmap.set_over(cmap_e(norm_e(nlev)))
-      use_norm = True
-    else:
-      norm = None
-      use_norm = False
   
     # --- decide whether to use extra contour lines
     if conts is None:
@@ -415,19 +437,10 @@ def shade(
   
     # --- decide whether to use contourf or pcolormesh at all or just contour
     if use_pcol:
-      # --- decide whether to use pcolormesh or contourf plotting
-      if contfs is None:
-        # use pcolormesh and not contourf
-        use_contf = False
-        use_pcol  = True
-      else:
-        # use contourf and not pcolormesh
-        use_contf = True
-        use_pcol  = False
-        contfs = calc_conts(contfs, clim, cincr, nclev)
-    else:
-      use_contf = False
-      use_pcol  = False
+      if contfs is not None:
+        norm = matplotlib.colors.BoundaryNorm(boundaries=contfs, ncolors=cmap.N) 
+    elif use_contf:
+      contfs = calc_conts(contfs, clim, cincr, nclev)
   
     # --- decide whether there should be black edges at colorbar
     if isinstance(cbdrawedges, str) and cbdrawedges=='auto':
@@ -502,7 +515,7 @@ def shade(
                          data, contfs,
                          vmin=clim[0], vmax=clim[1],
                          cmap=cmap, 
-                         norm=norm,
+                         #norm=norm,
                          extend=extend,
                          **ccrsdict
                         )
@@ -528,7 +541,8 @@ def shade(
         zorder = -5
         ax.set_rasterization_zorder(zorder)
         for cl in hm.collections:
-          cl.set_zorder(zorder - 1)
+# This line causes problems with cartopy and contourfs. The plot seems to be unvisible.
+#          cl.set_zorder(zorder - 1)
           cl.set_rasterized(True)
     else:
       hm = None
@@ -572,8 +586,8 @@ def shade(
         cb.set_ticks(cbticks)
       else:
         if use_norm:
-          #cb.set_ticks(norm.boundaries[::2]) 
-          cb.set_ticks(clevs[::2])
+          #cb.set_ticks(clevs[::2])
+          cb.set_ticks(clevs)
         else:
           cb.locator = ticker.MaxNLocator(nbins=5)
       cb.update_ticks()
