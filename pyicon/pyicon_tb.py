@@ -281,11 +281,11 @@ def zonal_average_3d_data(data3d, basin='global', it=0, coordinates='clat clon',
   return lat_sec, data_zave
 
 def zonal_average_atmosphere(data3d, ind_lev, fac, fpath_ckdtree='', coordinates='clat clon',):
-    icall = np.arange(data3d.shape[1],dtype=int)
-    datavi = data3d[ind_lev,icall]*fac+data3d[ind_lev-1,icall]*(1.-fac)
-    lon, lat, datavihi = interp_to_rectgrid(datavi, fpath_ckdtree, coordinates=coordinates)
-    data_zave = datavihi.mean(axis=2)
-    return lat, data_zave
+  icall = np.arange(data3d.shape[1],dtype=int)
+  datavi = data3d[ind_lev,icall]*fac+data3d[ind_lev+1,icall]*(1.-fac)
+  lon, lat, datavihi = interp_to_rectgrid(datavi, fpath_ckdtree, coordinates=coordinates)
+  data_zave = datavihi.mean(axis=2)
+  return lat, data_zave
 
 def zonal_section_3d_data(data3d, fpath_ckdtree, coordinates):
   """
@@ -499,7 +499,7 @@ Call example:
 icall, ind_lev, fac = calc_vertical_interp_weights(zdata, levs)
 
 Afterwards do interpolation like this:
-datai = data[ind_lev,icall]*fac+data[ind_lev-1,icall]*(1.-fac)
+datai = data[ind_lev,icall]*fac+data[ind_lev+1,icall]*(1.-fac)
   """
   nza = zdata.shape[0]
   # --- initializations
@@ -513,10 +513,10 @@ datai = data[ind_lev,icall]*fac+data[ind_lev-1,icall]*(1.-fac)
     ind_lev[k,:] = (zdata<levs[k]).sum(axis=0)-1
     ind_lev[k,ind_lev[k,:]==(nza-1)]=-1
     # --- zdata below and above lev 
-    zd1 = zdata[ind_lev[k,:]-1,icall]
-    zd2 = zdata[ind_lev[k,:],icall]
-    # --- linear interpolation to get weight
-    fac[k,:] = (1.-0.)/(zd2-zd1)*(levs[k]-zd1)+0 
+    zd1 = zdata[ind_lev[k,:],icall]
+    zd2 = zdata[ind_lev[k,:]+1,icall]
+    # --- linear interpolation to get weight (fac=1 if lev=zd1)
+    fac[k,:] = (0.-1.)/(zd2-zd1)*(levs[k]-zd1)+1.
   # --- mask values which are out of range
   fac[ind_lev==-1] = np.ma.masked 
   return icall, ind_lev, fac
@@ -886,6 +886,27 @@ def nctime2numpy(ncv):
                   ).astype("datetime64[s]")
   return np_time
 
+def nctime_to_datetime64(ncv_time, time_mode='num2date'):
+  if time_mode=='num2date':
+    np_time = num2date(ncv_time[:], units=ncv_time.units, calendar=ncv_time.calendar
+                    ).astype("datetime64[s]")
+  elif time_mode=='float2date':
+    tps = ncv_time[:]
+    secs_tot = np.round(86400.*(tps-np.floor(tps)))
+    hours = np.floor(secs_tot/3600.)
+    mins = np.floor((secs_tot-hours*3600.)/60.) 
+    secs = secs_tot - hours*3600. - mins*60.
+    tstrs = [0]*tps.size
+    for l in range(tps.size):
+      tp = tps[l]
+      tstr = '%s-%s-%sT%02d:%02d:%02d' % (str(tp)[:4], str(tp)[4:6], str(tp)[6:8], hours[l], mins[l], secs[l]) 
+      tstrs[l] = tstr
+    np_time = np.array(tstrs, dtype='datetime64')
+  else:
+    raise ValueError('::: Error: Wrong time_mode %s in get_timesteps! :::' % time_mode)
+  return np_time
+  
+
 def get_timesteps(flist, time_mode='num2date'):
   #f = Dataset(flist[0], 'r')
   #nt = f.variables['time'].size 
@@ -899,25 +920,26 @@ def get_timesteps(flist, time_mode='num2date'):
   flist_ts = np.array([], dtype='<U200')
   for nn, fpath in enumerate(flist):
     f = Dataset(fpath, 'r')
-    ncv = f.variables['time']
+    ncv_time = f.variables['time']
     nt = f.variables['time'].size 
-    if time_mode=='num2date':
-      np_time = num2date(ncv[:], units=ncv.units, calendar=ncv.calendar
-                      ).astype("datetime64[s]")
-    elif time_mode=='float2date':
-      tps = ncv[:]
-      secs_tot = np.round(86400.*(tps-np.floor(tps)))
-      hours = np.floor(secs_tot/3600.)
-      mins = np.floor((secs_tot-hours*3600.)/60.) 
-      secs = secs_tot - hours*3600. - mins*60.
-      tstrs = [0]*tps.size
-      for l in range(tps.size):
-        tp = tps[l]
-        tstr = '%s-%s-%sT%02d:%02d:%02d' % (str(tp)[:4], str(tp)[4:6], str(tp)[6:8], hours[l], mins[l], secs[l]) 
-        tstrs[l] = tstr
-      np_time = np.array(tstrs, dtype='datetime64')
-    else:
-      raise ValueError('::: Error: Wrong time_mode %s in get_timesteps! :::' % time_mode)
+    np_time = nctime_to_datetime64(ncv_time, time_mode=time_mode)
+    ##if time_mode=='num2date':
+    ##  np_time = num2date(ncv[:], units=ncv.units, calendar=ncv.calendar
+    ##                  ).astype("datetime64[s]")
+    ##elif time_mode=='float2date':
+    ##  tps = ncv[:]
+    ##  secs_tot = np.round(86400.*(tps-np.floor(tps)))
+    ##  hours = np.floor(secs_tot/3600.)
+    ##  mins = np.floor((secs_tot-hours*3600.)/60.) 
+    ##  secs = secs_tot - hours*3600. - mins*60.
+    ##  tstrs = [0]*tps.size
+    ##  for l in range(tps.size):
+    ##    tp = tps[l]
+    ##    tstr = '%s-%s-%sT%02d:%02d:%02d' % (str(tp)[:4], str(tp)[4:6], str(tp)[6:8], hours[l], mins[l], secs[l]) 
+    ##    tstrs[l] = tstr
+    ##  np_time = np.array(tstrs, dtype='datetime64')
+    ##else:
+    ##  raise ValueError('::: Error: Wrong time_mode %s in get_timesteps! :::' % time_mode)
     #mybreak()
     #times[nn*nt:(nn+1)*nt] = np_time
     #flist_ts[nn*nt:(nn+1)*nt] = np.array([fpath]*nt)
