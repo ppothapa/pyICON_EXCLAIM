@@ -15,6 +15,7 @@ path_sections = path_ckdtree + 'sections/'
 
 all_grids = [
   'global_1.0',
+  'global_1.0_era',
   'global_0.3',
 #  'global_0.1',
             ]
@@ -47,6 +48,16 @@ for gname, path_tgrid in zip(gnames, path_tgrids):
   print(path_tgrid, gname)
 
   # --- grids
+  sname = 'global_1.0_era'
+  if sname in all_grids:
+    pyic.ckdtree_hgrid(lon_reg=[-179.,181.], lat_reg=[-89.5,90.], res=1.0,
+                      fname_tgrid  = gname+'.nc',
+                      path_tgrid   = path_tgrid,
+                      path_ckdtree = path_rgrid,
+                      sname = sname,
+                      gname = gname,
+                      )
+
   sname = 'global_1.0'
   if sname in all_grids:
     pyic.ckdtree_hgrid(lon_reg=[-180.,180.], lat_reg=[-90.,90.], res=1.0,
