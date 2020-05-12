@@ -86,11 +86,12 @@ fig_names += ['sec:Biases']
 fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
 fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
 fig_names += ['sec:Time series']
-fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume', 'ts_ice_extent',]
+fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent',]
+fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
 fig_names += ['sec:Atmosphere surface']
-fig_names += ['atm_2m_temp','atm_sea_level_pressure',]
-fig_names += ['atm_zonal_wind_stress',]
-fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover']
+fig_names += ['atm_2m_temp','atm_surface_temp','atm_sea_level_pressure',]
+fig_names += ['atm_zonal_wind_stress', 'atm_meridional_wind_stress']
+fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover', 'atm_p_e', 'atm_10m_wind']
 fig_names += ['sec:Atmosphere surface bias']
 fig_names += ['atm_tas_bias']
 fig_names += ['atm_prw_bias']
@@ -99,7 +100,7 @@ fig_names += ['atm_tauu_bias']
 fig_names += ['atm_tauv_bias']
 fig_names += ['sec:Atmosphere zonal averages']
 fig_names += ['atm_temp_zave', 'atm_u_zave', 'atm_v_zave', 'atm_rel_hum_zave']
-fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave']
+fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave', 'atm_psi']
 #fig_names += ['sec:TKE and IDEMIX']
 #fig_names += ['tke30w', 'iwe30w', 'kv30w']
 
@@ -111,8 +112,11 @@ for pitem in plist:
 
 # --- for debugging
 #fig_names = []
+#fig_names += ['atm_psi']
+#fig_names += ['ts_tas_gmean']
+#fig_names += ['sst']
 #fig_names += ['ts_amoc']
-#fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume', 'ts_ice_extent',]
+#fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent',]
 #fig_names += ['mld_mar', 'mld_sep']
 #fig_names = ['temp_bias_gzave']
 #fig_names = ['sss']
@@ -408,7 +412,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD, IaV, clim=[-2,0], cincr=0.2, cmap='RdYlBu_r',
                     projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                     logplot=True,
-                    title='log$_{10}$(ssh variance) [m]',
+                    title='log$_{10}$(ssh variance) [m]', do_write_data_range=True,
                     )
     save_fig('SSH variance', path_pics, fig_name)
   
@@ -446,7 +450,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='cmo.ice_r',
                     projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                     ax=ax, cax=cax,
-                    crs_features=False, do_plot_settings=False,
+                    crs_features=False, do_plot_settings=False, do_write_data_range=True,
                     )
 
     ii+=1; ax=hca[ii]; cax=hcb[ii]
@@ -456,7 +460,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='cmo.ice_r',
                     projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                     ax=ax, cax=cax,
-                    crs_features=False, do_plot_settings=False,
+                    crs_features=False, do_plot_settings=False, do_write_data_range=True,
                     )
 
     for ax in hca:
@@ -484,7 +488,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], cincr=0.5, cmap='cmo.ice_r',
                     projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                     ax=ax, cax=cax,
-                    crs_features=False, do_plot_settings=False,
+                    crs_features=False, do_plot_settings=False, do_write_data_range=True,
                     )
 
     ii+=1; ax=hca[ii]; cax=hcb[ii]
@@ -494,7 +498,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], cincr=0.5, cmap='cmo.ice_r',
                     projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                     ax=ax, cax=cax,
-                    crs_features=False, do_plot_settings=False,
+                    crs_features=False, do_plot_settings=False, do_write_data_range=True,
                     )
 
     for ax in hca:
@@ -522,7 +526,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='cmo.ice_r',
                     projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                     ax=ax, cax=cax,
-                    crs_features=False, do_plot_settings=False,
+                    crs_features=False, do_plot_settings=False, do_write_data_range=True,
                     )
 
     ii+=1; ax=hca[ii]; cax=hcb[ii]
@@ -532,7 +536,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='cmo.ice_r',
                     projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                     ax=ax, cax=cax,
-                    crs_features=False, do_plot_settings=False,
+                    crs_features=False, do_plot_settings=False, do_write_data_range=True,
                     )
 
     for ax in hca:
@@ -560,7 +564,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='cmo.ice_r',
                     projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                     ax=ax, cax=cax,
-                    crs_features=False, do_plot_settings=False,
+                    crs_features=False, do_plot_settings=False, do_write_data_range=True,
                     )
 
     ii+=1; ax=hca[ii]; cax=hcb[ii]
@@ -570,7 +574,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='cmo.ice_r',
                     projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                     ax=ax, cax=cax,
-                    crs_features=False, do_plot_settings=False,
+                    crs_features=False, do_plot_settings=False, do_write_data_range=True,
                     )
 
     for ax in hca:
@@ -595,20 +599,20 @@ for tave_int in tave_ints:
     IaV = pyic.IconVariable('hiconc_mar', 'm', 'ice equiv. thickness March')
     IaV.data = hiconc_mar
     IaV.interp_to_rectgrid(fpath_ckdtree)
-    pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], cincr=0.5, cmap='cmo.ice_r',
+    pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], clevs=[0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='cmo.ice_r',
                     projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                     ax=ax, cax=cax,
-                    crs_features=False, do_plot_settings=False,
+                    crs_features=False, do_plot_settings=False, do_write_data_range=True,
                     )
 
     ii+=1; ax=hca[ii]; cax=hcb[ii]
     IaV = pyic.IconVariable('hiconc_sep', 'm', 'ice equiv. thickness September')
     IaV.data = hiconc_sep
     IaV.interp_to_rectgrid(fpath_ckdtree)
-    pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], cincr=0.5, cmap='cmo.ice_r',
+    pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], clevs=[0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='cmo.ice_r',
                     projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                     ax=ax, cax=cax,
-                    crs_features=False, do_plot_settings=False,
+                    crs_features=False, do_plot_settings=False, do_write_data_range=True,
                     )
 
     for ax in hca:
@@ -636,7 +640,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='cmo.ice_r',
                     projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                     ax=ax, cax=cax,
-                    crs_features=False, do_plot_settings=False,
+                    crs_features=False, do_plot_settings=False, do_write_data_range=True,
                     )
 
     ii+=1; ax=hca[ii]; cax=hcb[ii]
@@ -646,7 +650,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='cmo.ice_r',
                     projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                     ax=ax, cax=cax,
-                    crs_features=False, do_plot_settings=False,
+                    crs_features=False, do_plot_settings=False, do_write_data_range=True,
                     )
 
     for ax in hca:
@@ -747,7 +751,8 @@ for tave_int in tave_ints:
     IaV = pyic.IconVariable('temp_bias', 'deg C', 'temperature bias')
     IaV.data = tbias[0,:]
     IaV.interp_to_rectgrid(fpath_ckdtree)
-    pyic.hplot_base(IcD, IaV, clim=5., cmap='RdBu_r', cincr=0.5,
+    pyic.hplot_base(IcD, IaV, cmap='RdBu_r',
+                    clim=10, clevs=[-10,-7,-5,-3,-2,-1,-0.5,-0.1,0.1,0.5,1,2,3,5,7,10], do_write_data_range=True,
                     projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], asp=0.5)
     FigInf = dict(long_name=IaV.long_name)
     save_fig('Tbias: surface', path_pics, fig_name, FigInf)
@@ -758,8 +763,9 @@ for tave_int in tave_ints:
     IaV = pyic.IconVariable('temp_bias', 'deg C', 'temperature bias')
     IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(tbias, basin='global', 
                                fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
-    pyic.vplot_base(IcD, IaV, clim=5., cmap='RdBu_r', cincr=0.5, contfs='auto',
-                    asp=0.5)
+    pyic.vplot_base(IcD, IaV, cmap='RdBu_r',
+                    clim=10, contfs=[-10,-7,-5,-3,-2,-1,-0.5,-0.1,0.1,0.5,1,2,3,5,7,10],
+                    asp=0.5, do_write_data_range=True)
     FigInf = dict(long_name=IaV.long_name)
     save_fig('Tbias: global zon. ave.', path_pics, fig_name, FigInf)
   
@@ -769,8 +775,9 @@ for tave_int in tave_ints:
     IaV = pyic.IconVariable('temp_bias', 'deg C', 'temperature bias')
     IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(tbias, basin='atl', 
                                fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
-    pyic.vplot_base(IcD, IaV, clim=5., cmap='RdBu_r', cincr=0.5, contfs='auto',
-                    asp=0.5, xlim=[-30,90])
+    pyic.vplot_base(IcD, IaV, cmap='RdBu_r',
+                    clim=10, contfs=[-10,-7,-5,-3,-2,-1,-0.5,-0.1,0.1,0.5,1,2,3,5,7,10],
+                    asp=0.5, xlim=[-30,90], do_write_data_range=True)
     FigInf = dict(long_name=IaV.long_name)
     save_fig('Tbias: Atlantic zon. ave.', path_pics, fig_name, FigInf)
   
@@ -780,8 +787,9 @@ for tave_int in tave_ints:
     IaV = pyic.IconVariable('temp_bias', 'deg C', 'temperature bias')
     IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(tbias, basin='indopac', 
                                fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
-    pyic.vplot_base(IcD, IaV, clim=5., cmap='RdBu_r', cincr=0.5, contfs='auto',
-                    asp=0.5, xlim=[-30,65])
+    pyic.vplot_base(IcD, IaV, cmap='RdBu_r',
+                    clim=10, contfs=[-10,-7,-5,-3,-2,-1,-0.5,-0.1,0.1,0.5,1,2,3,5,7,10],
+                    asp=0.5, xlim=[-30,65], do_write_data_range=True)
     FigInf = dict(long_name=IaV.long_name)
     save_fig('Tbias: Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
   
@@ -791,7 +799,7 @@ for tave_int in tave_ints:
     IaV = pyic.IconVariable('salt_bias', 'g/kg', 'salinity bias')
     IaV.data = sbias[0,:]
     IaV.interp_to_rectgrid(fpath_ckdtree)
-    pyic.hplot_base(IcD, IaV, clim=2., cmap='RdBu_r', cincr=0.2,
+    pyic.hplot_base(IcD, IaV, clim=3., cmap='RdBu_r', cincr=0.2, do_write_data_range=True,
                     projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], asp=0.5)
     FigInf = dict(long_name=IaV.long_name)
     save_fig('Sbias: surface', path_pics, fig_name, FigInf)
@@ -803,7 +811,7 @@ for tave_int in tave_ints:
     IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(sbias, basin='global', 
                                fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
     pyic.vplot_base(IcD, IaV, clim=2., cmap='RdBu_r', cincr=0.2, contfs='auto',
-                    asp=0.5)
+                    asp=0.5, do_write_data_range=True)
     FigInf = dict(long_name=IaV.long_name)
     save_fig('Sbias: global zon. ave.', path_pics, fig_name, FigInf)
   
@@ -814,7 +822,7 @@ for tave_int in tave_ints:
     IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(sbias, basin='atl', 
                                fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
     pyic.vplot_base(IcD, IaV, clim=2., cmap='RdBu_r', cincr=0.2, contfs='auto',
-                    asp=0.5, xlim=[-30,90])
+                    asp=0.5, xlim=[-30,90], do_write_data_range=True)
     FigInf = dict(long_name=IaV.long_name)
     save_fig('Sbias: Atlantic zon. ave.', path_pics, fig_name, FigInf)
   
@@ -825,7 +833,7 @@ for tave_int in tave_ints:
     IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(sbias, basin='indopac', 
                                fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
     pyic.vplot_base(IcD, IaV, clim=2., cmap='RdBu_r', cincr=0.2, contfs='auto',
-                    asp=0.5, xlim=[-30,65])
+                    asp=0.5, xlim=[-30,65], do_write_data_range=True)
     FigInf = dict(long_name=IaV.long_name)
     save_fig('Sbias: Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
   
@@ -962,7 +970,7 @@ for tave_int in tave_ints:
     IaV.interp_to_rectgrid(fpath_ckdtree)
     pyic.hplot_base(IcD, IaV, clim=[-7,0], cincr=0.5, cmap='RdYlBu_r',
                     projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
-                    logplot=True,
+                    logplot=True, do_write_data_range=True,
                     title='log$_{10}$(kinetic energy) at %dm [m$^2$/s$^2$]'%(IcD.depthc[k100])
                     )
     save_fig('Kinetic energy 100m', path_pics, fig_name)
@@ -977,7 +985,7 @@ for tave_int in tave_ints:
     IaV.interp_to_rectgrid(fpath_ckdtree)
     pyic.hplot_base(IcD, IaV, clim=[-7,0], cincr=0.5, cmap='RdYlBu_r',
                     projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
-                    logplot=True,
+                    logplot=True, do_write_data_range=True,
                     title='log$_{10}$(kinetic energy) at %dm [m$^2$/s$^2$]'%(IcD.depthc[k2000])
                     )
     save_fig('Kinetic energy 2000m', path_pics, fig_name)
@@ -1004,7 +1012,8 @@ for tave_int in tave_ints:
   
     # --- plot bstr
     ax, cax, mappable, Dstr = pyic.hplot_base(
-      IcD, IaV, clim=60, cmap='RdBu_r', cincr=5.,
+      IcD, IaV, cmap='RdBu_r',
+      clim=200, clevs=[-200,-160,-120,-80,-40,-30,-20,-10,10,20,30,40,80,120,160,200], do_write_data_range=True,
       use_tgrid=False, projection=projection,)
     FigInf = dict(name=fig_name, fpath=path_pics+fig_name,
                   long_name=IaV.long_name)
@@ -1150,12 +1159,19 @@ for tave_int in tave_ints:
       title='Fresh water flux [m/s]',
       t1=t1, t2=t2, ave_freq=12)
     save_fig(fig_name, path_pics, fig_name, FigInf)
-  fig_name = 'ts_ice_volume'
+  fig_name = 'ts_ice_volume_nh'
   if fig_name in fig_names:
     FigInf = pyicqp.qp_timeseries(IcD, fname, 
-      ['ice_volume_nh', 'ice_volume_sh'], 
-      title='sea ice volume [km^3]',
-      t1=t1, t2=t2, ave_freq=12)
+      ['ice_volume_nh', 'ice_volume_nh'], 
+      title='sea ice volume Northern hemisphere [km^3]',
+      t1=t1, t2=t2, ave_freq=12, mode_ave=['max', 'min'], labels=['max', 'min'])
+    save_fig(fig_name, path_pics, fig_name, FigInf)
+  fig_name = 'ts_ice_volume_sh'
+  if fig_name in fig_names:
+    FigInf = pyicqp.qp_timeseries(IcD, fname, 
+      ['ice_volume_sh', 'ice_volume_sh'], 
+      title='sea ice volume Southern hemisphere [km^3]',
+      t1=t1, t2=t2, ave_freq=12, mode_ave=['max', 'min'], labels=['max', 'min'])
     save_fig(fig_name, path_pics, fig_name, FigInf)
   fig_name = 'ts_ice_extent'
   if fig_name in fig_names:
@@ -1163,6 +1179,19 @@ for tave_int in tave_ints:
       ['ice_extent_nh', 'ice_extent_sh'], 
       title='sea ice extent [km^2]',
       t1=t1, t2=t2, ave_freq=12)
+    save_fig(fig_name, path_pics, fig_name, FigInf)
+
+  fname = f'{run}{atm_mon}_????????????????.nc'
+  
+  fig_name = 'ts_tas_gmean'
+  if fig_name in fig_names:
+    FigInf = pyicqp.qp_timeseries(IcD, fname, ['tas_gmean'], 
+      t1=t1, t2=t2, ave_freq=12,
+      var_add=-273.15, units=' [$^o$C]')
+    save_fig(fig_name, path_pics, fig_name, FigInf)
+  fig_name = 'ts_radtop_gmean'
+  if fig_name in fig_names:
+    FigInf = pyicqp.qp_timeseries(IcD, fname, ['radtop_gmean'], t1=t1, t2=t2, ave_freq=12)
     save_fig(fig_name, path_pics, fig_name, FigInf)
   
   # -------------------------------------------------------------------------------- 
@@ -1233,6 +1262,18 @@ for tave_int in tave_ints:
                              IcD=IcD_atm2d, **Ddict)
     save_fig('2m temperature', path_pics, fig_name, FigInf)
 
+  # ---
+  fig_name = 'atm_surface_temp'
+  if fig_name in fig_names:
+    FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='ts', it=0,
+                             t1=t1, t2=t2,
+                             var_add=-273.15,
+                             units = '$^o$C',
+                             clim=[-30.,30.], cincr=5.0, cmap='cmo.thermal',
+                             land_facecolor='none',
+                             IcD=IcD_atm2d, **Ddict)
+    save_fig('surface temperature', path_pics, fig_name, FigInf)
+
   #calc_bias = False
   #for fig_name in fig_names:
   #  if 'bias' in fig_name: 
@@ -1275,7 +1316,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD_atm2d, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                     use_tgrid=False,
                     projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                    land_facecolor='none',
+                    land_facecolor='none', do_write_data_range=True,
                     asp=0.5)
     FigInf = dict(long_name=IaV.long_name)
     save_fig(IaV.long_name, path_pics, fig_name, FigInf)
@@ -1299,7 +1340,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD_atm2d, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                     use_tgrid=False,
                     projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                    land_facecolor='none',
+                    land_facecolor='none', do_write_data_range=True,
                     asp=0.5)
     FigInf = dict(long_name=IaV.long_name)
     save_fig(IaV.long_name, path_pics, fig_name, FigInf)
@@ -1323,7 +1364,7 @@ for tave_int in tave_ints:
     pyic.hplot_base(IcD_atm2d, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                     use_tgrid=False,
                     projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                    land_facecolor='none',
+                    land_facecolor='none', do_write_data_range=True,
                     asp=0.5)
     FigInf = dict(long_name=IaV.long_name)
     save_fig(IaV.long_name, path_pics, fig_name, FigInf)
@@ -1346,7 +1387,7 @@ for tave_int in tave_ints:
     IaV.data = data_bias*1e3
     pyic.hplot_base(IcD_atm2d, IaV, clim=100, contfs='auto', cmap='RdBu_r', 
                     use_tgrid=False,
-                    projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                    projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],  do_write_data_range=True,
                     #land_facecolor='none',
                     asp=0.5)
     FigInf = dict(long_name=IaV.long_name)
@@ -1370,7 +1411,7 @@ for tave_int in tave_ints:
     IaV.data = data_bias*1e3
     pyic.hplot_base(IcD_atm2d, IaV, clim=100, contfs='auto', cmap='RdBu_r', 
                     use_tgrid=False,
-                    projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                    projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],  do_write_data_range=True,
                     #land_facecolor='none',
                     asp=0.5)
     FigInf = dict(long_name=IaV.long_name)
@@ -1396,7 +1437,7 @@ for tave_int in tave_ints:
                              t1=t1, t2=t2,
                              var_fac=1e3,
                              units='mN/m$^2$',
-                             clim=[-200.,200.], cincr=25.0, cmap='RdYlBu_r',
+                             clim=[-200.,200.], clevs=[-200,-100,-50,-20,0,20,50,100,200], cmap='RdYlBu_r',
                              IcD=IcD_atm2d, **Ddict)
     save_fig('zonal wind stress', path_pics, fig_name, FigInf)
 
@@ -1407,7 +1448,7 @@ for tave_int in tave_ints:
                              t1=t1, t2=t2,
                              var_fac=1e3,
                              units='mN/m$^2$',
-                             clim=[-200.,200.], cincr=25.0, cmap='RdYlBu_r',
+                             clim=[-200.,200.], clevs=[-200,-100,-50,-20,0,20,50,100,200], cmap='RdYlBu_r',
                              IcD=IcD_atm2d, **Ddict)
     save_fig('meridional wind stress', path_pics, fig_name, FigInf)
 
@@ -1422,13 +1463,28 @@ for tave_int in tave_ints:
     save_fig('column water vapour', path_pics, fig_name, FigInf)
 
   # ---
+  fig_name = 'atm_cllvi_clivi'
+  if fig_name in fig_names:
+    cllvi, it_ave = pyic.time_average(IcD_atm2d, 'cllvi', t1, t2, iz='all')
+    clivi, it_ave = pyic.time_average(IcD_atm2d, 'clivi', t1, t2, iz='all')
+    IaV = pyic.IconVariable('cclvi_clivi', 'g/m$^2', 'Liquid water + ice content')
+    IaV.data = (cllvi+clivi)*1e3
+    pyic.hplot_base(IcD_atm2d, IaV, clim=[10,300], clevs=[10,50,100,200,300], cmap='RdYlBu_r', 
+                    use_tgrid=False,
+                    projection=projection, do_write_data_range=True,
+                    land_facecolor='none',
+                    asp=0.5)
+    FigInf = dict(long_name=IaV.long_name)
+    save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+  # ---
   fig_name = 'atm_total_precipitation'
   if fig_name in fig_names:
     FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='pr', it=0,
                              t1=t1, t2=t2,
-                             var_fac=1e-3*100/86400.,
+                             var_fac=86400.,
                              units='mm/d',
-                             clim=[2,12], cincr=2, cmap='RdYlBu_r',
+                             clim=[1,12], clevs=[1,2,4,8,12], cmap='RdYlBu',
                              land_facecolor='none',
                              IcD=IcD_atm2d, **Ddict)
     save_fig('total precipitation', path_pics, fig_name, FigInf)
@@ -1446,6 +1502,32 @@ for tave_int in tave_ints:
     save_fig('total cloud cover', path_pics, fig_name, FigInf)
 
   # ---
+  fig_name = 'atm_p_e'
+  if fig_name in fig_names:
+    pr, it_ave = pyic.time_average(IcD_atm2d, 'pr', t1, t2, iz='all')
+    evspsbl, it_ave = pyic.time_average(IcD_atm2d, 'evspsbl', t1, t2, iz='all')
+    IaV = pyic.IconVariable('p_e', 'mm/day', 'P-E')
+    IaV.data = (pr+evspsbl)*86400
+    IaV.interp_to_rectgrid(fpath_ckdtree_atm)
+    pyic.hplot_base(IcD_atm2d, IaV, clim=5, cincr=1, cmap='RdBu', 
+                    use_tgrid=False,
+                    projection=projection, do_write_data_range=True,
+                    land_facecolor='none',
+                    asp=0.5)
+    FigInf = dict(long_name=IaV.long_name)
+    save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+  # ---
+  fig_name = 'atm_10m_wind'
+  if fig_name in fig_names:
+    FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='sfcwind', it=0,
+                             t1=t1, t2=t2,
+                             clim=[0.5, 10.], clevs=[0.5,1.,2.,3.,5.,7.,10.], cmap='RdYlBu_r',
+                             land_facecolor='none',
+                             IcD=IcD_atm2d, **Ddict)
+    save_fig('surface temperature', path_pics, fig_name, FigInf)
+
+  # ---
   fig_name = 'atm_temp_zave'
   if fig_name in fig_names:
     data, it_ave = pyic.time_average(IcD_atm3d, 'ta', t1, t2, iz='all')
@@ -1454,7 +1536,7 @@ for tave_int in tave_ints:
     IaV.data += -273.15
     pyic.vplot_base(IcD_atm3d, IaV, clim=[-80., 30.], cincr=5, contfs='auto',
                     cmap='RdYlBu_r',
-                    asp=0.5)
+                    asp=0.5, do_write_data_range=True)
     save_fig('temperature', path_pics, fig_name)
 
   # ---
@@ -1463,8 +1545,8 @@ for tave_int in tave_ints:
     data, it_ave = pyic.time_average(IcD_atm3d, 'ua', t1, t2, iz='all')
     IaV = pyic.IconVariable('ua', 'm/s', 'zon. ave. zonal velocity')
     IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-    pyic.vplot_base(IcD_atm3d, IaV, clim=30., cincr=5, contfs='auto',
-                    asp=0.5)
+    pyic.vplot_base(IcD_atm3d, IaV, clim=30., cincr=5, contfs='auto', cmap='RdBu_r',
+                    asp=0.5, do_write_data_range=True)
     save_fig('zonal velocity', path_pics, fig_name)
 
   # ---
@@ -1473,9 +1555,20 @@ for tave_int in tave_ints:
     data, it_ave = pyic.time_average(IcD_atm3d, 'va', t1, t2, iz='all')
     IaV = pyic.IconVariable('va', 'm/s', 'zon. ave. meridional velocity')
     IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-    pyic.vplot_base(IcD_atm3d, IaV, clim=4., cincr=0.4, contfs='auto',
-                    asp=0.5)
+    pyic.vplot_base(IcD_atm3d, IaV, clim=4., cincr=0.4, contfs='auto', cmap='RdBu_r',
+                    asp=0.5, do_write_data_range=True)
     save_fig('meridional velocity', path_pics, fig_name)
+
+  # ---
+  fig_name = 'atm_spec_hum_zave'
+  if fig_name in fig_names:
+    data, it_ave = pyic.time_average(IcD_atm3d, 'hus', t1, t2, iz='all')
+    IaV = pyic.IconVariable('hus', 'g/kg', 'zon. ave. specific humidity')
+    IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
+    IaV.data *= 1000.
+    pyic.vplot_base(IcD_atm3d, IaV, clim=0.5, contfs=[0.005,0.01,0.03,0.05,0.1,0.3,0.5,1.,2.,5.,8.],
+                    asp=0.5, do_write_data_range=True)
+    save_fig('specific humidity', path_pics, fig_name)
 
   # ---
   fig_name = 'atm_rel_hum_zave'
@@ -1485,7 +1578,7 @@ for tave_int in tave_ints:
     IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
     IaV.data *= 100.
     pyic.vplot_base(IcD_atm3d, IaV, clim=[0,100.], cincr=10., contfs='auto',
-                    asp=0.5)
+                    asp=0.5, do_write_data_range=True)
     save_fig('relative humidity', path_pics, fig_name)
 
   # ---
@@ -1496,7 +1589,7 @@ for tave_int in tave_ints:
     IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
     IaV.data *= 100.
     pyic.vplot_base(IcD_atm3d, IaV, clim=[0,25.], cincr=2.5, contfs='auto',
-                    asp=0.5)
+                    asp=0.5, do_write_data_range=True)
     save_fig('cloud cover', path_pics, fig_name)
 
   # ---
@@ -1505,10 +1598,10 @@ for tave_int in tave_ints:
     data, it_ave = pyic.time_average(IcD_atm3d, 'clw', t1, t2, iz='all')
     IaV = pyic.IconVariable('clw', 'mg/kg', 'zon. ave. cloud water')
     IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-    IaV.data *= 1000.
+    IaV.data *= 1e6
     clw = IaV.data
     pyic.vplot_base(IcD_atm3d, IaV, clim=[0,25.], cincr=2., contfs='auto',
-                    asp=0.5)
+                    asp=0.5, do_write_data_range=True)
     save_fig('cloud water', path_pics, fig_name)
 
   # ---
@@ -1517,10 +1610,10 @@ for tave_int in tave_ints:
     data, it_ave = pyic.time_average(IcD_atm3d, 'cli', t1, t2, iz='all')
     IaV = pyic.IconVariable('cli', 'mg/kg', 'zon. ave. cloud ice')
     IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-    IaV.data *= 1000.
+    IaV.data *= 1e6
     cli = IaV.data
     pyic.vplot_base(IcD_atm3d, IaV, clim=[0,25.], cincr=2., contfs='auto',
-                    asp=0.5)
+                    asp=0.5, do_write_data_range=True)
     save_fig('cloud ice', path_pics, fig_name)
 
   # ---
@@ -1531,9 +1624,21 @@ for tave_int in tave_ints:
     IaV.data = clw+cli
     IaV.lat_sec = lat_sec 
     pyic.vplot_base(IcD_atm3d, IaV, clim=[0,25.], cincr=2., contfs='auto',
-                    asp=0.5)
+                    asp=0.5, do_write_data_range=True)
     save_fig('cloud water+ice', path_pics, fig_name)
 
+  # ---
+  fig_name = 'atm_psi'
+  if fig_name in fig_names:
+    data, it_ave = pyic.time_average(IcD_atm3d, 'va', t1, t2, iz='all')
+    IaV = pyic.IconVariable('psi', '10$^9$kg/s', 'Psi')
+    IaV.lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
+    plevi = np.concatenate(([107500],0.5*(IcD_atm3d.plevc[1:]+IcD_atm3d.plevc[:-1]),[0.]))
+    dp = np.diff(plevi)
+    IaV.data = (2.*np.pi*6.371e6/9.81)*np.cos(IaV.lat_sec*np.pi/180.)* ( (data_zave[::-1,:]*dp[::-1,np.newaxis]).cumsum(axis=0) )[::-1,:]*1e-9
+    pyic.vplot_base(IcD_atm3d, IaV, clim=[-80,80], cincr=10., contfs='auto', cmap='RdBu_r',
+                    asp=0.5, do_write_data_range=True)
+    save_fig('Psi', path_pics, fig_name)
 
   # --- North Pole
 
@@ -1547,7 +1652,7 @@ for tave_int in tave_ints:
     IaV.interp_to_rectgrid(fpath_ckdtree_atm)
     ax, cax, mappable, Dstr = pyic.hplot_base(IcD_atm2d, IaV, clim=200, cincr=25, cmap='RdYlBu_r',
                     projection='NorthPolarStereo', xlim=[-180.,180.], ylim=[60.,90.],
-                    crs_features=False, do_plot_settings=False,
+                    crs_features=False, do_plot_settings=False, do_write_data_range=True,
                     )
     pyic.plot_settings(ax=ax, xlim=[-180,180], ylim=[60,90], do_xyticks=False, do_xyminorticks=False, do_gridlines=True, land_facecolor='none')
     #FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='tauu', it=0,
