@@ -38,6 +38,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                crs_features=True,
                do_plot_settings=True,
                land_facecolor='0.7',
+               do_write_data_range=False,
               ):
   """
   IaV variable needs the following attributes
@@ -92,10 +93,15 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     ccrs_transform = ccrs.PlateCarree()
 
   # --- make axes and colorbar (taken from shade)
+  if not do_write_data_range:
+    dfigb = 0.0
+  else:
+    dfigb = 0.5
   if ax == 'auto':
       #fig, ax = plt.subplots(subplot_kw={'projection': ccrs_proj}) 
     hca, hcb = arrange_axes(1,1, plot_cb=True, asp=asp, fig_size_fac=fig_size_fac,
                                  projection=ccrs_proj,
+                                 dfigb=dfigb,
                                 )
     ax = hca[0]
     cax = hcb[0]
@@ -153,6 +159,10 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   if do_plot_settings:
     plot_settings(ax, template=template, land_facecolor=land_facecolor)
 
+  if do_write_data_range:
+    info_str = 'min: %.2g;        mean: %.2g;        std: %.2g;        max: %.2g' % (IaV.data.min(), IaV.data.mean(), IaV.data.std(), IaV.data.max())
+    ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
+
   #if (projection!='none') and (crs_features):
   ##if projection=='PlateCarree':
   ##if False:
@@ -186,6 +196,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                asp=0.5,
                fig_size_fac=2.0,
                do_plot_settings=True,
+               do_write_data_range=False,
               ):
   """
   IaV variable needs the following attributes
@@ -228,8 +239,12 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
       title = 'log$_{10}$('+IaV.long_name+') ['+IaV.units+']'
 
   # --- make axes and colorbar (taken from shade)
+  if not do_write_data_range:
+    dfigb = 0.0
+  else:
+    dfigb = 0.7
   if ax == 'auto':
-    hca, hcb = arrange_axes(1,1, plot_cb=True, asp=asp, fig_size_fac=fig_size_fac,
+    hca, hcb = arrange_axes(1,1, plot_cb=True, asp=asp, fig_size_fac=fig_size_fac, dfigb=dfigb,
                            )
     ax = hca[0]
     cax = hcb[0]
@@ -299,6 +314,10 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   ax.set_facecolor('0.8')
   ax.xaxis.set_ticks_position('both')
   ax.yaxis.set_ticks_position('both')
+
+  if do_write_data_range:
+    info_str = 'min: %.2g;        mean: %.2g;        std: %.2g;        max: %.2g' % (IaV.data.min(), IaV.data.mean(), IaV.data.std(), IaV.data.max())
+    ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
 
   return ax, cax, mappable, Dstr
 
@@ -405,17 +424,22 @@ def shade(
     if isinstance(cmap, str):
       cmap = getattr(plt.cm, cmap)
   
-    # --- norm
-    if cincr>0.:
-      clevs = np.arange(clim[0], clim[1]+cincr, cincr)
+    if use_pcol:
+      # --- norm
+      if cincr>0.:
+        clevs = np.arange(clim[0], clim[1]+cincr, cincr)
+        use_norm = True
+      elif use_pcol and clevs is not None:
+        clevs = np.array(clevs)
+        use_norm = True
+      else:
+        norm = None
+        use_norm = False
+    elif use_contf:
+      contfs = calc_conts(contfs, clim, cincr, nclev)
+      clevs = contfs
       use_norm = True
-    elif use_pcol and clevs is not None:
-      clevs = np.array(clevs)
-      use_norm = True
-    else:
-      norm = None
-      use_norm = False
-      
+        
     if use_norm:
       #norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)
       nlev = clevs.size
@@ -424,7 +448,7 @@ def shade(
       cmap_e = matplotlib.colors.ListedColormap(cmap(norm_e(np.arange(0,nlev+1,1))))
       # --- actuall cmap with over and under values
       cmap = matplotlib.colors.ListedColormap(cmap(norm_e(np.arange(1,nlev,1))))        
-      #norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)
+      norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)
       cmap.set_under(cmap_e(norm_e(0)))
       cmap.set_over(cmap_e(norm_e(nlev)))
   
@@ -434,13 +458,6 @@ def shade(
     else:
       use_cont = True
       conts = calc_conts(conts, clim, cincr, nclev)
-  
-    # --- decide whether to use contourf or pcolormesh at all or just contour
-    if use_pcol:
-      if contfs is not None:
-        norm = matplotlib.colors.BoundaryNorm(boundaries=contfs, ncolors=cmap.N) 
-    elif use_contf:
-      contfs = calc_conts(contfs, clim, cincr, nclev)
   
     # --- decide whether there should be black edges at colorbar
     if isinstance(cbdrawedges, str) and cbdrawedges=='auto':
@@ -515,7 +532,7 @@ def shade(
                          data, contfs,
                          vmin=clim[0], vmax=clim[1],
                          cmap=cmap, 
-                         #norm=norm,
+                         norm=norm,
                          extend=extend,
                          **ccrsdict
                         )
@@ -580,7 +597,7 @@ def shade(
       # ------ prevent white lines if fig is saved as pdf
       cb.solids.set_edgecolor("face")
       # ------ use exponential notation for large colorbar ticks
-      cb.formatter.set_powerlimits((-3, 2))
+      cb.formatter.set_powerlimits((-3, 3))
       # ------ colorbar ticks
       if isinstance(cbticks, np.ndarray) or isinstance(cbticks, list):
         cb.set_ticks(cbticks)
