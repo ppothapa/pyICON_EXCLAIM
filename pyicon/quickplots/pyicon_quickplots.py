@@ -40,7 +40,7 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               use_tgrid=False,
               crs_features=True,
               adjust_axlims=False,
-              asp=0.543,
+              asp=0.5,
               title='auto', units='',
               xlabel='', ylabel='',
               verbose=1,
@@ -49,6 +49,7 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               do_plot_settings=True,
               land_facecolor='0.7',
               do_mask=False,
+              do_write_data_range=True,
               ):
 
   #for fp in [fpath]:
@@ -141,6 +142,7 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               asp=asp,
               do_plot_settings=do_plot_settings,
               land_facecolor=land_facecolor,
+              do_write_data_range=do_write_data_range,
              )
 
   # --- contour labels
@@ -163,12 +165,13 @@ def qp_vplot(fpath, var, IcD='none', it=0,
               sec_name="specify_sec_name",
               path_ckdtree="",
               var_fac=1.,
+              var_add=0.,
               clim='auto', cincr=-1., cmap='auto',
               clevs=None,
               contfs='auto',
               conts='auto',
               xlim=[-90,90], ylim=[6000,0], projection='none',
-              asp=0.543,
+              asp=0.5,
               title='auto', xlabel='', ylabel='',
               verbose=1,
               ax='auto', cax='auto',
@@ -176,6 +179,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
               log2vax=False,
               mode_load='normal',
               do_plot_settings=True,
+              do_write_data_range=True,
               ):
 
   #for fp in [fpath]:
@@ -257,6 +261,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
       IaV.interp_to_section(fpath_ckdtree=sec_fpath)
 
     IaV.data *= var_fac
+    IaV.data += var_add
 
   # --- do plotting
   (ax, cax, 
@@ -273,6 +278,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
                  log2vax=log2vax,
                  logplot=logplot,
                  do_plot_settings=do_plot_settings,
+                 do_write_data_range=do_write_data_range,
                 )
 
   # --- contour labels
@@ -293,11 +299,21 @@ def qp_vplot(fpath, var, IcD='none', it=0,
   return FigInf
 
 def qp_timeseries(IcD, fpath, vars_plot, 
-                  fac_data=1, title='', units='',
+                  var_fac=1., var_add=0.,
+                  title='', units='',
                   t1='none', t2='none',
                   ave_freq=0,
                   omit_last_file=True,
+                  mode_ave=['mean'],
+                  labels=None,
+                  do_write_data_range=True,
                  ): 
+  if len(mode_ave)==1:
+    mode_ave = [mode_ave[0]]*len(vars_plot)
+    dfigb = 0.0
+  else:
+    do_write_data_range = False
+    dfigb = 0.7
   flist = glob.glob(IcD.path_data+fpath)
   flist.sort()
   if omit_last_file:
@@ -313,11 +329,13 @@ def qp_timeseries(IcD, fpath, vars_plot,
     times = times[int(ave_freq/2),:] # get middle of ave_freq
 
   hca, hcb = pyic.arrange_axes(1,1, plot_cb=False, asp=0.5, fig_size_fac=2.,
-               sharex=True, sharey=True, xlabel="time [years]", ylabel="",)
+               sharex=True, sharey=True, xlabel="time [years]", ylabel="", 
+               dfigb=dfigb,
+               )
   ii=-1
   ii+=1; ax=hca[ii]; cax=hcb[ii]
 
-  for var in vars_plot:
+  for mm, var in enumerate(vars_plot):
     data = np.array([])
     for nn, fpath in enumerate(flist):
       f = Dataset(fpath, 'r')
@@ -333,8 +351,20 @@ def qp_timeseries(IcD, fpath, vars_plot,
       #  raise ValueError(f'::: Time series has wrong size: {times.size} for ave_req={ave_freq}! :::')
       print(f'{var}: {data.size} {times.size}')
       data = np.reshape(data, (nresh, ave_freq)).transpose()
-      data = data.mean(axis=0)
-    ax.plot(times, data*fac_data, label=var)
+      if mode_ave[mm]=='mean':
+        data = data.mean(axis=0)
+      elif mode_ave[mm]=='min':
+        data = data.min(axis=0)
+      elif mode_ave[mm]=='max':
+        data = data.max(axis=0)
+
+    if labels is None:
+      label = var
+    else:
+      label = labels[mm]
+    data *= var_fac
+    data += var_add
+    ax.plot(times, data, label=label)
   ax.grid(True)
   if len(vars_plot)==1:
     f = Dataset(fpath, 'r')
@@ -353,6 +383,10 @@ def qp_timeseries(IcD, fpath, vars_plot,
     ax.axvline(t1, color='k')
   if not (isinstance(t2,str) and t2=='none'):
     ax.axvline(t2, color='k')
+
+  if do_write_data_range:
+    info_str = 'min: %.2g;        mean: %.2g;        std: %.2g;        max: %.2g' % (data.min(), data.mean(), data.std(), data.max())
+    ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
 
   FigInf = dict()
   return FigInf
