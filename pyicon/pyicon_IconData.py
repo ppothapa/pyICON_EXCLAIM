@@ -7,6 +7,7 @@ from scipy.spatial import cKDTree
 import matplotlib
 from ipdb import set_trace as mybreak  
 from .pyicon_tb import *
+from .pyicon_calc import *
 
 class IconData(object):
   """
@@ -104,6 +105,10 @@ class IconData(object):
 
     self.model_type = model_type
 
+    # --- constants
+    self.grid_sphere_radius = 6371229.
+    self.grav = 9.81
+
     # --- find regular grid ckdtrees for this grid
     sec_fpaths = np.array(
       glob.glob(self.path_sections+self.gname+'_*.npz'))
@@ -150,6 +155,7 @@ class IconData(object):
       self.load_tgrid()
     if load_rectangular_grid:
       self.load_rgrid()
+    self.nz = 1
     if load_vertical_grid:
       self.load_vgrid()
 
@@ -325,6 +331,9 @@ class IconData(object):
       self.wet_c = f.variables['wet_c'][:]
       self.wet_e = f.variables['wet_e'][:]
 
+      self.lsm_c = f.variables['lsm_c'][:]
+      self.lsm_e = f.variables['lsm_e'][:]
+
       #self.wet_e = f.variables['wet_e'][:]
       #for var in f.variables.keys():
       #  print(var)
@@ -432,8 +441,10 @@ class IconData(object):
     # --- distances and areas 
     self.cell_area = f.variables['cell_area'][:]
     self.cell_area_p = f.variables['cell_area_p'][:]
+    self.dual_area = f.variables['dual_area'][:]
     self.edge_length = f.variables['edge_length'][:]
     self.dual_edge_length = f.variables['dual_edge_length'][:]
+    self.edge_cell_distance = f.variables['edge_cell_distance'][:].transpose()
     # --- neighbor information
     self.vertex_of_cell = f.variables['vertex_of_cell'][:].transpose()-1
     self.edge_of_cell = f.variables['edge_of_cell'][:].transpose()-1
@@ -441,9 +452,32 @@ class IconData(object):
     self.edges_of_vertex = f.variables['edges_of_vertex'][:].transpose()-1
     self.edge_vertices = f.variables['edge_vertices'][:].transpose()-1
     self.adjacent_cell_of_edge = f.variables['adjacent_cell_of_edge'][:].transpose()-1
+    self.cells_of_vertex = f.variables['cells_of_vertex'][:].transpose()-1
     # --- orientation
     self.orientation_of_normal = f.variables['orientation_of_normal'][:].transpose()
     self.edge_orientation = f.variables['edge_orientation'][:].transpose()
+
+    # --- coordinates
+    self.cell_cart_vec = np.ma.zeros((self.clon.size,3))
+    self.cell_cart_vec[:,0] = f.variables['cell_circumcenter_cartesian_x'][:]
+    self.cell_cart_vec[:,1] = f.variables['cell_circumcenter_cartesian_y'][:]
+    self.cell_cart_vec[:,2] = f.variables['cell_circumcenter_cartesian_z'][:]
+    self.vert_cart_vec = np.ma.zeros((self.vlon.size,3))
+    self.vert_cart_vec[:,0] = f.variables['cartesian_x_vertices'][:]
+    self.vert_cart_vec[:,1] = f.variables['cartesian_y_vertices'][:]
+    self.vert_cart_vec[:,2] = f.variables['cartesian_z_vertices'][:]
+    self.edge_cart_vec = np.ma.zeros((self.elon.size,3))
+    self.edge_cart_vec[:,0] = f.variables['edge_middle_cartesian_x'][:]
+    self.edge_cart_vec[:,1] = f.variables['edge_middle_cartesian_y'][:]
+    self.edge_cart_vec[:,2] = f.variables['edge_middle_cartesian_z'][:]
+    #self.edge_cart_vec = np.ma.zeros((self.elon.size,3))
+    #self.edge_cart_vec[:,0] = f.variables['edge_dual_middle_cartesian_x'][:]
+    #self.edge_cart_vec[:,1] = f.variables['edge_dual_middle_cartesian_y'][:]
+    #self.edge_cart_vec[:,2] = f.variables['edge_dual_middle_cartesian_z'][:]
+    self.edge_prim_norm = np.ma.zeros((self.elon.size,3))
+    self.edge_prim_norm[:,0] = f.variables['edge_primal_normal_cartesian_x'][:]
+    self.edge_prim_norm[:,1] = f.variables['edge_primal_normal_cartesian_y'][:]
+    self.edge_prim_norm[:,2] = f.variables['edge_primal_normal_cartesian_z'][:]
     f.close()
 
     return
@@ -455,10 +489,48 @@ class IconData(object):
                       / self.cell_area_p[:,np.newaxis] )
     # FIXME: Is grid_sphere_radius okay?
     #        Necessary to scale with grid_rescale_factor? (configure_model/mo_grid_config.f90)
-    grid_sphere_radius = 6371e3
-    self.rot_coeff = (  self.dual_edge_length[self.edges_of_vertex]
-                      * grid_sphere_radius
+    #grid_sphere_radius = 1.
+    rot_coeff = (  self.dual_edge_length[self.edges_of_vertex]/self.grid_sphere_radius
+                      * self.grid_sphere_radius
                       * self.edge_orientation )
+    
+
+    if self.model_type=='oce':
+      #iv = 3738
+      self.zarea_fraction = 0.
+      self.rot_coeff = np.ma.zeros((self.nz, self.vlon.size, 6))
+      for k in range(self.nz):
+        print(k)
+        for ii in range(6):
+          ie = self.edges_of_vertex[:,ii]
+          ie_full = self.lsm_e[k,ie] == -2
+          ie_half = self.lsm_e[k,ie] == 0
+          ie_omit = self.lsm_e[k,ie] == 2
+          i1 = self.adjacent_cell_of_edge[ie,0]
+          i2 = self.adjacent_cell_of_edge[ie,1]
+          # if both cells are water
+          c1 = self.cell_cart_vec[i1,:]
+          c2 = self.cell_cart_vec[i2,:]
+          # if only one cell is water:
+          #   * c1: take c1 but if c1 is land take c2
+          #   * c2: take edge in between c1 and c2
+          ind_c1_is_land = ((self.wet_c[k,i1]==0.) & (ie_half))
+          c1[ind_c1_is_land] = c2[ind_c1_is_land]
+          c2[ie_half,:] = self.edge_cart_vec[ie[ie_half],:] 
+          partial_area = planar_triangle_area(c1, self.vert_cart_vec, c2)
+          # if edge does not exist partial_area should be zero
+          partial_area[ie_omit] = 0
+          #print('cell1 = ', c1)
+          #print('vert  = ', self.vert_cart_vec[iv,:])
+          #print('cell2 = ', c2)
+          #print('partial_area = ', partial_area[iv])
+          self.zarea_fraction += partial_area
+        ind_vertex_without_valid_edge = self.lsm_e[k,self.edges_of_vertex].sum(axis=1)==0
+        self.zarea_fraction[ind_vertex_without_valid_edge] = 0.
+        #self.rot_coeff *= 1./(self.dual_area[:,np.newaxis]*grid_sphere_radius**2)
+        self.rot_coeff[k,:,:] = rot_coeff/(self.zarea_fraction[:,np.newaxis]*self.grid_sphere_radius**2)
+    else:
+      self.rot_coeff = rot_coeff/(self.dual_area[:,np.newaxis])
     return
 
   
