@@ -98,7 +98,7 @@ fig_names += ['atm_tauu_bias', 'atm_tauv_bias']
 fig_names += ['sec:Atmosphere surface']
 fig_names += ['atm_2m_temp','atm_surface_temp','atm_sea_level_pressure',]
 fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover', 'atm_p_e', 'atm_10m_wind']
-fig_names += ['sec:Atmosphere surface bias']
+fig_names += ['sec:Bias atmosphere surface']
 fig_names += ['atm_tas_bias']
 fig_names += ['atm_prw_bias']
 fig_names += ['atm_psl_bias']
@@ -115,7 +115,7 @@ for pitem in plist:
     fig_names += [pitem]
 
 # --- for debugging
-#fig_names = []
+fig_names = []
 #fig_names += ['atm_psi']
 #fig_names += ['ts_tas_gmean']
 #fig_names += ['sst']
@@ -194,10 +194,6 @@ if do_ocean_plots:
                  path_grid    = path_grid,
                  gname        = gname,
                  lev          = lev,
-                 #path_ckdtree = path_ckdtree,
-                 #path_tgrid   = path_tgrid,
-                 #fpath_tgrid  = fpath_tgrid,
-                 #fpath_fx     = fpath_fx,
                  rgrid_name   = rgrid_name,
                  do_triangulation = False,
                  omit_last_file = False,
@@ -213,10 +209,6 @@ if do_ocean_plots:
                  path_grid    = path_grid,
                  gname        = gname,
                  lev          = lev,
-                 #path_ckdtree = path_ckdtree,
-                 #path_tgrid   = path_tgrid,
-                 #fpath_tgrid  = fpath_tgrid,
-                 #fpath_fx     = fpath_fx,
                  rgrid_name   = rgrid_name,
                  do_triangulation = False,
                  omit_last_file = False,
@@ -230,10 +222,6 @@ if do_ocean_plots:
                  path_grid    = path_grid,
                  gname        = gname,
                  lev          = lev,
-                 #path_ckdtree = path_ckdtree,
-                 #path_tgrid   = path_tgrid,
-                 #fpath_tgrid  = fpath_tgrid,
-                 #fpath_fx     = fpath_fx,
                  rgrid_name   = rgrid_name,
                  do_triangulation = True,
                  omit_last_file = False,
@@ -248,10 +236,6 @@ if do_atmosphere_plots:
                  path_grid    = path_grid_atm,
                  gname        = gname_atm,
                  lev          = lev_atm,
-                 #path_ckdtree = path_ckdtree,
-                 #path_tgrid   = path_tgrid,
-                 #fpath_tgrid  = fpath_tgrid,
-                 #fpath_fx     = fpath_fx,
                  rgrid_name   = rgrid_name_atm,
                  do_triangulation = True,
                  omit_last_file = False,
@@ -268,10 +252,6 @@ if do_atmosphere_plots:
                  path_grid    = path_grid_atm,
                  gname        = gname_atm,
                  lev          = lev_atm,
-                 #path_ckdtree = path_ckdtree,
-                 #path_tgrid   = path_tgrid,
-                 #fpath_tgrid  = fpath_tgrid,
-                 #fpath_fx     = fpath_fx,
                  rgrid_name   = rgrid_name_atm,
                  do_triangulation = True,
                  omit_last_file = False,
@@ -1384,7 +1364,7 @@ for tave_int in tave_ints:
     f.close()
     # --- calculate bias
     data_bias = datai-data_ref
-    IaV = pyic.IconVariable('data_bias', 'deg C', 'surface temperature bias')
+    IaV = pyic.IconVariable('data_bias', 'deg C', 'bias: surface temperature')
     IaV.data = data_bias
     pyic.hplot_base(IcD_atm2d, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                     use_tgrid=False,
@@ -1408,7 +1388,7 @@ for tave_int in tave_ints:
     f.close()
     # --- calculate bias
     data_bias = datai-data_ref
-    IaV = pyic.IconVariable('data_bias', 'kg m-2', 'integrated water vapor')
+    IaV = pyic.IconVariable('data_bias', 'kg m-2', 'bias: integrated water vapor')
     IaV.data = data_bias
     pyic.hplot_base(IcD_atm2d, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                     use_tgrid=False,
@@ -1432,7 +1412,7 @@ for tave_int in tave_ints:
     f.close()
     # --- calculate bias
     data_bias = datai-data_ref
-    IaV = pyic.IconVariable('data_bias', 'hPa', 'sea level pressure')
+    IaV = pyic.IconVariable('data_bias', 'hPa', 'bias: sea level pressure')
     IaV.data = data_bias/100.
     pyic.hplot_base(IcD_atm2d, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                     use_tgrid=False,
