@@ -1750,9 +1750,13 @@ for tave_int in tave_ints:
   
   qp.write_to_file()
 
-# --- add link of this time average
+  # --- add link of this time average
+  print("Executing qp_link_all.py")
+  os.system(f"python qp_link_all.py {path_qp}/../")
+
+# --- add link for this simulation
 print("Executing qp_link_all.py")
-os.system(f"python qp_link_all.py {path_qp}/../")
+os.system(f"python qp_link_all.py")
 
 ### --------------------------------------------------------------------------------
 ### show figures
