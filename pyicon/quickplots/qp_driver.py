@@ -115,7 +115,7 @@ for pitem in plist:
     fig_names += [pitem]
 
 # --- for debugging
-fig_names = []
+#fig_names = []
 #fig_names += ['atm_psi']
 #fig_names += ['ts_tas_gmean']
 #fig_names += ['sst']
