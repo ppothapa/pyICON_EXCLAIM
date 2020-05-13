@@ -172,7 +172,7 @@ def calc_3d_from_2dlocal(IcD, uo, vo):
   u2 =  uo*cosLon - vo*sinLat*sinLon
   u3 =  vo*cosLat
 
-  p_vn_c = np.concatenate((u1[:,:,np.newaxis],u2[:,:,np.newaxis],u3[:,:,np.newaxis]), axis=2)
+  p_vn_c = np.ma.concatenate((u1[:,:,np.newaxis],u2[:,:,np.newaxis],u3[:,:,np.newaxis]), axis=2)
   return p_vn_c
 
 # //////////////////////////////////////////////////////////////////////////////// 
