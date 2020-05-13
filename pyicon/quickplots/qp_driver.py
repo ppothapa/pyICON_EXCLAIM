@@ -56,7 +56,8 @@ t2 = 'auto'
 # ------ r2b6
 #exec(open("../../config_qp/conf-icon_08-nib0004.py").read())
 #exec(open("../../config_qp/conf-icon_08-nib0006.py").read())
-exec(open("../../config_qp/conf-jkr0042.py").read())
+#exec(open("../../config_qp/conf-jkr0042.py").read())
+exec(open("../../config_qp/conf-slo1284.py").read())
 
 fpath_ref_atm = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_era.nc'
 
@@ -86,7 +87,8 @@ fig_names += ['sec:Biases']
 fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
 fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
 fig_names += ['sec:Time series']
-fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent',]
+#fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent',]
+fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent',]
 fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
 fig_names += ['sec:Surface fluxes']
 fig_names += ['atm_zonal_wind_stress', 'atm_meridional_wind_stress']
@@ -157,8 +159,8 @@ def save_fig(title, path_pics, fig_name, FigInf=dict()):
   plt.savefig(FigInf['fpath'], dpi=300)
   with open(path_pics+fig_name+'.json', 'w') as fj:
     json.dump(FigInf, fj, sort_keys=True, indent=4)
-  #if close_figs:
-  #  plt.close('all')
+  if close_figs:
+    plt.close('all')
   return
 plt.close('all')
 
@@ -1241,6 +1243,12 @@ for tave_int in tave_ints:
   # -------------------------------------------------------------------------------- 
   # Surface fluxes
   # -------------------------------------------------------------------------------- 
+  Ddict = dict(
+    xlim=[-180.,180.], ylim=[-90.,90.],
+    rgrid_name=rgrid_name,
+    path_ckdtree=path_ckdtree,
+    projection=projection,
+              )
   # ---
   fig_name = 'atm_zonal_wind_stress'
   if fig_name in fig_names:
