@@ -96,7 +96,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   if not do_write_data_range:
     dfigb = 0.0
   else:
-    dfigb = 0.5
+    dfigb = 0.7
   if ax == 'auto':
       #fig, ax = plt.subplots(subplot_kw={'projection': ccrs_proj}) 
     hca, hcb = arrange_axes(1,1, plot_cb=True, asp=asp, fig_size_fac=fig_size_fac,
