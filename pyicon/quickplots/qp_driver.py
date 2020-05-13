@@ -88,16 +88,18 @@ fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzav
 fig_names += ['sec:Time series']
 fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent',]
 fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
+fig_names += ['sec:Surface fluxes']
+fig_names += ['atm_zonal_wind_stress', 'atm_meridional_wind_stress']
+fig_names += ['atm_curl_tau', 'atm_wek']
+fig_names += ['sec:Bias surface fluxes']
+fig_names += ['atm_tauu_bias', 'atm_tauv_bias']
 fig_names += ['sec:Atmosphere surface']
 fig_names += ['atm_2m_temp','atm_surface_temp','atm_sea_level_pressure',]
-fig_names += ['atm_zonal_wind_stress', 'atm_meridional_wind_stress']
 fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover', 'atm_p_e', 'atm_10m_wind']
 fig_names += ['sec:Atmosphere surface bias']
 fig_names += ['atm_tas_bias']
 fig_names += ['atm_prw_bias']
 fig_names += ['atm_psl_bias']
-fig_names += ['atm_tauu_bias']
-fig_names += ['atm_tauv_bias']
 fig_names += ['sec:Atmosphere zonal averages']
 fig_names += ['atm_temp_zave', 'atm_u_zave', 'atm_v_zave', 'atm_rel_hum_zave']
 fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave', 'atm_psi']
@@ -131,6 +133,7 @@ for pitem in plist:
 #fig_names += ['atm_sea_level_pressure']
 #fig_names += ['atm_2m_temp','atm_sea_level_pressure',]
 #fig_names += ['atm_zonal_wind_stress',]
+#fig_names += ['atm_curl_tau', 'atm_wek']
 #fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover']
 #fig_names += ['atm_tas_bias']
 #fig_names += ['atm_temp_zave', 'atm_u_zave', 'atm_v_zave', 'atm_rel_hum_zave']
@@ -252,6 +255,7 @@ if do_atmosphere_plots:
                  omit_last_file = False,
                  load_vertical_grid = False,
                  time_mode = 'float2date',
+                 model_type = 'atm',
                 )
 
   fname = '%s%s_%s.nc' % (run, atm_3d, tstep)
@@ -270,8 +274,8 @@ if do_atmosphere_plots:
                  do_triangulation = True,
                  omit_last_file = False,
                  load_vertical_grid = False,
-                 model_type   = 'atm',
                  time_mode = 'float2date',
+                 model_type = 'atm',
                 )
   fpath_ckdtree_atm = IcD_atm3d.rgrid_fpath_dict[rgrid_name_atm]
   
@@ -1235,6 +1239,67 @@ for tave_int in tave_ints:
     save_fig('k_v at 30W', path_pics, fig_name, FigInf)
 
   # -------------------------------------------------------------------------------- 
+  # Surface fluxes
+  # -------------------------------------------------------------------------------- 
+  # ---
+  fig_name = 'atm_zonal_wind_stress'
+  if fig_name in fig_names:
+    FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='tauu', it=0,
+                             t1=t1, t2=t2,
+                             var_fac=1e3,
+                             units='mN/m$^2$',
+                             clim=[-200.,200.], clevs=[-200,-100,-50,-20,0,20,50,100,200], cmap='RdYlBu_r',
+                             IcD=IcD_atm2d, **Ddict)
+    save_fig('zonal wind stress', path_pics, fig_name, FigInf)
+
+  # ---
+  fig_name = 'atm_meridional_wind_stress'
+  if fig_name in fig_names:
+    FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='tauv', it=0,
+                             t1=t1, t2=t2,
+                             var_fac=1e3,
+                             units='mN/m$^2$',
+                             clim=[-200.,200.], clevs=[-200,-100,-50,-20,0,20,50,100,200], cmap='RdYlBu_r',
+                             IcD=IcD_atm2d, **Ddict)
+    save_fig('meridional wind stress', path_pics, fig_name, FigInf)
+
+  # ---
+  fig_name = 'atm_curl_tau'
+  if fig_name in fig_names:
+    tauu, it_ave   = pyic.time_average(IcD_atm2d, 'tauu', t1=t1, t2=t2, iz='all')         
+    tauv, it_ave   = pyic.time_average(IcD_atm2d, 'tauv', t1=t1, t2=t2, iz='all')
+    tauu[IcD_atm2d.cell_sea_land_mask>0] = np.ma.masked
+    tauv[IcD_atm2d.cell_sea_land_mask>0] = np.ma.masked
+    p_tau = pyic.calc_3d_from_2dlocal(IcD_atm2d, tauu[np.newaxis,:], tauv[np.newaxis,:])
+    ptp_tau = pyic.cell2edges(IcD_atm2d, p_tau)
+    curl_tau = pyic.calc_curl(IcD_atm2d, ptp_tau)
+    IaV = pyic.IconVariable('curl_tau', '1e-7 N m-3', 'wind stress curl', coordinates='vlat vlon')
+    IaV.data = curl_tau[0,:]/1e-7
+    IaV.interp_to_rectgrid(fpath_ckdtree_atm)
+    pyic.hplot_base(IcD_atm2d, IaV, clim=4., contfs=[-4,-3,-2,-1.5,-1.,-0.75,-0.5,-0.25,0.25,0.5,0.75,1.,1.5,2,3,4], cmap='RdBu_r', 
+                    use_tgrid=False,
+                    projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                    land_facecolor='0.7', do_write_data_range=True,
+                    asp=0.5)
+    save_fig('wind stress curl', path_pics, fig_name)
+
+  # ---
+  fig_name = 'atm_wek'
+  if fig_name in fig_names:
+    w_ek = pyic.calc_curl(IcD_atm2d, ptp_tau/IcD_atm2d.fe/IcD.rho0)
+    w_ek = w_ek[0,:]
+    w_ek[np.abs(IcD_atm2d.vlat)<5.] = np.ma.masked
+    IaV = pyic.IconVariable('w_ek', 'm / year', 'Ekman pumping', coordinates='vlat vlon')
+    IaV.data = w_ek*86400*365
+    IaV.interp_to_rectgrid(fpath_ckdtree_atm)
+    pyic.hplot_base(IcD_atm2d, IaV, clim=60, contfs='auto', cmap='RdBu_r', 
+                    use_tgrid=False,
+                    projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                    land_facecolor='0.7', do_write_data_range=True,
+                    asp=0.5)
+    save_fig('Ekman pumping', path_pics, fig_name)
+
+  # -------------------------------------------------------------------------------- 
   # Atmosphere 2D
   # -------------------------------------------------------------------------------- 
   Ddict = dict(
@@ -1429,28 +1494,6 @@ for tave_int in tave_ints:
                              land_facecolor='none',
                              IcD=IcD_atm2d, **Ddict)
     save_fig('sea level pressure', path_pics, fig_name, FigInf)
-
-  # ---
-  fig_name = 'atm_zonal_wind_stress'
-  if fig_name in fig_names:
-    FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='tauu', it=0,
-                             t1=t1, t2=t2,
-                             var_fac=1e3,
-                             units='mN/m$^2$',
-                             clim=[-200.,200.], clevs=[-200,-100,-50,-20,0,20,50,100,200], cmap='RdYlBu_r',
-                             IcD=IcD_atm2d, **Ddict)
-    save_fig('zonal wind stress', path_pics, fig_name, FigInf)
-
-  # ---
-  fig_name = 'atm_meridional_wind_stress'
-  if fig_name in fig_names:
-    FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='tauv', it=0,
-                             t1=t1, t2=t2,
-                             var_fac=1e3,
-                             units='mN/m$^2$',
-                             clim=[-200.,200.], clevs=[-200,-100,-50,-20,0,20,50,100,200], cmap='RdYlBu_r',
-                             IcD=IcD_atm2d, **Ddict)
-    save_fig('meridional wind stress', path_pics, fig_name, FigInf)
 
   # ---
   fig_name = 'atm_column_water_vapour'
