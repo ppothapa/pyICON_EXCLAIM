@@ -108,6 +108,8 @@ class IconData(object):
     # --- constants
     self.grid_sphere_radius = 6371229.
     self.grav = 9.81
+    self.earth_rot_freq = 7.292115e-05
+    self.rho0 = 1024. # FIXME: Needs to be checked what ICON is using here
 
     # --- find regular grid ckdtrees for this grid
     sec_fpaths = np.array(
@@ -457,6 +459,10 @@ class IconData(object):
     self.orientation_of_normal = f.variables['orientation_of_normal'][:].transpose()
     self.edge_orientation = f.variables['edge_orientation'][:].transpose()
 
+    # --- masks
+    self.cell_sea_land_mask = f.variables['cell_sea_land_mask'][:]
+    self.edge_sea_land_mask = f.variables['edge_sea_land_mask'][:]
+
     # --- coordinates
     self.cell_cart_vec = np.ma.zeros((self.clon.size,3))
     self.cell_cart_vec[:,0] = f.variables['cell_circumcenter_cartesian_x'][:]
@@ -483,6 +489,13 @@ class IconData(object):
     return
 
   def calc_coeff(self):
+    print('start calc_coeff')
+
+    # --- derive Coriolis parameter
+    self.fc = 2.* self.earth_rot_freq * np.sin(self.clat*np.pi/180.)
+    self.fe = 2.* self.earth_rot_freq * np.sin(self.elat*np.pi/180.)
+    self.fv = 2.* self.earth_rot_freq * np.sin(self.vlat*np.pi/180.)
+
     # --- derive coefficients
     self.div_coeff = (  self.edge_length[self.edge_of_cell] 
                       * self.orientation_of_normal 
@@ -531,6 +544,7 @@ class IconData(object):
         self.rot_coeff[k,:,:] = rot_coeff/(self.zarea_fraction[:,np.newaxis]*self.grid_sphere_radius**2)
     else:
       self.rot_coeff = rot_coeff/(self.dual_area[:,np.newaxis])
+    print('done calc_coeff')
     return
 
   
