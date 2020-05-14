@@ -105,11 +105,15 @@ class IconData(object):
 
     self.model_type = model_type
 
-    # --- constants
-    self.grid_sphere_radius = 6371229.
-    self.grav = 9.81
-    self.earth_rot_freq = 7.292115e-05
-    self.rho0 = 1024. # FIXME: Needs to be checked what ICON is using here
+    # --- constants (from src/shared/mo_physical_constants.f90)
+    self.grid_sphere_radius = 6.371229e6
+    self.grav = 9.80665
+    self.earth_angular_velocity = 7.29212e-05
+    self.rho0 = 1025.022 
+    self.sal_ref = 35.
+    rcpl = 3.1733
+    cpd = 1004.64 
+    self.cp = (rcpl + 1.0) * cpd
 
     # --- find regular grid ckdtrees for this grid
     sec_fpaths = np.array(
@@ -489,19 +493,18 @@ class IconData(object):
     return
 
   def calc_coeff(self):
-    print('start calc_coeff')
+    print('Start with calc_coeff...')
 
     # --- derive Coriolis parameter
-    self.fc = 2.* self.earth_rot_freq * np.sin(self.clat*np.pi/180.)
-    self.fe = 2.* self.earth_rot_freq * np.sin(self.elat*np.pi/180.)
-    self.fv = 2.* self.earth_rot_freq * np.sin(self.vlat*np.pi/180.)
+    self.fc = 2.* self.earth_angular_velocity * np.sin(self.clat*np.pi/180.)
+    self.fe = 2.* self.earth_angular_velocity * np.sin(self.elat*np.pi/180.)
+    self.fv = 2.* self.earth_angular_velocity * np.sin(self.vlat*np.pi/180.)
 
     # --- derive coefficients
     self.div_coeff = (  self.edge_length[self.edge_of_cell] 
                       * self.orientation_of_normal 
                       / self.cell_area_p[:,np.newaxis] )
-    # FIXME: Is grid_sphere_radius okay?
-    #        Necessary to scale with grid_rescale_factor? (configure_model/mo_grid_config.f90)
+    # Necessary to scale with grid_rescale_factor? (configure_model/mo_grid_config.f90)
     #grid_sphere_radius = 1.
     rot_coeff = (  self.dual_edge_length[self.edges_of_vertex]/self.grid_sphere_radius
                       * self.grid_sphere_radius
@@ -513,7 +516,7 @@ class IconData(object):
       self.zarea_fraction = 0.
       self.rot_coeff = np.ma.zeros((self.nz, self.vlon.size, 6))
       for k in range(self.nz):
-        print(k)
+        #print(k)
         for ii in range(6):
           ie = self.edges_of_vertex[:,ii]
           ie_full = self.lsm_e[k,ie] == -2
@@ -544,7 +547,7 @@ class IconData(object):
         self.rot_coeff[k,:,:] = rot_coeff/(self.zarea_fraction[:,np.newaxis]*self.grid_sphere_radius**2)
     else:
       self.rot_coeff = rot_coeff/(self.dual_area[:,np.newaxis])
-    print('done calc_coeff')
+    print('Done with calc_coeff!')
     return
 
   
