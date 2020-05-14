@@ -1,6 +1,25 @@
 import sys, glob, os
 import argparse
 
+# --- default values for config file
+runname = ''
+oce_def = ''
+oce_moc = '_MOC'
+oce_mon = '_oceanMonitor'
+oce_monthly = oce_def
+do_atmosphere_plots = False
+do_ocean_plots = True
+path_quickplots = '../../all_qps/'
+
+#rgrid_name = 'global_1.0'
+sec_name_30w = '30W_300pts'
+rgrid_name = 'global_0.3'
+rgrid_name_atm = 'global_1.0_era'
+
+
+t1 = 'auto'
+t2 = 'auto'
+
 help_text = """
 Driver for pyicon quickplots.
 
@@ -35,6 +54,8 @@ parser.add_argument('fpath_config', metavar='fpath_config', type=str,
                     help='path to quickplot configure file')
 parser.add_argument('--path_quickplots', metavar='path_quickplots', type=str, default='../../all_qps/',
                     help='path where the quickplots website and figures are storred')
+parser.add_argument('--tave_int', metavar='tave_int', type=str, default='none',
+                    help='specify time averaging interval e.g. --tave_int=1600-01-01, 1700-12-31')
 iopts = parser.parse_args()
 
 print('--------------------------------------------------------------------------------')
@@ -69,25 +90,6 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 from qp_cmaps import PyicCmaps
 
 #cm_wbgyr = PyicCmaps().WhiteBlueGreenYellowRed
-
-# --- default values for config file
-runname = ''
-oce_def = ''
-oce_moc = '_MOC'
-oce_mon = '_oceanMonitor'
-oce_monthly = oce_def
-do_atmosphere_plots = False
-do_ocean_plots = True
-path_quickplots = '../../all_qps/'
-
-#rgrid_name = 'global_1.0'
-sec_name_30w = '30W_300pts'
-rgrid_name = 'global_0.3'
-rgrid_name_atm = 'global_1.0_era'
-
-
-t1 = 'auto'
-t2 = 'auto'
 
 # ---
 #runname = 'icon_08'
@@ -331,8 +333,8 @@ print('Done reading datasets')
 # timing
 # -------------------------------------------------------------------------------- 
 for tave_int in tave_ints:
-  t1 = tave_int[0]
-  t2 = tave_int[1]
+  t1 = tave_int[0].replace(' ', '')
+  t2 = tave_int[1].replace(' ', '')
 
   if isinstance(t1,str) and t1=='auto':
     t1 = IcD.times[0]
@@ -346,12 +348,15 @@ for tave_int in tave_ints:
   # -------------------------------------------------------------------------------- 
   # making new directories and copying files
   # -------------------------------------------------------------------------------- 
+  # --- path to module
+  path_qp_driver = os.path.dirname(pyicqp.__file__)+'/'
+
   # --- make directory for this current time average
   if runname=='':
     dirname = f'qp-{run}'
   else:
     dirname = f'qp-{runname}-{run}'
-  #path_qp_sim = f'{path_quickplots}/{dirname}/'
+  path_qp_sim = f'{path_quickplots}/{dirname}/'
   path_qp_tav = f'{path_quickplots}/{dirname}/tave_{t1}-{t2}/'
   if not os.path.exists(path_qp_tav):
     os.makedirs(path_qp_tav)
@@ -363,7 +368,15 @@ for tave_int in tave_ints:
     os.makedirs(path_pics)
   
   # --- copy css style file
-  shutil.copyfile('./qp_css.css', path_qp_tav+'qp_css.css')
+  shutil.copyfile(path_qp_driver+'qp_css.css', path_qp_tav+'qp_css.css')
+  
+  # --- backup qp_driver (this script)
+  fname_this_script = __file__.split('/')[-1]
+  shutil.copyfile(path_qp_driver+fname_this_script, path_qp_tav+'bcp_'+fname_this_script)
+
+  # --- backup config file
+  fname_config = fpath_config.split('/')[-1]
+  shutil.copyfile(fpath_config, path_qp_tav+'bcp_'+fname_config)
   
   # --- initialize web page
   if runname=='':
@@ -379,10 +392,6 @@ for tave_int in tave_ints:
     fpath_css='./qp_css.css',
     fpath_html=path_qp_tav+'qp_index.html'
     )
-  
-  # --- backup this script
-  fname_this_script = __file__.split('/')[-1]
-  shutil.copyfile(fname_this_script, path_qp_tav+'bcp_'+fname_this_script)
     
   if not iopts.no_plots:
     # -------------------------------------------------------------------------------- 
@@ -1724,11 +1733,14 @@ for tave_int in tave_ints:
 
   # --- execute qp_link_all to add link of this time average
   print("Executing qp_link_all.py")
-  os.system(f"python qp_link_all.py {path_qp_tav}/../")
+  #os.system(f"python {path_qp_driver}qp_link_all.py {path_qp_sim}")
+  pyicqp.link_all(path_quickplots=path_quickplots, path_search=path_qp_sim)
+
 
 # --- add link for this simulation
 print("Executing qp_link_all.py")
-os.system(f"python qp_link_all.py")
+#os.system(f"python {path_qp_driver}qp_link_all.py")
+pyicqp.link_all(path_quickplots=path_quickplots)
 
 ### --------------------------------------------------------------------------------
 ### show figures
