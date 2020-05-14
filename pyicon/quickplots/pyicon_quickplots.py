@@ -1,5 +1,6 @@
 import sys, glob, os
 import json
+import shutil
 # --- calculations
 import numpy as np
 # --- reading data 
@@ -608,6 +609,7 @@ qp.write_to_file()
     self.close_toc()
 
     # --- write to output file
+    print(f'Writing file {self.fpath_html}')
     f = open(self.fpath_html, 'w')
     f.write(self.header)
     f.write(self.toc)
@@ -618,3 +620,87 @@ qp.write_to_file()
 
 # ================================================================================ 
 # ================================================================================ 
+def link_all(path_quickplots='../../all_qps/', path_search='path_quickplots'):
+  """ 
+Link all sub pages
+  * either to qp_index.html if sub pages for time averages are linked
+  * or to index.html if sub pages for simulations are linked  
+
+Example usage:
+--------------
+
+To link sub pages of all simulations:
+  pyicqp.link_all(path_quickplots='../../all_qps/')
+
+To link sub pages for time averages for a specific simulation:
+  pyicqp.link_all(path_quickplots='../../all_qps/', path_search='../../all_qps/qp-slo1284/')
+
+  """
+  #print('la: search path')
+
+  path_qp_driver = os.path.dirname(__file__)+'/'
+  
+  if path_search=='path_quickplots':
+    path_search = path_quickplots
+    top_level = True
+    title='List of all simulations'
+    fname_html = 'index.html'
+  else:
+    if not path_search.endswith('/'):
+      path_search += '/'
+    run = path_search.split('/')[-2][3:]
+    top_level = False
+    title = f'List of timeaverages for {run}'
+    fname_html = 'qp_index.html'
+  
+  #print('la: find all pages')
+  # --- find all pages that should be linked
+  flist = glob.glob(path_search+'*/qp_index.html')
+  flist.sort()
+  
+  #print('qp_link_all: ',flist)
+  
+  #print('la: make header')
+  # --- make header
+  qp = QuickPlotWebsite(
+    title=title,
+    author=os.environ.get('USER'),
+    date=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    #path_data=path_quickplots,
+    info='ICON data plotted by pyicon.quickplots',
+    fpath_css='./qp_css.css',
+    fpath_html=path_search+fname_html
+    )
+  
+  # --- copy css file
+  #print('la: copy css')
+  shutil.copyfile(path_qp_driver+'qp_css.css', path_quickplots+'qp_css.css')
+  
+  #print('la: do content')
+  # --- start with content
+  text = ''
+  # --- add link to pyicon docu
+  if top_level:
+    text += '<p><li><a href="pyicon_doc/html/index.html">pyicon documentation</a></>\n'
+  # --- add link to experiments / timeaverages
+  for fpath in flist:
+    name = fpath.split('/')[-2]#[3:]
+    name = name.replace('qp-','')
+    rpath = fpath.replace(path_search,'')
+    print(rpath, name)
+    text += '<p>'
+    text += '<li><a href=\"'+rpath+'\">'+name+'</a>'
+    text += '</>\n'
+  qp.main = text
+  
+  # --- finally put everything together
+  if True:
+    #print('la: write to file')
+    qp.write_to_file()
+  # --- for diagnostics
+  else:
+    print(qp.header)
+    print(qp.toc)
+    print(qp.main)
+    print(qp.footer)
+  return
