@@ -20,6 +20,8 @@ rgrid_name_atm = 'global_1.0_era'
 t1 = 'auto'
 t2 = 'auto'
 
+fpath_ref_atm = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_era.nc'
+
 help_text = """
 Driver for pyicon quickplots.
 
@@ -34,6 +36,9 @@ python qp_driver.py /path/to/config_file.py
 
 In batch mode (slurm):
 python qp_driver.py --batch /path/to/config_file.py
+
+For debugging:
+%run qp_driver.py /path/to/config_file.py --no_plots --tave_int=1610-01-01,1620-01-01
 
 Argument list:
 --------------
@@ -56,6 +61,8 @@ parser.add_argument('--path_quickplots', metavar='path_quickplots', type=str, de
                     help='path where the quickplots website and figures are storred')
 parser.add_argument('--tave_int', metavar='tave_int', type=str, default='none',
                     help='specify time averaging interval e.g. --tave_int=1600-01-01, 1700-12-31')
+parser.add_argument('--run', metavar='run', type=str, default='none',
+                    help='name of simulation; if specified, it is used to alter path_data by replacing "run" from config file')
 iopts = parser.parse_args()
 
 print('--------------------------------------------------------------------------------')
@@ -91,14 +98,6 @@ from qp_cmaps import PyicCmaps
 
 #cm_wbgyr = PyicCmaps().WhiteBlueGreenYellowRed
 
-# ---
-#runname = 'icon_08'
-#run = 'nib0002'
-#tstep = '20020101T000000Z'
-#
-#path_data    = '/Users/nbruggemann/work/icon_playground/icon_r2b4_test_data/icon_08/icon-oes/experiments/nib0002/'
-#path_ckdtree = '/Users/nbruggemann/work/icon_playground/icon_ckdtree/'
-
 # ------ r2b4
 #exec(open("../../config_qp/conf-icon_08-nib002.py").read())
 #exec(open("../../config_qp/conf-mac-icon_08-nib0002.py").read())
@@ -122,7 +121,13 @@ if not os.path.isfile(fpath_config):
   raise ValueError("::: Error: Config file %s does not exist! :::" % (fpath_config))
 exec(open(fpath_config).read())
 
-fpath_ref_atm = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_era.nc'
+# --- overwrite variables if given by argument parsing
+if iopts.run!='none':
+  path_data = path_data.replace(run, iopts.run)
+  run = iopts.run
+
+print(f'path_data = {path_data}')
+print(f'run = {run}')
 
 # -------------------------------------------------------------------------------- 
 # Settings
@@ -332,6 +337,11 @@ print('Done reading datasets')
 # -------------------------------------------------------------------------------- 
 # timing
 # -------------------------------------------------------------------------------- 
+# --- if --tave_int argument is given use this otherwise it needs to be specified in config file
+if not iopts.tave_int=='none':
+  tave_int = iopts.tave_int.split(',')
+tave_ints = [tave_int]
+
 for tave_int in tave_ints:
   t1 = tave_int[0].replace(' ', '')
   t2 = tave_int[1].replace(' ', '')
