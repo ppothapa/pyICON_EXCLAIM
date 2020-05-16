@@ -674,7 +674,7 @@ To link sub pages for time averages for a specific simulation:
   
   # --- copy css file
   #print('la: copy css')
-  shutil.copyfile(path_qp_driver+'qp_css.css', path_quickplots+'qp_css.css')
+  shutil.copyfile(path_qp_driver+'qp_css.css', path_search+'qp_css.css')
   
   #print('la: do content')
   # --- start with content
