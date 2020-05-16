@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 #SBATCH --job-name=pyicon_qp
 #SBATCH --time=00:20:00
 #SBATCH --output=log.o-%j.out
@@ -12,13 +12,12 @@ module list
 source /home/mpim/m300602/pyicon/tools/conda_act_mistral_pyicon_env.sh
 which python
 
-path_pyicon = '../'
+path_pyicon="/mnt/lustre01/pf/zmaw/m300602/pyicon/"
 qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
 config_file="${path_pyicon}config_qp/conf-slo1284.py"
-path_quickplots="${path_pyicon}all_qps_2/"
 
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
-python -u ${qp_driver} --batch=True --path_quickplots=${path_quickplots} ${config_file}
+python -u ${qp_driver} --batch=True ${config_file}
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 
 echo "--------------------------------------------------------------------------------"
