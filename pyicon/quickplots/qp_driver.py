@@ -340,7 +340,7 @@ print('Done reading datasets')
 # --- if --tave_int argument is given use this otherwise it needs to be specified in config file
 if not iopts.tave_int=='none':
   tave_int = iopts.tave_int.split(',')
-tave_ints = [tave_int]
+  tave_ints = [tave_int]
 
 for tave_int in tave_ints:
   t1 = tave_int[0].replace(' ', '')
