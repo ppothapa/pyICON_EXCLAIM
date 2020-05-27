@@ -959,6 +959,20 @@ def get_varnames(fpath, skip_vars=[]):
     varnames = [var for var in varnames if not var.startswith(skip_var)]
   return varnames
 
+def indfind(elements, vector):                                                      
+  """ return indices of elements that closest match elements in vector
+  """
+  # convert elements to np array                                                    
+  if type(elements) is int or type(elements) is float:                              
+    elements = np.array([elements])
+  elif type(elements) is list:
+    elements = np.array(elements)                                                   
+  # find indices
+  inds = [0]*elements.size                                                          
+  for i in range(elements.size):                                                    
+    inds[i] = np.argmin( np.abs(vector - elements[i]) )                             
+  return inds
+
 #def nc_info(fpath):
 #  if not os.path.isfile(fpath):
 #    print("::: Error: file %s does not exist! :::" %(fpath))
