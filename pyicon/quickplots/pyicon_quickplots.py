@@ -79,7 +79,10 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
   #  print('Using given IcD!')
 
   if depth!=-1e33:
-    iz = np.argmin((IcD.depthc-depth)**2)
+    try:
+      iz = np.argmin((IcD.depthc-depth)**2)
+    except:
+      iz = 0
   IaV = IcD.vars[var]
   step_snap = it
 
@@ -223,10 +226,12 @@ def qp_vplot(fpath, var, IcD='none', it=0,
     #               step_snap = step_snap
     #              ) 
     IaV.time_average(IcD, t1, t2, it_ave, iz='all')
-    IaV.data = IaV.data[:,:,0]/1e9 # MOC in nc-file as dim (nt,nz,ny,ndummy=1)
+    #IaV.data = IaV.data[:,:,0]/1e9 # MOC in nc-file as dim (nt,nz,ny,ndummy=1)
+    IaV.data = IaV.data/1e9
     f = Dataset(IcD.flist_ts[0], 'r')
     IaV.lat_sec = f.variables['lat'][:]
-    IaV.depth = f.variables['depth'][:]
+    #IaV.depth = f.variables['depth'][:]
+    #IcD.depthc = f.variables['depth'][:] # Fix: to avoid reading fx file in IcD_moc
     f.close()
     IaV.mask = IaV.data==0.
     IaV.data[IaV.mask] = np.ma.masked
