@@ -10,9 +10,11 @@ oce_monthly = oce_def
 do_atmosphere_plots = False
 do_ocean_plots = True
 path_quickplots = '../../all_qps/'
+omit_last_file = False
 
 #rgrid_name = 'global_1.0'
 sec_name_30w = '30W_300pts'
+#sec_name_30w = '30W_200pts'
 rgrid_name = 'global_0.3'
 rgrid_name_atm = 'global_1.0_era'
 
@@ -157,22 +159,23 @@ fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzav
 fig_names += ['sec:Time series']
 #fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent',]
 fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent',]
-fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
-fig_names += ['sec:Surface fluxes']
-fig_names += ['atm_zonal_wind_stress', 'atm_meridional_wind_stress']
-fig_names += ['atm_curl_tau', 'atm_wek']
-fig_names += ['sec:Bias surface fluxes']
-fig_names += ['atm_tauu_bias', 'atm_tauv_bias']
-fig_names += ['sec:Atmosphere surface']
-fig_names += ['atm_2m_temp','atm_surface_temp','atm_sea_level_pressure',]
-fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover', 'atm_p_e', 'atm_10m_wind']
-fig_names += ['sec:Bias atmosphere surface']
-fig_names += ['atm_tas_bias']
-fig_names += ['atm_prw_bias']
-fig_names += ['atm_psl_bias']
-fig_names += ['sec:Atmosphere zonal averages']
-fig_names += ['atm_temp_zave', 'atm_u_zave', 'atm_v_zave', 'atm_rel_hum_zave']
-fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave', 'atm_psi']
+if do_atmosphere_plots:
+  fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
+  fig_names += ['sec:Surface fluxes']
+  fig_names += ['atm_zonal_wind_stress', 'atm_meridional_wind_stress']
+  fig_names += ['atm_curl_tau', 'atm_wek']
+  fig_names += ['sec:Bias surface fluxes']
+  fig_names += ['atm_tauu_bias', 'atm_tauv_bias']
+  fig_names += ['sec:Atmosphere surface']
+  fig_names += ['atm_2m_temp','atm_surface_temp','atm_sea_level_pressure',]
+  fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover', 'atm_p_e', 'atm_10m_wind']
+  fig_names += ['sec:Bias atmosphere surface']
+  fig_names += ['atm_tas_bias']
+  fig_names += ['atm_prw_bias']
+  fig_names += ['atm_psl_bias']
+  fig_names += ['sec:Atmosphere zonal averages']
+  fig_names += ['atm_temp_zave', 'atm_u_zave', 'atm_v_zave', 'atm_rel_hum_zave']
+  fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave', 'atm_psi']
 #fig_names += ['sec:TKE and IDEMIX']
 #fig_names += ['tke30w', 'iwe30w', 'kv30w']
 
@@ -184,6 +187,7 @@ for pitem in plist:
 
 # --- for debugging
 #fig_names = []
+#fig_names += ['temp30w', 'salt30w', 'dens30w']
 #fig_names += ['atm_psi']
 #fig_names += ['ts_tas_gmean']
 #fig_names += ['sst']
@@ -211,6 +215,9 @@ for pitem in plist:
 #fig_names += ['atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave']
 #fig_names += ['vort']
 #fig_names += ['np_zonal_wind_stress']
+#fig_names += ['amoc', 'pmoc', 'gmoc']
+#fig_names += ['temp_gzave', 'temp_azave', 'temp_ipzave']
+#fig_names += ['salt30w', 'temp30w']
 
 fig_names = np.array(fig_names)
 
@@ -259,9 +266,10 @@ if do_ocean_plots and not iopts.no_plots:
                  lev          = lev,
                  rgrid_name   = rgrid_name,
                  do_triangulation   = False,
-                 omit_last_file     = False,
+                 omit_last_file     = omit_last_file,
                  load_vertical_grid = True,
-                 calc_coeff         = True,
+                 load_triangular_grid = True, # needed for bstr
+                 calc_coeff         = False,
                 )
   fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
   [k100, k500, k800, k1000, k2000, k3000] = indfind(IcD.depthc, [100., 500., 800., 1000., 2000., 3000.])
@@ -276,10 +284,13 @@ if do_ocean_plots and not iopts.no_plots:
                  lev          = lev,
                  rgrid_name   = rgrid_name,
                  do_triangulation   = False,
-                 omit_last_file     = False,
-                 load_vertical_grid = True,
+                 omit_last_file     = omit_last_file,
+                 load_vertical_grid = False,
+                 load_triangular_grid = False,
                  calc_coeff         = False,
                 )
+  IcD_moc.depthc = IcD.depthc
+  IcD_moc.depthi = IcD.depthi
 
   fname_monthly = '%s%s_%s.nc' % (run, oce_monthly, tstep)
   print('Dataset %s' % (fname_monthly))
@@ -291,10 +302,12 @@ if do_ocean_plots and not iopts.no_plots:
                  lev          = lev,
                  rgrid_name   = rgrid_name,
                  do_triangulation   = False,
-                 omit_last_file     = False,
-                 load_vertical_grid = True,
+                 omit_last_file     = omit_last_file,
+                 load_vertical_grid = False,
+                 load_triangular_grid = False,
                  calc_coeff         = False,
                 )
+  IcD_monthly.wet_c = IcD.wet_c
 
 if do_atmosphere_plots and not iopts.no_plots:
   fname = '%s%s_%s.nc' % (run, atm_2d, tstep)
@@ -307,7 +320,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  lev          = lev_atm,
                  rgrid_name   = rgrid_name_atm,
                  do_triangulation   = False,
-                 omit_last_file     = False,
+                 omit_last_file     = omit_last_file,
                  load_vertical_grid = False,
                  calc_coeff         = True,
                  time_mode    = 'float2date',
@@ -324,7 +337,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  lev          = lev_atm,
                  rgrid_name   = rgrid_name_atm,
                  do_triangulation   = False,
-                 omit_last_file     = False,
+                 omit_last_file     = omit_last_file,
                  load_vertical_grid = False,
                  calc_coeff         = False,
                  time_mode    = 'float2date',
@@ -340,7 +353,7 @@ print('Done reading datasets')
 # --- if --tave_int argument is given use this otherwise it needs to be specified in config file
 if not iopts.tave_int=='none':
   tave_int = iopts.tave_int.split(',')
-tave_ints = [tave_int]
+  tave_ints = [tave_int]
 
 for tave_int in tave_ints:
   t1 = tave_int[0].replace(' ', '')
@@ -739,15 +752,26 @@ for tave_int in tave_ints:
       FigInf = dict(long_name=IaV.long_name)
       save_fig('Snow equiv. thickness SH', path_pics, fig_name, FigInf)
 
-    # -------------------------------------------------------------------------------- 
+    # --------------------------------------------------------------------------------
     # biases
-    # -------------------------------------------------------------------------------- 
+    # --------------------------------------------------------------------------------
     fname = '%s%s_%s.nc' % (run, oce_def, tstep)
     calc_bias = False
     for fig_name in fig_names:
       if '_bias' in fig_name: 
         calc_bias = True
+
+    TS_plots = ['temp30w', 'temp_gzave', 'temp_azave', 'temp_ipzave', 
+                'salt30w', 'salt_gzave', 'salt_azave', 'salt_ipzave',]
+    if np.any(np.in1d(fig_names, TS_plots)) or calc_bias:
+      print('load temp and salt')
+      temp, it_ave = pyic.time_average(IcD, 'to', t1, t2, iz='all')
+      salt, it_ave = pyic.time_average(IcD, 'so', t1, t2, iz='all')
+      temp[temp==0.]=np.ma.masked
+      salt[salt==0.]=np.ma.masked
+
     if calc_bias:
+      print('Calculate bias')
       fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
     
       f = Dataset(fpath_initial_state, 'r')
@@ -756,17 +780,6 @@ for tave_int in tave_ints:
       f.close()
       temp_ref[temp_ref==0.]=np.ma.masked
       salt_ref[salt_ref==0.]=np.ma.masked
-    
-      #f = Dataset(path_data+fname, 'r')
-      #temp = f.variables['to'][:,:,:].mean(axis=0)
-      #salt = f.variables['so'][:,:,:].mean(axis=0)
-      #f.close()
-      #temp[temp==0.]=np.ma.masked
-      #salt[salt==0.]=np.ma.masked
-      temp, it_ave = pyic.time_average(IcD, 'to', t1, t2, iz='all')
-      salt, it_ave = pyic.time_average(IcD, 'so', t1, t2, iz='all')
-      temp[temp==0.]=np.ma.masked
-      salt[salt==0.]=np.ma.masked
     
       tbias = temp-temp_ref
       sbias = salt-salt_ref
@@ -892,24 +905,36 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'temp30w'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='to', it=0,
-                          t1=t1, t2=t2,
-                          clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
-                          IcD=IcD,
-                          sec_name=sec_name_30w,
-                          path_ckdtree=path_ckdtree)
-      save_fig('Temperature at 30W', path_pics, fig_name, FigInf)
+      IaV = IcD.vars['to']
+      IaV.lon_sec, IaV.lat_sec, IaV.dist_sec, IaV.data = pyic.interp_to_section(temp, fpath_ckdtree=IcD.sec_fpath_dict[sec_name_30w])
+      pyic.vplot_base(IcD, IaV, 
+                      clim=[-2., 30.], cincr=2.0, cmap='cmo.thermal',
+                      asp=0.5, do_write_data_range=True)
+      save_fig('Temperature at 30W', path_pics, fig_name)
+      #FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='to', it=0,
+      #                    t1=t1, t2=t2,
+      #                    clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
+      #                    IcD=IcD,
+      #                    sec_name=sec_name_30w,
+      #                    path_ckdtree=path_ckdtree)
+      #save_fig('Temperature at 30W', path_pics, fig_name, FigInf)
     
     # ---
     fig_name = 'salt30w'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='so', it=0,
-                          t1=t1, t2=t2,
-                          clim=[32., 37.], cincr=0.25, cmap='cmo.haline',
-                          IcD=IcD,
-                          sec_name=sec_name_30w,
-                          path_ckdtree=path_ckdtree)
-      save_fig('Salinity at 30W', path_pics, fig_name, FigInf)
+      IaV = IcD.vars['so']
+      IaV.lon_sec, IaV.lat_sec, IaV.dist_sec, IaV.data = pyic.interp_to_section(salt, fpath_ckdtree=IcD.sec_fpath_dict[sec_name_30w])
+      pyic.vplot_base(IcD, IaV, 
+                      clim=[32., 37.], cincr=0.25, cmap='cmo.haline',
+                      asp=0.5, do_write_data_range=True)
+      save_fig('Salinity at 30W', path_pics, fig_name)
+      #FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='so', it=0,
+      #                    t1=t1, t2=t2,
+      #                    clim=[32., 37.], cincr=0.25, cmap='cmo.haline',
+      #                    IcD=IcD,
+      #                    sec_name=sec_name_30w,
+      #                    path_ckdtree=path_ckdtree)
+      #save_fig('Salinity at 30W', path_pics, fig_name, FigInf)
     
     # ---
     fig_name = 'dens30w'
@@ -932,62 +957,104 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'temp_gzave'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='to', it=0,
-                          t1=t1, t2=t2,
-                          clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
-                          sec_name='zave:glob:%s'%rgrid_name,
-                          IcD=IcD, path_ckdtree=path_ckdtree,)
-      save_fig('Temperature global zon. ave.', path_pics, fig_name, FigInf)
+      IaV = IcD.vars['to']
+      IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(temp, basin='global', 
+                                 fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
+      pyic.vplot_base(IcD, IaV, 
+                      clim=[-2., 30.], cincr=2.0, cmap='cmo.thermal',
+                      asp=0.5, do_write_data_range=True)
+      save_fig('Temperature global zon. ave.', path_pics, fig_name)
+      #FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='to', it=0,
+      #                    t1=t1, t2=t2,
+      #                    clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
+      #                    sec_name='zave:glob:%s'%rgrid_name,
+      #                    IcD=IcD, path_ckdtree=path_ckdtree,)
+      #save_fig('Temperature global zon. ave.', path_pics, fig_name, FigInf)
     
     # ---
     fig_name = 'temp_azave'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='to', it=0,
-                          t1=t1, t2=t2,
-                          clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
-                          sec_name='zave:atl:%s'%rgrid_name,
-                          IcD=IcD, xlim=[-30,90], path_ckdtree=path_ckdtree,)
-      save_fig('Temperature Atlantic zon. ave.', path_pics, fig_name, FigInf)
+      IaV = IcD.vars['to']
+      IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(temp, basin='atl', 
+                                 fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
+      pyic.vplot_base(IcD, IaV, 
+                      clim=[-2., 30.], cincr=2.0, cmap='cmo.thermal',
+                      asp=0.5, xlim=[-30,90], do_write_data_range=True)
+      save_fig('Temperature Atlantic zon. ave.', path_pics, fig_name)
+      #FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='to', it=0,
+      #                    t1=t1, t2=t2,
+      #                    clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
+      #                    sec_name='zave:atl:%s'%rgrid_name,
+      #                    IcD=IcD, xlim=[-30,90], path_ckdtree=path_ckdtree,)
+      #save_fig('Temperature Atlantic zon. ave.', path_pics, fig_name, FigInf)
     
     # ---
     fig_name = 'temp_ipzave'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='to', it=0,
-                          t1=t1, t2=t2,
-                          clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
-                          sec_name='zave:indopac:%s'%rgrid_name,
-                          IcD=IcD, xlim=[-30,65], path_ckdtree=path_ckdtree,)
-      save_fig('Temperature Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
+      IaV = IcD.vars['to']
+      IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(temp, basin='indopac', 
+                                 fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
+      pyic.vplot_base(IcD, IaV, 
+                      clim=[-2., 30.], cincr=2.0, cmap='cmo.thermal',
+                      asp=0.5, xlim=[-30,65], do_write_data_range=True)
+      save_fig('Temperature Atlantic zon. ave.', path_pics, fig_name)
+      #FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='to', it=0,
+      #                    t1=t1, t2=t2,
+      #                    clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
+      #                    sec_name='zave:indopac:%s'%rgrid_name,
+      #                    IcD=IcD, xlim=[-30,65], path_ckdtree=path_ckdtree,)
+      #save_fig('Temperature Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
     
     # ---
     fig_name = 'salt_gzave'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='so', it=0,
-                          t1=t1, t2=t2,
-                          clim=[32.,37.], cincr=0.25, cmap='cmo.haline',
-                          sec_name='zave:glob:%s'%rgrid_name,
-                          IcD=IcD, path_ckdtree=path_ckdtree,)
-      save_fig('Salinity global zon. ave.', path_pics, fig_name, FigInf)
+      IaV = IcD.vars['so']
+      IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(salt, basin='global', 
+                                 fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
+      pyic.vplot_base(IcD, IaV, 
+                      clim=[32., 37.], cincr=0.25, cmap='cmo.haline',
+                      asp=0.5, do_write_data_range=True)
+      save_fig('Salinity global zon. ave.', path_pics, fig_name)
+      #FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='so', it=0,
+      #                    t1=t1, t2=t2,
+      #                    clim=[32.,37.], cincr=0.25, cmap='cmo.haline',
+      #                    sec_name='zave:glob:%s'%rgrid_name,
+      #                    IcD=IcD, path_ckdtree=path_ckdtree,)
+      #save_fig('Salinity global zon. ave.', path_pics, fig_name, FigInf)
     
     # ---
     fig_name = 'salt_azave'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='so', it=0,
-                          t1=t1, t2=t2,
-                          clim=[32.,37.], cincr=0.25, cmap='cmo.haline',
-                          sec_name='zave:atl:%s'%rgrid_name,
-                          IcD=IcD, xlim=[-30,90], path_ckdtree=path_ckdtree,)
-      save_fig('Salinity Atlantic zon. ave.', path_pics, fig_name, FigInf)
+      IaV = IcD.vars['so']
+      IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(salt, basin='atl', 
+                                 fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
+      pyic.vplot_base(IcD, IaV, 
+                      clim=[32., 37.], cincr=0.25, cmap='cmo.haline',
+                      asp=0.5, xlim=[-30,90], do_write_data_range=True)
+      save_fig('Salinity Atlantic zon. ave.', path_pics, fig_name)
+      #FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='so', it=0,
+      #                    t1=t1, t2=t2,
+      #                    clim=[32.,37.], cincr=0.25, cmap='cmo.haline',
+      #                    sec_name='zave:atl:%s'%rgrid_name,
+      #                    IcD=IcD, xlim=[-30,90], path_ckdtree=path_ckdtree,)
+      #save_fig('Salinity Atlantic zon. ave.', path_pics, fig_name, FigInf)
     
     # ---
     fig_name = 'salt_ipzave'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='so', it=0,
-                          t1=t1, t2=t2,
-                          clim=[32.,37.], cincr=0.25, cmap='cmo.haline',
-                          sec_name='zave:indopac:%s'%rgrid_name,
-                          IcD=IcD, xlim=[-30,65], path_ckdtree=path_ckdtree,)
-      save_fig('Salinity Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
+      IaV = IcD.vars['so']
+      IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(salt, basin='indopac', 
+                                 fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
+      pyic.vplot_base(IcD, IaV, 
+                      clim=[32., 37.], cincr=0.25, cmap='cmo.haline',
+                      asp=0.5, xlim=[-30,65], do_write_data_range=True)
+      save_fig('Salinity Atlantic zon. ave.', path_pics, fig_name)
+      #FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='so', it=0,
+      #                    t1=t1, t2=t2,
+      #                    clim=[32.,37.], cincr=0.25, cmap='cmo.haline',
+      #                    sec_name='zave:indopac:%s'%rgrid_name,
+      #                    IcD=IcD, xlim=[-30,65], path_ckdtree=path_ckdtree,)
+      #save_fig('Salinity Indo-Pac. zon. ave.', path_pics, fig_name, FigInf)
     
     # -------------------------------------------------------------------------------- 
     # Transports
@@ -1026,6 +1093,7 @@ for tave_int in tave_ints:
     fig_name = 'bstr'
     
     if fig_name in fig_names:
+      print('calc_bstr_vgrid')
       fname = '%s%s_%s.nc' % (run, oce_def, tstep)
       mass_flux, it_ave = pyic.time_average(IcD, 'mass_flux', t1, t2, iz='all')
       mass_flux_vint = mass_flux.sum(axis=0)
@@ -1201,7 +1269,8 @@ for tave_int in tave_ints:
         t1=t1, t2=t2, ave_freq=12)
       save_fig(fig_name, path_pics, fig_name, FigInf)
   
-    fname = f'{run}{atm_mon}_????????????????.nc'
+    if do_atmosphere_plots:
+      fname = f'{run}{atm_mon}_????????????????.nc'
     
     fig_name = 'ts_tas_gmean'
     if fig_name in fig_names:

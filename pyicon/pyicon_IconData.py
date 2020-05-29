@@ -323,22 +323,22 @@ class IconData(object):
       self.depthi = f.variables['depth_2'][:]
       self.nz = self.depthc.size
 
-      # --- the variables prism_thick_flat_sfc_c seem to be corrupted in fx file
-      self.prism_thick_flat_sfc_c = f.variables['prism_thick_flat_sfc_c'][:] # delete this later
-      self.prism_thick_c = f.variables['prism_thick_flat_sfc_c'][:]
-      self.prism_thick_e = f.variables['prism_thick_flat_sfc_e'][:]
-      self.constantPrismCenters_Zdistance = f.variables['constantPrismCenters_Zdistance'][:]
-      self.dzw           = self.prism_thick_c
-      self.dze           = self.prism_thick_e
-      self.dzt           = self.constantPrismCenters_Zdistance
-
-      self.dolic_c = f.variables['dolic_c'][:]-1
-      self.dolic_e = f.variables['dolic_e'][:]-1
+#      # --- the variables prism_thick_flat_sfc_c seem to be corrupted in fx file
+#      self.prism_thick_flat_sfc_c = f.variables['prism_thick_flat_sfc_c'][:] # delete this later
+#      self.prism_thick_c = f.variables['prism_thick_flat_sfc_c'][:]
+#      self.prism_thick_e = f.variables['prism_thick_flat_sfc_e'][:]
+#      self.constantPrismCenters_Zdistance = f.variables['constantPrismCenters_Zdistance'][:]
+#      self.dzw           = self.prism_thick_c
+#      self.dze           = self.prism_thick_e
+#      self.dzt           = self.constantPrismCenters_Zdistance
+#
+#      self.dolic_c = f.variables['dolic_c'][:]-1
+#      self.dolic_e = f.variables['dolic_e'][:]-1
       self.wet_c = f.variables['wet_c'][:]
       self.wet_e = f.variables['wet_e'][:]
-
-      self.lsm_c = f.variables['lsm_c'][:]
-      self.lsm_e = f.variables['lsm_e'][:]
+#
+#      self.lsm_c = f.variables['lsm_c'][:]
+#      self.lsm_e = f.variables['lsm_e'][:]
 
       #self.wet_e = f.variables['wet_e'][:]
       #for var in f.variables.keys():

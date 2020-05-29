@@ -259,7 +259,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     x = IaV.lat_sec
     xstr = 'latitude'
   elif xvar=='dist':
-    x = IaC.dist_sec/1e3
+    x = IaV.dist_sec/1e3
     xstr = 'distance [km]'
 
   # --- vertical axes

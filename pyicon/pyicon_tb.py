@@ -666,16 +666,20 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
   # --- get dimensions to allocate data
   f = Dataset(IcD.flist_ts[0], 'r')
   # FIXME: If == ('time', 'lat', 'lon') works well use it everywhere
-  if f.variables[var].dimensions == ('time', 'lat', 'lon'):
+  load_hfl_type = False
+  load_moc_type = False
+  if f.variables[var].dimensions == ('time', 'lat', 'lon'): # e.g. for heat fluxes
     nt, nc, nx = f.variables[var].shape
     nz = 0
+    load_hfl_type = True
+  elif f.variables[var].dimensions == ('time', 'depth', 'lat', 'lon'): # is the case for moc data
+    nt, nz, nc, ndummy = f.variables[var].shape 
+    load_moc_type = True
   elif f.variables[var].ndim==3:
     nt, nz, nc = f.variables[var].shape
   elif f.variables[var].ndim==2: # for 2D variables like zos and mld
     nt, nc = f.variables[var].shape
     nz = 0
-  elif f.variables[var].ndim==4: # is the case for moc data
-    nt, nz, nc, ndummy = f.variables[var].shape 
   f.close()
 
   # --- set iz to all levels
@@ -688,7 +692,11 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
   fpaths = np.unique(IcD.flist_ts[it_ave])
   if (fpaths.size==1) and not always_use_loop:
     f = Dataset(fpaths[0], 'r')
-    if nz>0:
+    if load_hfl_type:
+      data_ave = f.variables[var][IcD.its[it_ave],:,0].mean(axis=0)
+    elif load_moc_type:
+      data_ave = f.variables[var][IcD.its[it_ave],:,:,0].mean(axis=0)
+    elif nz>0:
       data_ave = f.variables[var][IcD.its[it_ave],iz,:].mean(axis=0)
     else:
       data_ave = f.variables[var][IcD.its[it_ave],:].mean(axis=0)
@@ -696,7 +704,7 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
   # --- otherwise loop ovar all files is needed
   else:
     # --- allocate data
-    if isinstance(iz,int) or nz==0:
+    if isinstance(iz,(int,np.integer)) or nz==0:
       data_ave = np.ma.zeros((nc))
     else:
       data_ave = np.ma.zeros((iz.size,nc))
@@ -704,7 +712,11 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
     # --- average by looping over all files and time steps
     for l in it_ave:
       f = Dataset(IcD.flist_ts[l], 'r')
-      if nz>0:
+      if load_hfl_type:
+        data_ave += f.variables[var][IcD.its[l],:,0]/it_ave.size
+      elif load_moc_type:
+        data_ave += f.variables[var][IcD.its[l],:,:,0]/it_ave.size
+      elif nz>0:
         data_ave += f.variables[var][IcD.its[l],iz,:]/it_ave.size
       else:
         data_ave += f.variables[var][IcD.its[l],:]/it_ave.size
@@ -958,6 +970,20 @@ def get_varnames(fpath, skip_vars=[]):
   for skip_var in skip_vars:
     varnames = [var for var in varnames if not var.startswith(skip_var)]
   return varnames
+
+def indfind(elements, vector):                                                      
+  """ return indices of elements that closest match elements in vector
+  """
+  # convert elements to np array                                                    
+  if type(elements) is int or type(elements) is float:                              
+    elements = np.array([elements])
+  elif type(elements) is list:
+    elements = np.array(elements)                                                   
+  # find indices
+  inds = [0]*elements.size                                                          
+  for i in range(elements.size):                                                    
+    inds[i] = np.argmin( np.abs(vector - elements[i]) )                             
+  return inds
 
 #def nc_info(fpath):
 #  if not os.path.isfile(fpath):
