@@ -336,9 +336,9 @@ class IconData(object):
 #      self.dolic_e = f.variables['dolic_e'][:]-1
       self.wet_c = f.variables['wet_c'][:]
       self.wet_e = f.variables['wet_e'][:]
-#
-#      self.lsm_c = f.variables['lsm_c'][:]
-#      self.lsm_e = f.variables['lsm_e'][:]
+
+      self.lsm_c = f.variables['lsm_c'][:]
+      self.lsm_e = f.variables['lsm_e'][:]
 
       #self.wet_e = f.variables['wet_e'][:]
       #for var in f.variables.keys():
