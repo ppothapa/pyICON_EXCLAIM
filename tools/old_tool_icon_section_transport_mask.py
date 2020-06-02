@@ -300,8 +300,9 @@ Ms = []
 # START USER INPUT
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
 # --- path to triploar grid file
-fpath_tgrid = '/pool/data/ICON/oes/input/r0003/OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min/OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min.nc'
+#fpath_tgrid = '/pool/data/ICON/oes/input/r0003/OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min/OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min.nc'
 #fpath_tgrid = '/pool/data/ICON/oes/input/r0002/OceanOnly_Icos_0158km_etopo40/OceanOnly_Icos_0158km_etopo40.nc'
+fpath_tgrid = '/Users/nbruggemann/work/icon_playground/r2b4/r2b4_tgrid.nc'
 # --- path to output netcdf file
 fpath_ncfile_out = 'icon_section_transport_mask.nc'
 
@@ -383,6 +384,7 @@ for M in Ms:
 fo.close()
 
 if True:
+  sys.path.append('/Users/nbruggemann/Promotion/src/pyicon/')
   import pyicon as pyic
   import matplotlib.pyplot as plt
   import matplotlib
