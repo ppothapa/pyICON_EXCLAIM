@@ -1,9 +1,6 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from netCDF4 import Dataset
 import sys
-#sys.path.append('/Users/nbruggemann/Promotion/src/pyicon/')
-#import pyicon as pyic
+import numpy as np
+from netCDF4 import Dataset
 
 # --- dummy object to collect variables
 class Obj(object):
@@ -150,15 +147,25 @@ def find_section_edges_orientation(IcD, lon1, lat1, lon2, lat2, along_const_lat=
           print('did not find final vertex')
           break
       iv_search[iel_prev,:] = np.ma.masked
-      iel_prev = np.where(iv_search==iv_next)[0][0]
-      ivl_prev = np.where(iv_search==iv_next)[1][0]
-      ie_list.append(ie_valid[iel_prev])
-      print(vlon[iv_list[-1]], vlat[iv_list[-1]])
+      #iel_prev = np.where(iv_search==iv_next)[0][0]
+      #ivl_prev = np.where(iv_search==iv_next)[1][0]
+      #ie_list.append(ie_valid[iel_prev])
+      try:
+          iel_prev = np.where(iv_search==iv_next)[0][0]
+          ivl_prev = np.where(iv_search==iv_next)[1][0]
+          ie_list.append(ie_valid[iel_prev])
+      except:
+          print('::: Warning: Cannot continue finding section points. :::')
+          break
+      #print(vlon[iv_list[-1]], vlat[iv_list[-1]])
       #print('iv: ', iv_valid[iel_prev, ivl_prev])
       #print('ie: ', ie_valid[iel_prev])
   
-  or_list = np.zeros((len(ie_list)))
-  for nn in range(len(ie_list)):
+  ie_list = np.array(ie_list)
+  iv_list = np.array(iv_list)
+
+  or_list = np.zeros((ie_list.size))
+  for nn in range(ie_list.size):
       iel = IcD.edges_of_vertex[iv_list[nn],:]==ie_list[nn]
       or_list[nn] = IcD.edge_orientation[iv_list[nn], iel]
 
@@ -174,78 +181,61 @@ Ms = []
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
 # START USER INPUT
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-# --- path to triploar grid file
-#fpath_tgrid = '/pool/data/ICON/oes/input/r0003/OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min/OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min.nc'
-#fpath_tgrid = '/pool/data/ICON/oes/input/r0002/OceanOnly_Icos_0158km_etopo40/OceanOnly_Icos_0158km_etopo40.nc'
-fpath_tgrid = '/Users/nbruggemann/work/icon_playground/r2b4/r2b4_tgrid.nc'
-# --- path to output netcdf file
-fpath_ncfile_out = 'icon_section_transport_mask.nc'
+do_plot_sections_in_the_end = True
 
-# --- sec 1 barents_opening
+# --- path to triploar grid file
+#fpath_tgrid = '/Users/nbruggemann/work/icon_playground/r2b4/r2b4_tgrid.nc'
+#fpath_tgrid = '/pool/data/ICON/oes/input/r0003/OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min/OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min.nc'
+#gname = 'r2b4'
+gname = 'r2b6'
+#gname = 'r2b8'
+path_grid = f'/mnt/lustre01/work/mh0033/m300602/icon/grids/{gname}/'
+fpath_tgrid = f'{path_grid}/{gname}_tgrid.nc'
+# --- path to output netcdf file
+fpath_ncfile_out = f'{path_grid}section_mask_{gname}.nc'
+
+# --- sec: barents_opening
 M = Obj()
-#M.lon1, M.lat1 = 16.8, 76.5
-#M.lon2, M.lat2 = 19.2, 70.2
 M.lon1, M.lat1 = 16.6, 77.
 M.lon2, M.lat2 = 19.5, 69.8
 M.name = 'barents_opening'
 Ms.append(M)
 
-# --- sec 2 bering_strait
+# --- sec: bering_strait
 M = Obj()
 M.lon1, M.lat1 = -171, 66.2
 M.lon2, M.lat2 = -166, 65
 M.name = 'bering_strait'
 Ms.append(M)
 
-# --- sec 6 drake_passage
+# --- sec: drake_passage
 M = Obj()
-#M.lon1, M.lat1 = -68, -54.
-M.lon1, M.lat1 = -60, -64.7
-M.lon2, M.lat2 = -68, -54.
-
-#M.lon1, M.lat1 = -60.5, -64.3
-#M.lon2, M.lat2 = -67, -55.
+M.lon1, M.lat1 = -60.5, -64.3                                                        
+M.lon2, M.lat2 = -67, -55. 
+# Does not work in r2b6, keep for testing debug mode
+#M.lon1, M.lat1 = -60, -64.7 
+#M.lon2, M.lat2 = -68, -54.
 M.name = 'drake_passage'
 Ms.append(M)
 
-# --- sec 1
+# --- sec: 26N
 M = Obj()
-#M.lon1, M.lat1 = -98., 26.
 M.lon1, M.lat1 = -80.5, 26.
 M.lon2, M.lat2 = -14., 26.
 M.along_const_lat = True
-#M.lon1, M.lat1 = -60., 54.
-#M.lon2, M.lat2 = -43., 70.
-#M.name = '26N'
-#M.lon1, M.lat1 = -50., 0.
-#M.lon2, M.lat2 =  12., 0.
-#M.name = 'Atl.Eq.'
-#M.lon1, M.lat1 = -30., -78.
-#M.lon2, M.lat2 = -30.,  70.
 M.name = 'atl26N'
-#M.along_const_lat = True
 Ms.append(M)
-
-##lon1, lat1 = -60, 53
-##lon2, lat2 = -50, 62
-##along_const_lat = False
-##
-### lon1, lat1 = -100, 26
-### lon2, lat2 = -5, 26
-### along_const_lat = True
-##
-### lon1o, lat1o = 16.6, 77.
-### lon2o, lat2o = 19.5, 69.8
-### along_const_lat = False
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
 # END USER INPUT
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
 
 # --- load tripolar grid
+print(f'Loading grid: {fpath_tgrid}')
 IcD = load_grid(fpath_tgrid)
 
 # --- open netcdf file
+print(f'Writing file {fpath_ncfile_out}')
 fo = Dataset(fpath_ncfile_out, 'w')
 
 # --- add dimensions
@@ -254,6 +244,11 @@ ncv = fo.createVariable('elon', 'f4', ('edge',))
 ncv[:] = IcD.elon
 ncv = fo.createVariable('elat', 'f4', ('edge',))
 ncv[:] = IcD.elat
+fo.createDimension('vertex', IcD.vlon.size)
+ncv = fo.createVariable('vlon', 'f4', ('vertex',))
+ncv[:] = IcD.vlon
+ncv = fo.createVariable('vlat', 'f4', ('vertex',))
+ncv[:] = IcD.vlat
 
 # --- loop over all sections
 for M in Ms:
@@ -264,18 +259,23 @@ for M in Ms:
      IcD, M.lon1, M.lat1, M.lon2, M.lat2, M.along_const_lat)
 
   # --- save edge_mask to nc file
-  ncv = fo.createVariable(M.name,'f4',('edge',))
+  ncv = fo.createVariable('mask_'+M.name,'i4',('edge',))
   ncv[:] = edge_mask
+  
+  # --- save edge_list and vertex list to nc file
+  ncv = fo.createVariable('ie_'+M.name, 'i4', ('edge'))
+  ncv[:ie_list.size] = ie_list
+  ncv = fo.createVariable('iv_'+M.name, 'i4', ('vertex'))
+  ncv[:iv_list.size] = iv_list
 
 # --- close nc file
 fo.close()
 
-if True:
-  sys.path.append('/Users/nbruggemann/Promotion/src/pyicon/')
+if do_plot_sections_in_the_end:
+  #sys.path.append('/Users/nbruggemann/Promotion/src/pyicon/')
   import pyicon as pyic
   import matplotlib.pyplot as plt
   import matplotlib
-  import my_toolbox as my
   fo = Dataset(fpath_ncfile_out, 'r')
   vlist = np.array(list(fo.variables.keys()))
   vlist=vlist[vlist!='elon']
@@ -317,9 +317,9 @@ if True:
   for M in Ms:
     var = M.name
     print(var)
-    exec('mask = 1.*%s'%var)
-    ax.scatter(elon[mask!=0], elat[mask!=0], c='b', s=10)
-    ax.scatter(M.lon1, M.lat1, c='g', s=20)
-    ax.scatter(M.lon2, M.lat2, c='r', s=20)
+    exec('mask = 1.*mask_%s'%var)
+    ax.scatter(elon[mask!=0], elat[mask!=0], c='b', s=10, zorder=3)
+    ax.scatter(M.lon1, M.lat1, c='g', s=20, zorder=3)
+    ax.scatter(M.lon2, M.lat2, c='r', s=20, zorder=3)
 
   plt.show()
