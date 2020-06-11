@@ -191,7 +191,7 @@ for pitem in plist:
     fig_names += [pitem]
 
 # --- for debugging
-fig_names = []
+#fig_names = []
 #fig_names += ['temp30w', 'salt30w', 'dens30w']
 #fig_names += ['atm_psi']
 #fig_names += ['ts_tas_gmean']
@@ -227,9 +227,9 @@ fig_names = []
 #fig_names += ['ts_amoc']
 #fig_names += ['ts_ice_extent_sh']
 #fig_names += ['atm_temp_zave_bias', 'atm_logv_temp_zave_bias', 'atm_logv_temp_zave', 'atm_temp_zave']
-fig_names += ['atm_temp_zave', 'atm_temp_zave_bias', 'atm_logv_temp_zave', 'atm_logv_temp_zave_bias']
-fig_names += ['atm_u_zave', 'atm_u_zave_bias', 'atm_logv_u_zave', 'atm_logv_u_zave_bias']
-fig_names += ['atm_v_zave', 'atm_v_zave_bias', 'atm_logv_v_zave', 'atm_logv_v_zave_bias']
+#fig_names += ['atm_temp_zave', 'atm_temp_zave_bias', 'atm_logv_temp_zave', 'atm_logv_temp_zave_bias']
+#fig_names += ['atm_u_zave', 'atm_u_zave_bias', 'atm_logv_u_zave', 'atm_logv_u_zave_bias']
+#fig_names += ['atm_v_zave', 'atm_v_zave_bias', 'atm_logv_v_zave', 'atm_logv_v_zave_bias']
 
 fig_names = np.array(fig_names)
 
