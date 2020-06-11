@@ -12,7 +12,7 @@ module list
 source /home/mpim/m300602/pyicon/tools/conda_act_mistral_pyicon_env.sh
 which python
 
-path_pyicon="/mnt/lustre01/pf/zmaw/m300602/pyicon/"
+path_pyicon=`(cd .. && pwd)`"/"
 qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
 config_file="${path_pyicon}config_qp/conf-hel20134-TOP.py"
 path_qps="${path_pyicon}all_qps/"
