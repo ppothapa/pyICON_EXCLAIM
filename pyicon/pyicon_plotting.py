@@ -160,7 +160,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     plot_settings(ax, template=template, land_facecolor=land_facecolor)
 
   if do_write_data_range:
-    info_str = 'min: %.2g;        mean: %.2g;        std: %.2g;        max: %.2g' % (IaV.data.min(), IaV.data.mean(), IaV.data.std(), IaV.data.max())
+    info_str = 'min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (IaV.data.min(), IaV.data.mean(), IaV.data.std(), IaV.data.max())
     ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
 
   #if (projection!='none') and (crs_features):
@@ -192,6 +192,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                xvar='lat',
                log2vax=False,
                vertaxtype='linear',
+               daxl=1.8,
                logplot=False,
                asp=0.5,
                fig_size_fac=2.0,
@@ -244,7 +245,8 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   else:
     dfigb = 0.7
   if ax == 'auto':
-    hca, hcb = arrange_axes(1,1, plot_cb=True, asp=asp, fig_size_fac=fig_size_fac, dfigb=dfigb,
+    # (daxl needed to be increase for quickplots atm log v-axis)
+    hca, hcb = arrange_axes(1,1, plot_cb=True, asp=asp, fig_size_fac=fig_size_fac, dfigb=dfigb, daxl=daxl,
                            )
     ax = hca[0]
     cax = hcb[0]
@@ -270,13 +272,16 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
       z = IcD.depthi
     ylabel = 'depth [m]'
   elif IcD.model_type=='atm':
-    z = IcD.plevc/100.
+    if vertaxtype=='linear':
+      z = IcD.plevc/100.
+    elif vertaxtype=='log10':
+      z = IcD.plev_log/100.
     ylabel = 'pressure [hPa]'
 
   if vertaxtype=='log2':
-    z = np.log(depth)/np.log(2) 
+    z = np.log(z)/np.log(2) 
   elif vertaxtype=='log10':
-    z = np.log(depth)/np.log(10) 
+    z = np.log(z)/np.log(10) 
 
   # --- do plotting
   hm = shade(x, z, IaV.data, ax=ax, cax=cax, 
@@ -300,23 +305,27 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   ax.set_title(title)
   ax.set_xlabel(xstr)
   ax.set_ylabel(ylabel)
-  ax.set_xticks(np.linspace(np.round(xlim[0]),np.round(xlim[1]),7))
-  if IcD.model_type=='oce':
-    ax.set_yticks(np.arange(0,6500,1000.))
-  elif IcD.model_type=='atm':
-    ax.set_yticks(np.arange(0,1100,100.))
   ax.set_xlim(xlim)
   ax.set_ylim(ylim)
-  if vertaxtype=='log2':
+  ax.set_xticks(np.linspace(np.round(xlim[0]),np.round(xlim[1]),7))
+  if vertaxtype=='linear':
+    if IcD.model_type=='oce':
+      ax.set_yticks(np.arange(0,6500,1000.))
+    elif IcD.model_type=='atm':
+      ax.set_yticks(np.arange(0,1100,100.))
+  elif vertaxtype=='log2':
     ax.set_yticklabels(2**ax.get_yticks())
   elif vertaxtype=='log10':
-    ax.set_yticklabels(10**ax.get_yticks())
+    if IcD.model_type=='atm':
+      yticks = np.array([0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1., 2., 5., 10., 20., 50., 100., 200., 500., 1000.])
+      ax.set_yticks(np.log10(yticks))
+      ax.set_yticklabels(yticks)
   ax.set_facecolor('0.8')
   ax.xaxis.set_ticks_position('both')
   ax.yaxis.set_ticks_position('both')
 
   if do_write_data_range:
-    info_str = 'min: %.2g;        mean: %.2g;        std: %.2g;        max: %.2g' % (IaV.data.min(), IaV.data.mean(), IaV.data.std(), IaV.data.max())
+    info_str = 'min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (IaV.data.min(), IaV.data.mean(), IaV.data.std(), IaV.data.max())
     ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
 
   return ax, cax, mappable, Dstr
@@ -603,8 +612,11 @@ def shade(
         cb.set_ticks(cbticks)
       else:
         if use_norm:
-          #cb.set_ticks(clevs[::2])
-          cb.set_ticks(clevs)
+          dcl = np.diff(clevs)
+          if (np.isclose(dcl, dcl[0])).all(): 
+            cb.set_ticks(clevs[::2])
+          else:
+            cb.set_ticks(clevs)
         else:
           cb.locator = ticker.MaxNLocator(nbins=5)
       cb.update_ticks()
