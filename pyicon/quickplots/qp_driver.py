@@ -549,7 +549,7 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('conc_mar', '', 'sea ice concentration March')
       IaV.data = conc_mar[0,:]
       IaV.interp_to_rectgrid(fpath_ckdtree)
-      pyic.hplot_base(IcD_monthly, IaV, cmap=PyicCmaps().WhiteBlueGreenYellowRed,
+      pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
                       clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                       ax=ax, cax=cax,
@@ -560,7 +560,7 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('conc_sep', 'm', 'sea ice concentration September')
       IaV.data = conc_sep[0,:]
       IaV.interp_to_rectgrid(fpath_ckdtree)
-      pyic.hplot_base(IcD_monthly, IaV, cmap=PyicCmaps().WhiteBlueGreenYellowRed,
+      pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
                       clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                       ax=ax, cax=cax,
@@ -589,7 +589,8 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('hiconc_mar', 'm', 'ice equiv. thickness March')
       IaV.data = hiconc_mar
       IaV.interp_to_rectgrid(fpath_ckdtree)
-      pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], cincr=0.5, cmap=PyicCmaps().WhiteBlueGreenYellowRed,
+      pyic.hplot_base(IcD_monthly, IaV, 
+                      clim=[0,6], clevs=[0, 0.01, 0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                       ax=ax, cax=cax,
                       crs_features=False, do_plot_settings=False, do_write_data_range=True,
@@ -599,7 +600,8 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('hiconc_sep', 'm', 'ice equiv. thickness September')
       IaV.data = hiconc_sep
       IaV.interp_to_rectgrid(fpath_ckdtree)
-      pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], cincr=0.5, cmap=PyicCmaps().WhiteBlueGreenYellowRed,
+      pyic.hplot_base(IcD_monthly, IaV, 
+                      clim=[0,6], clevs=[0, 0.01, 0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                       ax=ax, cax=cax,
                       crs_features=False, do_plot_settings=False, do_write_data_range=True,
@@ -627,7 +629,7 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('hsconc_mar', 'm', 'snow equiv. thickness March')
       IaV.data = hsconc_mar
       IaV.interp_to_rectgrid(fpath_ckdtree)
-      pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap=PyicCmaps().WhiteBlueGreenYellowRed,
+      pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                       ax=ax, cax=cax,
                       crs_features=False, do_plot_settings=False, do_write_data_range=True,
@@ -637,7 +639,7 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('hsconc_sep', 'm', 'snow equiv. thickness September')
       IaV.data = hsconc_sep
       IaV.interp_to_rectgrid(fpath_ckdtree)
-      pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap=PyicCmaps().WhiteBlueGreenYellowRed,
+      pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                       ax=ax, cax=cax,
                       crs_features=False, do_plot_settings=False, do_write_data_range=True,
@@ -665,7 +667,7 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('conc_mar', '', 'sea ice concentration March')
       IaV.data = conc_mar[0,:]
       IaV.interp_to_rectgrid(fpath_ckdtree)
-      pyic.hplot_base(IcD_monthly, IaV, cmap=PyicCmaps().WhiteBlueGreenYellowRed,
+      pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
                       clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                       ax=ax, cax=cax,
@@ -676,7 +678,7 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('conc_sep', 'm', 'sea ice concentration September')
       IaV.data = conc_sep[0,:]
       IaV.interp_to_rectgrid(fpath_ckdtree)
-      pyic.hplot_base(IcD_monthly, IaV, cmap=PyicCmaps().WhiteBlueGreenYellowRed,
+      pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
                       clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                       ax=ax, cax=cax,
@@ -705,7 +707,7 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('hiconc_mar', 'm', 'ice equiv. thickness March')
       IaV.data = hiconc_mar
       IaV.interp_to_rectgrid(fpath_ckdtree)
-      pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], clevs=[0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap=PyicCmaps().WhiteBlueGreenYellowRed,
+      pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], clevs=[0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                       ax=ax, cax=cax,
                       crs_features=False, do_plot_settings=False, do_write_data_range=True,
@@ -715,7 +717,7 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('hiconc_sep', 'm', 'ice equiv. thickness September')
       IaV.data = hiconc_sep
       IaV.interp_to_rectgrid(fpath_ckdtree)
-      pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], clevs=[0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap=PyicCmaps().WhiteBlueGreenYellowRed,
+      pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], clevs=[0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                       ax=ax, cax=cax,
                       crs_features=False, do_plot_settings=False, do_write_data_range=True,
@@ -743,7 +745,7 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('hsconc_mar', 'm', 'snow equiv. thickness March')
       IaV.data = hsconc_mar
       IaV.interp_to_rectgrid(fpath_ckdtree)
-      pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='cmo.ice_r',
+      pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                       ax=ax, cax=cax,
                       crs_features=False, do_plot_settings=False, do_write_data_range=True,
@@ -753,7 +755,7 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('hsconc_sep', 'm', 'snow equiv. thickness September')
       IaV.data = hsconc_sep
       IaV.interp_to_rectgrid(fpath_ckdtree)
-      pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='cmo.ice_r',
+      pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                       ax=ax, cax=cax,
                       crs_features=False, do_plot_settings=False, do_write_data_range=True,
