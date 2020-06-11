@@ -308,6 +308,7 @@ def qp_timeseries(IcD, fpath, vars_plot,
                   var_fac=1., var_add=0.,
                   title='', units='',
                   t1='none', t2='none',
+                  lstart='none', lend='none',
                   ave_freq=0,
                   omit_last_file=True,
                   mode_ave=['mean'],
@@ -316,10 +317,10 @@ def qp_timeseries(IcD, fpath, vars_plot,
                  ): 
   if len(mode_ave)==1:
     mode_ave = [mode_ave[0]]*len(vars_plot)
-    dfigb = 0.0
+    dfigb = 0.7
   else:
     do_write_data_range = False
-    dfigb = 0.7
+    dfigb = 0.0
   flist = glob.glob(IcD.path_data+fpath)
   flist.sort()
   if omit_last_file:
@@ -370,6 +371,13 @@ def qp_timeseries(IcD, fpath, vars_plot,
       label = labels[mm]
     data *= var_fac
     data += var_add
+    if lstart=='none':
+      lstart=0
+    if lend=='none':
+      lend=data.size
+    times = times[lstart:lend]
+    data  = data[lstart:lend]
+
     ax.plot(times, data, label=label)
   ax.grid(True)
   if len(vars_plot)==1:
@@ -390,8 +398,9 @@ def qp_timeseries(IcD, fpath, vars_plot,
   if not (isinstance(t2,str) and t2=='none'):
     ax.axvline(t2, color='k')
 
+  ind = (times<t2) & (times>=t1)
   if do_write_data_range:
-    info_str = 'min: %.2g;        mean: %.2g;        std: %.2g;        max: %.2g' % (data.min(), data.mean(), data.std(), data.max())
+    info_str = 'in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data[ind].min(), data[ind].mean(), data[ind].std(), data[ind].max())
     ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
 
   FigInf = dict()
