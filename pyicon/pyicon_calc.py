@@ -8,18 +8,6 @@ from netCDF4 import Dataset, num2date
 from ipdb import set_trace as mybreak  
 #from .pyicon_tb import *
 
-def calc_wvel(IcD, mass_flux):
-  div_mass_flux = (
-    mass_flux[:,IcD.edge_of_cell]*IcD.div_coeff[np.newaxis,:,:]).sum(axis=2)
-  wvel = np.zeros((IcD.nz+1, IcD.clon.size))
-  wvel[:IcD.nz,:] = -div_mass_flux[::-1,:].cumsum(axis=0)[::-1,:]
-  return wvel
-
-def calc_curl(IcD, ve):
-  # FIXME: this needs to be tested
-  curl_v = (ve[:,IcD.edges_of_vertex] * IcD.rot_coeff).sum(axis=2)
-  return curl_v
-
 #def distance(p1, p2):
 #  """
 #  p1: cartesian vector with 2nd dim (x,y,z) dim(npoints, 3)
@@ -42,6 +30,8 @@ def scalar_product(v1, v2, dim=1):
     scalar_product = v1[:,0]*v2[:,0]+v1[:,1]*v2[:,1]+v1[:,2]*v2[:,2]
   elif dim==2:
     scalar_product = v1[:,:,0]*v2[:,:,0]+v1[:,:,1]*v2[:,:,1]+v1[:,:,2]*v2[:,:,2]
+  elif dim==3:
+    scalar_product = v1[:,:,:,0]*v2[:,:,:,0]+v1[:,:,:,1]*v2[:,:,:,1]+v1[:,:,:,2]*v2[:,:,:,2]
   return scalar_product
 
 def planar_triangle_area(p1, p2, p3):
@@ -62,8 +52,110 @@ def planar_triangle_area(p1, p2, p3):
   return planar_triangle_area
 
 def edges2cell(IcD, ve):
+  p_vn_c = (   IcD.edge2cell_coeff_cc[np.newaxis,:,:,:]
+             * ve[:,IcD.edge_of_cell,np.newaxis]
+             * IcD.prism_thick_e[:,IcD.edge_of_cell,np.newaxis]
+           ).sum(axis=2)
+  # dim(fixed_vol_norm) = (nCells)
+  #dist_vector = IcD.edge_cart_vec[IcD.edge_of_cell,:] - IcD.cell_cart_vec[:,np.newaxis,:]
+  #fixed_vol_norm = (0.5 * np.sqrt(scalar_product(dist_vector,dist_vector,dim=2)) * IcD.edge_length[IcD.edge_of_cell]).sum(axis=1)
+  #p_vn_c *= 1./(fixed_vol_norm[np.newaxis,:,np.newaxis]*IcD.prism_thick_c[:,:,np.newaxis])
+  p_vn_c *= 1./(IcD.fixed_vol_norm[np.newaxis,:,np.newaxis]*IcD.prism_thick_c[:,:,np.newaxis])
+  return p_vn_c
+
+def calc_fixed_volume_norm(IcD):
+  # --- fixed volume norm
+  dist_vector = IcD.edge_cart_vec[IcD.edge_of_cell,:] - IcD.cell_cart_vec[:,np.newaxis,:]
+  norm = np.sqrt(scalar_product(dist_vector,dist_vector,dim=2)) 
+  prime_edge_length = IcD.edge_length/IcD.grid_sphere_radius
+  fixed_vol_norm = (  0.5 * norm
+                    * (prime_edge_length[IcD.edge_of_cell]))
+  fixed_vol_norm = fixed_vol_norm.sum(axis=1)
+  
+  # ------ check fixed volume
+  # ic30w26n = np.argmin((IcD.clon+30.)**2+(IcD.clat-26.)**2)
+  # ic = ic30w26n
+  # ni = 16
+  # block = (ic+1)//ni + 1 
+  # index = (ic+1)-(block-1)*ni 
+  # block, index, ic
+  # print('clon = ', IcD.clon[ic]*np.pi/180., 'clat = ', IcD.clat[ic]*np.pi/180.)
+  # print('fixed_vol_norm = ', fixed_vol_norm[ic])
+  # print('dist_vector = ', dist_vector[ic,0,:])
+  # print('norm = ', norm[ic,:])
+  # print(np.sqrt((dist_vector[ic,0,:]**2).sum()))
+  # print('prime_edge_length = ', prime_edge_length[IcD.edge_of_cell][ic,:])
+  # #print(np.sqrt(scalar_product(dist_vector[ic,0,:],dist_vector[ic,0,:])) )
+  return fixed_vol_norm
+
+def calc_edge2edge_viacell_coeff(IcD):
+  cell_index = IcD.adjacent_cell_of_edge
+  
+  # dist_vector_basic: distance vector between edge center and center of the two neighbouring cells
+  # dim(dist_vector_basic) = (nEdges, nCellOfEdges, nCartDims)
+  dist_vector_basic = IcD.edge_cart_vec[:,np.newaxis,:] - IcD.cell_cart_vec[cell_index,:]
+  dist_edge_cell_basic  = np.sqrt(scalar_product(dist_vector_basic,dist_vector_basic, dim=2))
+  dist_vector_basic *= 1./dist_edge_cell_basic[:,:,np.newaxis]
+  orientation = scalar_product(dist_vector_basic, IcD.edge_prim_norm[:,np.newaxis,:], dim=2)
+  dist_vector_basic *= np.sign(orientation)[:,:,np.newaxis]
+  
+  cell_center = IcD.cell_cart_vec[cell_index,:]
+  edge_center = IcD.edge_cart_vec
+  
+  # dist_vector: distance vector between adjacent cell centers of edge and their sourounding edges
+  # dim(edge_index_cell) = (nEdges, neighbCells, neighbEdges)
+  edge_index_cell = IcD.edge_of_cell[cell_index,:]
+  # dim(dist_vector) = (nEdges, nCellOfEdges, nEdgesOfCell, nCartDims)
+  dist_vector = IcD.edge_cart_vec[edge_index_cell,:] - cell_center[:,:,np.newaxis,:]
+  dist_edge_cell = np.sqrt(scalar_product(dist_vector, dist_vector, dim=3))
+  dist_vector *= 1./ dist_edge_cell[:,:,:,np.newaxis]
+  dist_vector *= IcD.orientation_of_normal[cell_index][:,:,:,np.newaxis]
+  
+  edge2edge_viacell_coeff_2D = scalar_product(dist_vector_basic[:,:,np.newaxis,:],dist_vector, dim=3)
+  
+  # math/mo_operator_ocean_coeff_3d.f90: init_operator_coeffs_cell
+  edge2edge_viacell_coeff_2D *= (  (IcD.edge_length[edge_index_cell]/IcD.grid_sphere_radius)
+                                 * dist_edge_cell*dist_edge_cell_basic[:,:,np.newaxis] 
+                                 / (IcD.dual_edge_length[:,np.newaxis,np.newaxis]/IcD.grid_sphere_radius)
+                                )
+  
+  # ni = 16
+  # ie30w26n = np.argmin((IcD.elon+30.)**2+(IcD.elat-26.)**2)
+  # ip = ie30w26n
+  # block = (ip+1)//ni + 1 
+  # index = (ip+1)-(block-1)*ni 
+  # block, index
+  
+  # neigbor = 0
+  # ictr = 0
+  # print('elon = ', IcD.elon[ip]*np.pi/180., 'elat = ', IcD.elat[ip]*np.pi/180.)
+  # print('dist_edge_cell = ', dist_edge_cell[ip, neigbor, ictr])
+  # print('dist_vector = ', dist_vector[ip, neigbor, ictr])
+  # print('dist_edge_cell_basic = ', dist_edge_cell_basic[ip,neigbor])
+  # print('dist_vector_basic = ', dist_vector_basic[ip,neigbor])
+  # # print('edge2edge_viacell_coeff_2D = ', edge2edge_viacell_coeff_2D[ip, neigbor, ictr])
+  # print('edge2edge_viacell_coeff_2D = ', edge2edge_viacell_coeff_2D[ip, :, :])
+  
+  # --- make edge2edge_viacell_coeff 3D and mask it
+  edge2edge_viacell_coeff = np.tile(edge2edge_viacell_coeff_2D, (IcD.nz,1,1,1))
+  
+  # ------ mask if center edge is not sea
+  lsm_e_ext = np.tile(IcD.lsm_e[:,:,np.newaxis,np.newaxis], (1,1,2,3))
+  edge2edge_viacell_coeff[lsm_e_ext!=-2] = 0.0
+  # ------ mask each edge of stencil which is not sea 
+  edge2edge_viacell_coeff[IcD.lsm_e[:,IcD.edge_of_cell[IcD.adjacent_cell_of_edge,:]]!=-2] = 0.0
+  
+  
+  # --- normalize by fixed_vol_norm
+  edge2edge_viacell_coeff[:,:,0,:] *= 1./IcD.fixed_vol_norm[IcD.adjacent_cell_of_edge[:,0]][np.newaxis,:,np.newaxis]
+  edge2edge_viacell_coeff[:,:,1,:] *= 1./IcD.fixed_vol_norm[IcD.adjacent_cell_of_edge[:,1]][np.newaxis,:,np.newaxis]
+  
+  # print('edge2edge_viacell_coeff = ', edge2edge_viacell_coeff[0,ip, :, :])
+  return edge2edge_viacell_coeff
+
+def calc_edge2cell_coeff_cc(IcD):
   """
-From math/mo_scalar_product.f90 map_edges2cell_no_height_3d_onTriangles:
+From math/mo_scalar_product.f90 map_edges2cell_3d (interface to map_edges2cell_no_height_3d -> map_edges2cell_no_height_3d_onTriangles):
 and from math/mo_operator_ocean_coeff_3d.f90 init_operator_coeffs_cell:
         edge_1_index = patch_2d%cells%edge_idx(cell_index,blockNo,1)
         edge_1_block = patch_2d%cells%edge_blk(cell_index,blockNo,1)
@@ -104,30 +196,57 @@ and from math/mo_operator_ocean_coeff_3d.f90 init_operator_coeffs_cell:
               & patch_2D%cells%edge_orientation(cell_index,cell_block,neigbor)
   """
   # dim(dist_vector) = (nCells, nEdgesOfCell, nCartDims)
-  dist_vector = IcD.edge_cart_vec[IcD.edge_of_cell,:] - IcD.cell_cart_vec[:,np.newaxis,:]
+  dist_vector = (  IcD.edge_cart_vec[IcD.edge_of_cell,:] 
+                 - IcD.cell_cart_vec[:,np.newaxis,:] )
   # dim(edge2cell_coeff_cc) = (nCells, nEdgesOfCell, nCartDims)
-  edge2cell_coeff_cc = dist_vector * IcD.edge_length[IcD.edge_of_cell,np.newaxis] * IcD.orientation_of_normal[:,:,np.newaxis]
+  edge2cell_coeff_cc = (  dist_vector 
+                        * (IcD.edge_length[IcD.edge_of_cell,np.newaxis] / IcD.grid_sphere_radius)
+                        * IcD.orientation_of_normal[:,:,np.newaxis] )
   # dim(edge2cell_coeff_cc[np.newaxis,:,:,:]) = (nDepth, nCells, nEdgesOfCell, nCartDims)
-  p_vn_c = (edge2cell_coeff_cc[np.newaxis,:,:,:]*ve[:,IcD.edge_of_cell,np.newaxis]*IcD.prism_thick_e[:,IcD.edge_of_cell,np.newaxis]).sum(axis=2)
-  # dim(fixed_vol_norm) = (nCells)
-  fixed_vol_norm = (0.5 * np.sqrt(scalar_product(dist_vector,dist_vector)) * IcD.edge_length[IcD.edge_of_cell]).sum(axis=1)
-  p_vn_c *= 1./(fixed_vol_norm[np.newaxis,:,np.newaxis]*IcD.prism_thick_c[:,:,np.newaxis])
-  return p_vn_c
+  return edge2cell_coeff_cc
 
-def cell2edges(IcD, p_vn_c):
-  """
-  math/mo_scalar_product.f90: map_cell2edges_3d_mlevels
-  """
+def calc_edge2cell_coeff_cc_t(IcD):
   # dim(dist_vector) = (nEdges, nCellsOfEdges, nCartDims)
-  dist_vector = (IcD.edge_cart_vec[:,np.newaxis,:] - IcD.cell_cart_vec[IcD.adjacent_cell_of_edge])
+  dist_vector = (  IcD.edge_cart_vec[:,np.newaxis,:] 
+                 - IcD.cell_cart_vec[IcD.adjacent_cell_of_edge] )
   orientation = scalar_product(dist_vector, IcD.edge_prim_norm[:,np.newaxis,:], dim=2) 
   dist_vector *= np.sign(orientation)[:,:,np.newaxis]
   # dim(edge2cell_coeff_cc_t) = (nEdges, nCellsOfEdges, nCartDims)
   edge2cell_coeff_cc_t = (  IcD.edge_prim_norm[:,np.newaxis,:]*IcD.grid_sphere_radius
                           * np.sqrt(scalar_product(dist_vector,dist_vector, dim=2))[:,:,np.newaxis] 
                           / IcD.dual_edge_length[:,np.newaxis,np.newaxis] )
-  ptp_vn = (   scalar_product(p_vn_c[:,IcD.adjacent_cell_of_edge[:,0],:], edge2cell_coeff_cc_t[np.newaxis,:,0,:], dim=2)
-             + scalar_product(p_vn_c[:,IcD.adjacent_cell_of_edge[:,1],:], edge2cell_coeff_cc_t[np.newaxis,:,1,:], dim=2)
+  return edge2cell_coeff_cc_t
+  
+def derive_mass_flux(IcD, vn_e):
+  # --- derive mass_flux
+  il_c = IcD.adjacent_cell_of_edge[:,0]
+  il_e = IcD.edge_of_cell[il_c]
+  out_vn_e  = (vn_e[:,il_e] * IcD.edge2edge_viacell_coeff[:,:,0,:] * IcD.prism_thick_e[:,il_e]).sum(axis=2)
+  il_c = IcD.adjacent_cell_of_edge[:,1]
+  il_e = IcD.edge_of_cell[il_c]
+  out_vn_e += (vn_e[:,il_e] * IcD.edge2edge_viacell_coeff[:,:,1,:] * IcD.prism_thick_e[:,il_e]).sum(axis=2)
+  return out_vn_e
+
+def calc_wvel(IcD, mass_flux):
+  div_mass_flux = (
+    mass_flux[:,IcD.edge_of_cell]*IcD.div_coeff[np.newaxis,:,:]).sum(axis=2)
+  wvel = np.zeros((IcD.nz+1, IcD.clon.size))
+  wvel[:IcD.nz,:] = -div_mass_flux[::-1,:].cumsum(axis=0)[::-1,:]
+  return wvel
+
+def calc_curl(IcD, ve):
+  # FIXME: this needs to be tested
+  curl_v = (ve[:,IcD.edges_of_vertex] * IcD.rot_coeff).sum(axis=2)
+  return curl_v
+
+def cell2edges(IcD, p_vn_c):
+  """
+  math/mo_scalar_product.f90: map_cell2edges_3d_mlevels
+  """
+  ptp_vn = (   scalar_product(p_vn_c[:,IcD.adjacent_cell_of_edge[:,0],:], 
+                              IcD.edge2cell_coeff_cc_t[np.newaxis,:,0,:], dim=2)
+             + scalar_product(p_vn_c[:,IcD.adjacent_cell_of_edge[:,1],:], 
+                              IcD.edge2cell_coeff_cc_t[np.newaxis,:,1,:], dim=2)
            )
   return ptp_vn
 
@@ -160,6 +279,21 @@ def calc_2dlocal_from_3d(IcD, p_vn_c):
 
   uo =   u2*cosLon - u1*sinLon
   vo = -(u1*cosLon + u2*sinLon)*sinLat + u3*cosLat
+
+  #sinLon = np.sin(IcD.clon*np.pi/180.)
+  #cosLon = np.cos(IcD.clon*np.pi/180.)
+  #sinLat = np.sin(IcD.clat*np.pi/180.)
+  #cosLat = np.cos(IcD.clat*np.pi/180.)
+
+  #cartesian_x = p_vn_c[:,:,0]
+  #cartesian_y = p_vn_c[:,:,1]
+  #cartesian_z = p_vn_c[:,:,2]
+
+  #x      = cosLon*cartesian_y - sinLon*cartesian_x
+  #y_help = cosLon*cartesian_x + sinLon*cartesian_y
+  #y_help = sinLat * y_help
+  #y      = cosLat * cartesian_z - y_help
+  #uo, vo = x, y
   return uo, vo
 
 def calc_3d_from_2dlocal(IcD, uo, vo):
