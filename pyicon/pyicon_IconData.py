@@ -36,10 +36,14 @@ class IconData(object):
                do_triangulation      = True,
                omit_last_file        = False,  # set to true to avoid data damage for running simulations
                load_vertical_grid    = True,
+               load_vgrid_depth      = 'auto',
+               load_vgrid_dz         = 'auto',
+               load_vgrid_mask       = 'auto',
                load_triangular_grid  = True,
                load_rectangular_grid = True,
                load_variable_info    = True,
                calc_coeff            = True,
+               calc_coeff_mappings   = False,
                time_mode             = 'num2date',
                model_type            = 'oce',
               ):
@@ -110,6 +114,8 @@ class IconData(object):
     self.grav = 9.80665
     self.earth_angular_velocity = 7.29212e-05
     self.rho0 = 1025.022 
+    self.rhoi = 917.0
+    self.rhos = 300.0
     self.sal_ref = 35.
     rcpl = 3.1733
     cpd = 1004.64 
@@ -163,11 +169,20 @@ class IconData(object):
       self.load_rgrid()
     self.nz = 1
     if load_vertical_grid:
-      self.load_vgrid()
+      if isinstance(load_vgrid_depth, str) and load_vgrid_depth=='auto':
+        load_vgrid_depth = True
+      if isinstance(load_vgrid_dz, str) and load_vgrid_dz=='auto':
+        load_vgrid_dz = True
+      if isinstance(load_vgrid_mask, str) and load_vgrid_mask=='auto':
+        load_vgrid_mask = True
+      self.load_vgrid(load_vgrid_depth=load_vgrid_depth, load_vgrid_dz=load_vgrid_dz, load_vgrid_mask=load_vgrid_mask)
 
     # --- calculate coefficients for divergence, curl, etc.
     if calc_coeff:
       self.calc_coeff()
+    
+    if calc_coeff_mappings:
+      self.calc_coeff_mappings() 
 
     #self.crop_grid(lon_reg=self.lon_reg, lat_reg=self.lat_reg)
     # --- triangulation
@@ -310,7 +325,7 @@ class IconData(object):
     print('------------------------------------------------------------') 
     return
 
-  def load_vgrid(self, lon_reg='all', lat_reg='all'):
+  def load_vgrid(self, lon_reg='all', lat_reg='all', load_vgrid_depth=True, load_vgrid_dz=True, load_vgrid_mask=True):
     """ Load certain variables from self.fpath_fx which are typically related to a specification of the vertical grid.
     """
 
@@ -319,26 +334,30 @@ class IconData(object):
       f = Dataset(self.fpath_fx, 'r')
       #self.clon = f.variables['clon'][:] * 180./np.pi
       #self.clat = f.variables['clat'][:] * 180./np.pi
-      self.depthc = f.variables['depth'][:]
-      self.depthi = f.variables['depth_2'][:]
-      self.nz = self.depthc.size
+      if load_vgrid_depth:
+        self.depthc = f.variables['depth'][:]
+        self.depthi = f.variables['depth_2'][:]
+        self.nz = self.depthc.size
 
-#      # --- the variables prism_thick_flat_sfc_c seem to be corrupted in fx file
+      if load_vgrid_dz:
+      # FIXME (2020-06-05): still true? the variables prism_thick_flat_sfc_c seem to be corrupted in fx file
 #      self.prism_thick_flat_sfc_c = f.variables['prism_thick_flat_sfc_c'][:] # delete this later
-#      self.prism_thick_c = f.variables['prism_thick_flat_sfc_c'][:]
-#      self.prism_thick_e = f.variables['prism_thick_flat_sfc_e'][:]
-#      self.constantPrismCenters_Zdistance = f.variables['constantPrismCenters_Zdistance'][:]
-#      self.dzw           = self.prism_thick_c
-#      self.dze           = self.prism_thick_e
-#      self.dzt           = self.constantPrismCenters_Zdistance
-#
-#      self.dolic_c = f.variables['dolic_c'][:]-1
-#      self.dolic_e = f.variables['dolic_e'][:]-1
-      self.wet_c = f.variables['wet_c'][:]
-      self.wet_e = f.variables['wet_e'][:]
+        self.prism_thick_c = f.variables['prism_thick_flat_sfc_c'][:]
+        self.prism_thick_e = f.variables['prism_thick_flat_sfc_e'][:]
+        self.constantPrismCenters_Zdistance = f.variables['constantPrismCenters_Zdistance'][:]
+        self.dzw           = self.prism_thick_c
+        self.dze           = self.prism_thick_e
+        self.dzt           = self.constantPrismCenters_Zdistance
 
-      self.lsm_c = f.variables['lsm_c'][:]
-      self.lsm_e = f.variables['lsm_e'][:]
+      if load_vgrid_mask:
+        self.dolic_c = f.variables['dolic_c'][:]-1
+        self.dolic_e = f.variables['dolic_e'][:]-1
+        self.wet_c = f.variables['wet_c'][:]
+        self.wet_e = f.variables['wet_e'][:]
+  
+        # land=2, land_bound=1, bound=0, sea_bound=-1, sea=-2 
+        self.lsm_c = f.variables['lsm_c'][:]
+        self.lsm_e = f.variables['lsm_e'][:]
 
       #self.wet_e = f.variables['wet_e'][:]
       #for var in f.variables.keys():
@@ -548,6 +567,24 @@ class IconData(object):
     else:
       self.rot_coeff = rot_coeff/(self.dual_area[:,np.newaxis])
     print('Done with calc_coeff!')
+    return
+
+  def calc_coeff_mappings(self):
+    print('Start with calc_coeff_mappings...')
+
+    print('--- fixed_vol_norm')
+    self.fixed_vol_norm = calc_fixed_volume_norm(self)
+
+    print('--- edge2edge_viacell_coeff')
+    self.edge2edge_viacell_coeff = calc_edge2edge_viacell_coeff(self)
+
+    print('--- edge2cell_coeff_cc')
+    self.edge2cell_coeff_cc = calc_edge2cell_coeff_cc(self)
+
+    print('--- edge2cell_coeff_cc_t')
+    self.edge2cell_coeff_cc_t = calc_edge2cell_coeff_cc_t(self)
+
+    print('Done with calc_coeff_mappings!')
     return
 
   
