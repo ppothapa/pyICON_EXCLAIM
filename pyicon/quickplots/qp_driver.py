@@ -42,6 +42,9 @@ In batch mode (slurm):
 python qp_driver.py --batch /path/to/config_file.py
 
 For debugging:
+%run qp_driver.py /path/to/config_file.py --debug --tave_int=1610-01-01,1620-01-01
+
+Just creating the web page without producing any new figures:
 %run qp_driver.py /path/to/config_file.py --no_plots --tave_int=1610-01-01,1620-01-01
 
 Argument list:
@@ -59,6 +62,9 @@ parser.add_argument('--slurm', default=False,
 parser.add_argument('--no_plots', default=False, 
                     action='store_true', #const=False,
                     help='do not make any plots')
+parser.add_argument('--debug', default=False, 
+                    action='store_true', #const=False,
+                    help='only limitted number of plots are made (specified in qp_driver debugging section)')
 parser.add_argument('fpath_config', metavar='fpath_config', type=str,
                     help='path to quickplot configure file')
 parser.add_argument('--path_quickplots', metavar='path_quickplots', type=str, default='../../all_qps/',
@@ -191,46 +197,48 @@ for pitem in plist:
     fig_names += [pitem]
 
 # --- for debugging
-#fig_names = []
-#fig_names += ['temp30w', 'salt30w', 'dens30w']
-#fig_names += ['atm_psi']
-#fig_names += ['ts_tas_gmean']
-#fig_names += ['sst']
-#fig_names += ['ts_amoc']
-#fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent',]
-#fig_names += ['mld_mar', 'mld_sep']
-#fig_names = ['temp_bias_gzave']
-#fig_names = ['sss']
-#fig_names = ['ssh_variance']
-#fig_names += ['amoc']
-#fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
-#fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
-#fig_names += ['ice_concentration_nh', 'ice_thickness_nh', 'snow_thickness_nh',] 
-#fig_names += ['ice_concentration_sh', 'ice_thickness_sh', 'snow_thickness_sh',]
-#fig_names += ['bstr']
-#fig_names += ['ke_100m', 'ke_2000m']
-#fig_names += ['atm_sea_level_pressure']
-#fig_names += ['atm_2m_temp','atm_sea_level_pressure',]
-#fig_names += ['atm_zonal_wind_stress',]
-#fig_names += ['atm_curl_tau', 'atm_wek']
-#fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover']
-#fig_names += ['atm_tas_bias']
-#fig_names += ['atm_temp_zave', 'atm_u_zave', 'atm_v_zave', 'atm_rel_hum_zave']
-#fig_names += ['atm_logv_temp_zave']
-#fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave']
-#fig_names += ['atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave']
-#fig_names += ['vort']
-#fig_names += ['np_zonal_wind_stress']
-#fig_names += ['amoc', 'pmoc', 'gmoc']
-#fig_names += ['temp_gzave', 'temp_azave', 'temp_ipzave']
-#fig_names += ['salt30w', 'temp30w']
-#fig_names += ['ts_amoc']
-#fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
-#fig_names += ['ts_ice_extent_sh']
-#fig_names += ['atm_temp_zave_bias', 'atm_logv_temp_zave_bias', 'atm_logv_temp_zave', 'atm_temp_zave']
-#fig_names += ['atm_temp_zave', 'atm_temp_zave_bias', 'atm_logv_temp_zave', 'atm_logv_temp_zave_bias']
-#fig_names += ['atm_u_zave', 'atm_u_zave_bias', 'atm_logv_u_zave', 'atm_logv_u_zave_bias']
-#fig_names += ['atm_v_zave', 'atm_v_zave_bias', 'atm_logv_v_zave', 'atm_logv_v_zave_bias']
+if debug:
+  print('XXXXXXXXXXXXXXXXX Debugging mode! XXXXXXXXXXXXXXX')
+  #fig_names = []
+  #fig_names += ['temp30w', 'salt30w', 'dens30w']
+  #fig_names += ['atm_psi']
+  #fig_names += ['ts_tas_gmean']
+  #fig_names += ['sst']
+  #fig_names += ['ts_amoc']
+  #fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent',]
+  #fig_names += ['mld_mar', 'mld_sep']
+  #fig_names = ['temp_bias_gzave']
+  #fig_names = ['sss']
+  #fig_names = ['ssh_variance']
+  #fig_names += ['amoc']
+  #fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
+  #fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
+  #fig_names += ['ice_concentration_nh', 'ice_thickness_nh', 'snow_thickness_nh',] 
+  #fig_names += ['ice_concentration_sh', 'ice_thickness_sh', 'snow_thickness_sh',]
+  #fig_names += ['bstr']
+  #fig_names += ['ke_100m', 'ke_2000m']
+  #fig_names += ['atm_sea_level_pressure']
+  #fig_names += ['atm_2m_temp','atm_sea_level_pressure',]
+  #fig_names += ['atm_zonal_wind_stress',]
+  #fig_names += ['atm_curl_tau', 'atm_wek']
+  #fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover']
+  #fig_names += ['atm_tas_bias']
+  #fig_names += ['atm_temp_zave', 'atm_u_zave', 'atm_v_zave', 'atm_rel_hum_zave']
+  #fig_names += ['atm_logv_temp_zave']
+  #fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave']
+  #fig_names += ['atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave']
+  #fig_names += ['vort']
+  #fig_names += ['np_zonal_wind_stress']
+  #fig_names += ['amoc', 'pmoc', 'gmoc']
+  #fig_names += ['temp_gzave', 'temp_azave', 'temp_ipzave']
+  #fig_names += ['salt30w', 'temp30w']
+  #fig_names += ['ts_amoc']
+  #fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
+  #fig_names += ['ts_ice_extent_sh']
+  #fig_names += ['atm_temp_zave_bias', 'atm_logv_temp_zave_bias', 'atm_logv_temp_zave', 'atm_temp_zave']
+  #fig_names += ['atm_temp_zave', 'atm_temp_zave_bias', 'atm_logv_temp_zave', 'atm_logv_temp_zave_bias']
+  #fig_names += ['atm_u_zave', 'atm_u_zave_bias', 'atm_logv_u_zave', 'atm_logv_u_zave_bias']
+  #fig_names += ['atm_v_zave', 'atm_v_zave_bias', 'atm_logv_v_zave', 'atm_logv_v_zave_bias']
 
 fig_names = np.array(fig_names)
 
