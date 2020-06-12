@@ -191,7 +191,7 @@ for pitem in plist:
     fig_names += [pitem]
 
 # --- for debugging
-fig_names = []
+#fig_names = []
 #fig_names += ['temp30w', 'salt30w', 'dens30w']
 #fig_names += ['atm_psi']
 #fig_names += ['ts_tas_gmean']
@@ -225,7 +225,7 @@ fig_names = []
 #fig_names += ['temp_gzave', 'temp_azave', 'temp_ipzave']
 #fig_names += ['salt30w', 'temp30w']
 #fig_names += ['ts_amoc']
-fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
+#fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
 #fig_names += ['ts_ice_extent_sh']
 #fig_names += ['atm_temp_zave_bias', 'atm_logv_temp_zave_bias', 'atm_logv_temp_zave', 'atm_temp_zave']
 #fig_names += ['atm_temp_zave', 'atm_temp_zave_bias', 'atm_logv_temp_zave', 'atm_logv_temp_zave_bias']
