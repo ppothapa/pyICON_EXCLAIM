@@ -217,14 +217,36 @@ def calc_edge2cell_coeff_cc_t(IcD):
                           / IcD.dual_edge_length[:,np.newaxis,np.newaxis] )
   return edge2cell_coeff_cc_t
   
-def derive_mass_flux(IcD, vn_e):
-  # --- derive mass_flux
+def edges2edges_via_cell(IcD, vn_e, dze='const'):
+  """ Transfer from edge to 3D cell and back to edge. Supposed to mimic the M operator (K2017).
+
+  Used e.g. to calculate the mass flux and therewith vert. velocity.
+  """
+  if isinstance(dze,str) and dze=='const':
+    dze = IcD.prism_thick_e
   il_c = IcD.adjacent_cell_of_edge[:,0]
   il_e = IcD.edge_of_cell[il_c]
-  out_vn_e  = (vn_e[:,il_e] * IcD.edge2edge_viacell_coeff[:,:,0,:] * IcD.prism_thick_e[:,il_e]).sum(axis=2)
+  out_vn_e  = (vn_e[:,il_e] * IcD.edge2edge_viacell_coeff[:,:,0,:] * dze[:,il_e]).sum(axis=2)
   il_c = IcD.adjacent_cell_of_edge[:,1]
   il_e = IcD.edge_of_cell[il_c]
-  out_vn_e += (vn_e[:,il_e] * IcD.edge2edge_viacell_coeff[:,:,1,:] * IcD.prism_thick_e[:,il_e]).sum(axis=2)
+  out_vn_e += (vn_e[:,il_e] * IcD.edge2edge_viacell_coeff[:,:,1,:] * dze[:,il_e]).sum(axis=2)
+  return out_vn_e
+
+def edges2edges_via_cell_scalar(IcD, vn_e, scalar, dze='const'):
+  """ Same as edges2edges_via_cell but with scalar mutiplied at cell centers. Supposed to mimic M[v,phi] (K2017).
+
+  Used e.g. to calculate advective tracer fluxes (before flux limiter are applied).
+  """
+  if isinstance(dze,str) and dze=='const':
+    dze = IcD.prism_thick_e
+  il_c = IcD.adjacent_cell_of_edge[:,0]
+  il_e = IcD.edge_of_cell[il_c]
+  out_vn_e  = (   (vn_e[:,il_e] * IcD.edge2edge_viacell_coeff[:,:,0,:] * dze[:,il_e]).sum(axis=2) 
+                * scalar[:,il_c])
+  il_c = IcD.adjacent_cell_of_edge[:,1]
+  il_e = IcD.edge_of_cell[il_c]
+  out_vn_e += (   (vn_e[:,il_e] * IcD.edge2edge_viacell_coeff[:,:,1,:] * dze[:,il_e]).sum(axis=2)
+                * scalar[:,il_c])
   return out_vn_e
 
 def calc_wvel(IcD, mass_flux):
