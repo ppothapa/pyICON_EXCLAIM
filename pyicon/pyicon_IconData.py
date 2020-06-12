@@ -350,8 +350,8 @@ class IconData(object):
         self.dzt           = self.constantPrismCenters_Zdistance
 
       if load_vgrid_mask:
-        self.dolic_c = f.variables['dolic_c'][:]-1
-        self.dolic_e = f.variables['dolic_e'][:]-1
+        #self.dolic_c = f.variables['dolic_c'][:]-1
+        #self.dolic_e = f.variables['dolic_e'][:]-1
         self.wet_c = f.variables['wet_c'][:]
         self.wet_e = f.variables['wet_e'][:]
   
