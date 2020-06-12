@@ -359,6 +359,26 @@ if do_atmosphere_plots and not iopts.no_plots:
   
 print('Done reading datasets')
 
+
+print(f'--------------------------------------------------------------------------------')
+if do_ocean_plots and not iopts.no_plots:
+  print(f'--- ocean:')
+  print(f'fpath_fx          = {IcD.fpath_fx}')
+  print(f'fpath_tgrid       = {IcD.fpath_tgrid}')
+  print(f'path_data         = {path_data}')
+  print(f'gname             = {gname}')
+  print(f'lev               = {lev}')
+  print(f'rgrid_name        = {rgrid_name}')
+if do_atmosphere_plots and not iopts.no_plots:
+  print(f'--- atmosphere:')
+  #print(f'fpath_fx_atm      = {IcD_atm3d.fpath_fx}')
+  print(f'fpath_tgrid_atm   = {IcD_atm3d.fpath_tgrid}')
+  print(f'path_data         = {path_data}')
+  print(f'gname_atm         = {gname_atm}')
+  print(f'lev_atm           = {lev_atm}')
+  print(f'rgrid_name_atm    = {rgrid_name_atm}')
+print(f'--------------------------------------------------------------------------------')
+
 # -------------------------------------------------------------------------------- 
 # timing
 # -------------------------------------------------------------------------------- 
