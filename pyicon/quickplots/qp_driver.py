@@ -191,7 +191,7 @@ for pitem in plist:
     fig_names += [pitem]
 
 # --- for debugging
-#fig_names = []
+fig_names = []
 #fig_names += ['temp30w', 'salt30w', 'dens30w']
 #fig_names += ['atm_psi']
 #fig_names += ['ts_tas_gmean']
@@ -225,6 +225,7 @@ for pitem in plist:
 #fig_names += ['temp_gzave', 'temp_azave', 'temp_ipzave']
 #fig_names += ['salt30w', 'temp30w']
 #fig_names += ['ts_amoc']
+fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
 #fig_names += ['ts_ice_extent_sh']
 #fig_names += ['atm_temp_zave_bias', 'atm_logv_temp_zave_bias', 'atm_logv_temp_zave', 'atm_temp_zave']
 #fig_names += ['atm_temp_zave', 'atm_temp_zave_bias', 'atm_logv_temp_zave', 'atm_logv_temp_zave_bias']
@@ -1255,62 +1256,62 @@ for tave_int in tave_ints:
     
     fig_name = 'ts_amoc'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_timeseries(IcD, fname, ['amoc26n'], t1=t1, t2=t2, ave_freq=12)
+      FigInf = pyicqp.qp_timeseries(IcD, fname, ['amoc26n'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name, FigInf)
     fig_name = 'ts_heat_content'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_timeseries(IcD, fname, ['global_heat_content'], t1=t1, t2=t2, ave_freq=12)
+      FigInf = pyicqp.qp_timeseries(IcD, fname, ['global_heat_content'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name, FigInf)
     fig_name = 'ts_ssh'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_timeseries(IcD, fname, ['ssh_global'], t1=t1, t2=t2, ave_freq=12)
+      FigInf = pyicqp.qp_timeseries(IcD, fname, ['ssh_global'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name, FigInf)
     fig_name = 'ts_sst'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_timeseries(IcD, fname, ['sst_global'], t1=t1, t2=t2, ave_freq=12)
+      FigInf = pyicqp.qp_timeseries(IcD, fname, ['sst_global'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name, FigInf)
     fig_name = 'ts_sss'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_timeseries(IcD, fname, ['sss_global'], t1=t1, t2=t2, ave_freq=12)
+      FigInf = pyicqp.qp_timeseries(IcD, fname, ['sss_global'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name, FigInf)
     fig_name = 'ts_hfl'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_timeseries(IcD, fname, ['HeatFlux_Total_global'], t1=t1, t2=t2, ave_freq=12)
+      FigInf = pyicqp.qp_timeseries(IcD, fname, ['HeatFlux_Total_global'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name, FigInf)
     fig_name = 'ts_wfl'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_timeseries(IcD, fname, 
         ['FrshFlux_Precipitation_global', 'FrshFlux_SnowFall_global', 'FrshFlux_Evaporation_global', 'FrshFlux_Runoff_global', 'FrshFlux_VolumeIce_global', 'FrshFlux_TotalOcean_global', 'FrshFlux_TotalIce_global', 'FrshFlux_VolumeTotal_global'], 
         title='Fresh water flux [m/s]',
-        t1=t1, t2=t2, ave_freq=12)
+        t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name, FigInf)
     fig_name = 'ts_ice_volume_nh'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_timeseries(IcD, fname, 
         ['ice_volume_nh', 'ice_volume_nh'], 
         title='sea ice volume Northern hemisphere [km^3]',
-        t1=t1, t2=t2, ave_freq=12, mode_ave=['max', 'min'], labels=['max', 'min'])
+        t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'])
       save_fig(fig_name, path_pics, fig_name, FigInf)
     fig_name = 'ts_ice_volume_sh'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_timeseries(IcD, fname, 
         ['ice_volume_sh', 'ice_volume_sh'], 
         title='sea ice volume Southern hemisphere [km^3]',
-        t1=t1, t2=t2, ave_freq=12, mode_ave=['max', 'min'], labels=['max', 'min'])
+        t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'])
       save_fig(fig_name, path_pics, fig_name, FigInf)
     fig_name = 'ts_ice_extent_nh'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_timeseries(IcD, fname, 
         ['ice_extent_nh', 'ice_extent_nh'], 
         title='sea ice extent Northern hemisphere [km^2]',
-        t1=t1, t2=t2, ave_freq=12, mode_ave=['max', 'min'], labels=['max', 'min'])
+        t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'])
       save_fig(fig_name, path_pics, fig_name, FigInf)
     fig_name = 'ts_ice_extent_sh'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_timeseries(IcD, fname, 
         ['ice_extent_sh', 'ice_extent_sh'], 
         title='sea ice extent Southern hemisphere [km^2]',
-        t1=t1, t2=t2, ave_freq=12, mode_ave=['max', 'min'], labels=['max', 'min'])
+        t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'])
       save_fig(fig_name, path_pics, fig_name, FigInf)
   
     if do_atmosphere_plots:
@@ -1319,13 +1320,13 @@ for tave_int in tave_ints:
     fig_name = 'ts_tas_gmean'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_timeseries(IcD, fname, ['tas_gmean'], 
-        t1=t1, t2=t2, ave_freq=12,
+        t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file,
         var_add=-273.15, units=' [$^o$C]')
       save_fig(fig_name, path_pics, fig_name, FigInf)
 
     fig_name = 'ts_radtop_gmean'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_timeseries(IcD, fname, ['radtop_gmean'], t1=t1, t2=t2, ave_freq=12)
+      FigInf = pyicqp.qp_timeseries(IcD, fname, ['radtop_gmean'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name, FigInf)
     
     # -------------------------------------------------------------------------------- 
