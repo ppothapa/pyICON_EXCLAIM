@@ -304,7 +304,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
   #FigInf['IcD'] = IcD
   return FigInf
 
-def qp_timeseries(IcD, fpath, vars_plot, 
+def qp_timeseries(IcD, fname, vars_plot, 
                   var_fac=1., var_add=0.,
                   title='', units='',
                   t1='none', t2='none',
@@ -314,6 +314,7 @@ def qp_timeseries(IcD, fpath, vars_plot,
                   mode_ave=['mean'],
                   labels=None,
                   do_write_data_range=True,
+                  ax='none',
                  ): 
   if len(mode_ave)==1:
     mode_ave = [mode_ave[0]]*len(vars_plot)
@@ -321,7 +322,8 @@ def qp_timeseries(IcD, fpath, vars_plot,
   else:
     do_write_data_range = False
     dfigb = 0.0
-  flist = glob.glob(IcD.path_data+fpath)
+  # start: not needed if IcD.load_timeseries is used
+  flist = glob.glob(IcD.path_data+fname)
   flist.sort()
   if omit_last_file:
     flist = flist[:-1]
@@ -334,15 +336,21 @@ def qp_timeseries(IcD, fpath, vars_plot,
     times = np.reshape(times, (nresh, ave_freq)).transpose()
     #times_ave = times.mean(axis=0)
     times = times[int(ave_freq/2),:] # get middle of ave_freq
+  # end: not needed if IcD.load_timeseries is used
 
-  hca, hcb = pyic.arrange_axes(1,1, plot_cb=False, asp=0.5, fig_size_fac=2.,
-               sharex=True, sharey=True, xlabel="time [years]", ylabel="", 
-               dfigb=dfigb,
-               )
-  ii=-1
-  ii+=1; ax=hca[ii]; cax=hcb[ii]
+  if isinstance(ax, str) and ax=='none':
+    hca, hcb = pyic.arrange_axes(1,1, plot_cb=False, asp=0.5, fig_size_fac=2.,
+                 sharex=True, sharey=True, xlabel="time [years]", ylabel="", 
+                 dfigb=dfigb,
+                 )
+    ii=-1
+    ii+=1; ax=hca[ii]; cax=hcb[ii]
+    adjust_xylim = True
+  else:
+    adjust_xylim = False
 
   for mm, var in enumerate(vars_plot):
+    # start: not needed if IcD.load_timeseries is used
     data = np.array([])
     for nn, fpath in enumerate(flist):
       f = Dataset(fpath, 'r')
@@ -364,6 +372,7 @@ def qp_timeseries(IcD, fpath, vars_plot,
         data = data.min(axis=0)
       elif mode_ave[mm]=='max':
         data = data.max(axis=0)
+    # end: not needed if IcD.load_timeseries is used
 
     if labels is None:
       label = var
@@ -378,7 +387,12 @@ def qp_timeseries(IcD, fpath, vars_plot,
     times = times[lstart:lend]
     data  = data[lstart:lend]
 
-    ax.plot(times, data, label=label)
+    hl, = ax.plot(times, data, label=label)
+
+    if adjust_xylim:
+      ax.set_xlim([times.min(), times.max()])
+      ax.set_ylim([data.min(), data.max()])
+
   ax.grid(True)
   if len(vars_plot)==1:
     f = Dataset(fpath, 'r')
@@ -394,16 +408,20 @@ def qp_timeseries(IcD, fpath, vars_plot,
     ax.legend()
 
   if not (isinstance(t1,str) and t1=='none'):
-    ax.axvline(t1, color='k')
+    hlt1 = ax.axvline(t1, color='k')
   if not (isinstance(t2,str) and t2=='none'):
-    ax.axvline(t2, color='k')
+    hlt2 = ax.axvline(t2, color='k')
 
-  ind = (times<t2) & (times>=t1)
   if do_write_data_range:
+    ind = (times<t2) & (times>=t1)
     info_str = 'in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data[ind].min(), data[ind].mean(), data[ind].std(), data[ind].max())
     ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
 
   FigInf = dict()
+  FigInf['ax'] = ax
+  FigInf['hl'] = hl
+  FigInf['hlt1'] = hlt1
+  FigInf['hlt2'] = hlt2
   return FigInf
 
 ##def qp_hor_plot(fpath, var, IC='none', iz=0, it=0,
