@@ -46,8 +46,14 @@ class IconData(object):
                calc_coeff_mappings   = False,
                time_mode             = 'num2date',
                model_type            = 'oce',
+               verbose               = False,
               ):
 
+
+    # ---
+    self.verbose = verbose
+
+    self.diag_out('set paths and fnames')
 
     # --- paths data and grid
     self.path_data     = path_data
@@ -92,6 +98,7 @@ class IconData(object):
         raise ValueError('::: Error: Cannot find %s: %s! :::' % (pname, fp))
 
     # --- global variables
+    self.diag_out('set global variables')
     if rgrid_name=='orig':
       use_tgrid = True
       rgrid_name = ""
@@ -117,9 +124,17 @@ class IconData(object):
     self.rhoi = 917.0
     self.rhos = 300.0
     self.sal_ref = 35.
+    self.sal_ice = 5.
     rcpl = 3.1733
     cpd = 1004.64 
     self.cp = (rcpl + 1.0) * cpd
+    self.tref = 273.15
+    self.tmelt = 273.15
+    self.tfreeze = -1.9
+    self.alf = 2.8345e6-2.5008e6 # [J/kg]   latent heat for fusion
+
+    # ---
+    self.diag_out('find  ckdtrees etc.')
 
     # --- find regular grid ckdtrees for this grid
     sec_fpaths = np.array(
@@ -164,8 +179,10 @@ class IconData(object):
     # ---------- 
     # --- load grid
     if load_triangular_grid:
+      self.diag_out('load tgrid')
       self.load_tgrid()
     if load_rectangular_grid:
+      self.diag_out('load rgrid')
       self.load_rgrid()
     self.nz = 1
     if load_vertical_grid:
@@ -175,23 +192,28 @@ class IconData(object):
         load_vgrid_dz = True
       if isinstance(load_vgrid_mask, str) and load_vgrid_mask=='auto':
         load_vgrid_mask = True
+      self.diag_out('load vgrid')
       self.load_vgrid(load_vgrid_depth=load_vgrid_depth, load_vgrid_dz=load_vgrid_dz, load_vgrid_mask=load_vgrid_mask)
 
     # --- calculate coefficients for divergence, curl, etc.
     if calc_coeff:
+      self.diag_out('calc_coeff')
       self.calc_coeff()
     
     if calc_coeff_mappings:
+      self.diag_out('calc_coeff_mappings')
       self.calc_coeff_mappings() 
 
     #self.crop_grid(lon_reg=self.lon_reg, lat_reg=self.lat_reg)
     # --- triangulation
     if do_triangulation:
+      self.diag_out('do_triangulation')
       self.Tri = matplotlib.tri.Triangulation(self.vlon, self.vlat, 
                                               triangles=self.vertex_of_cell)
       self.mask_big_triangles()
 
     # --- list of variables and time steps / files
+    self.diag_out('list of variables and time steps')
     if self.fname!="":
       self.get_files_of_timeseries()
       if omit_last_file:
@@ -205,6 +227,10 @@ class IconData(object):
 
     return
 
+  def diag_out(self, txt):
+    if self.verbose==True:
+      print('-v-: '+txt)
+    return
   def get_files_of_timeseries(self):
     self.times_flist, self.flist = get_files_of_timeseries(self.path_data, self.fname)
     return 
@@ -607,6 +633,44 @@ class IconData(object):
     self.Tri, self.mask_bt = mask_big_triangles(self.vlon, self.vertex_of_cell, 
                                                 self.Tri)
     return
+  
+  def load_timeseries(self, 
+                      var,
+                      ave_freq=0,
+                      mode_ave='mean',
+                     ):
+    times = np.copy(self.times)
+    if ave_freq>0:
+      nskip = times.size%ave_freq
+      if nskip>0:
+        times = times[:-nskip]
+      nresh = int(times.size/ave_freq)
+      times = np.reshape(times, (nresh, ave_freq)).transpose()
+      #times_ave = times.mean(axis=0)
+      times = times[int(ave_freq/2),:] # get middle of ave_freq
+
+    data = np.array([])
+    for nn, fpath in enumerate(self.flist):
+      f = Dataset(fpath, 'r')
+      data_file = f.variables[var][:,0,0]
+      data = np.concatenate((data, data_file))
+      f.close()
+    #print(f'{var}: {data.size}')
+    # --- apply time averaging
+    if ave_freq>0:
+      if nskip>0:
+        data = data[:-nskip]
+      #if times.size%ave_freq != 0:
+      #  raise ValueError(f'::: Time series has wrong size: {times.size} for ave_req={ave_freq}! :::')
+      print(f'{var}: {data.size} {times.size}')
+      data = np.reshape(data, (nresh, ave_freq)).transpose()
+      if mode_ave=='mean':
+        data = data.mean(axis=0)
+      elif mode_ave=='min':
+        data = data.min(axis=0)
+      elif mode_ave=='max':
+        data = data.max(axis=0)
+    return times, data
 
 class IconVariable(object):
   def __init__(self, name, units='', long_name='', 
@@ -706,7 +770,7 @@ class IconVariable(object):
     if self.isinterpolated:
       raise ValueError('::: Variable %s is already interpolated. :::'%self.name)
     self.lon, self.lat, self.data = interp_to_rectgrid(self.data, fpath_ckdtree, coordinates=self.coordinates)
-    return
+    return times, data
 
   def interp_to_section(self, fpath_ckdtree):
     if self.isinterpolated:
