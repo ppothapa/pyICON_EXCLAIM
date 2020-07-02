@@ -366,6 +366,7 @@ def shade(
               contthick=0.,
               contlw=1.,
               use_pcol=True,
+              use_pcol_or_contf=True,
               cbticks='auto',
               cbtitle='',
               cbdrawedges='auto',
@@ -393,12 +394,16 @@ def shade(
 
 
     # --- decide whether pcolormesh or contourf plot
-    if contfs is None:
-      use_pcol = True
-      use_contf = False
+    if use_pcol_or_contf:
+      if contfs is None:
+        use_pcol = True
+        use_contf = False
+      else:
+        use_pcol = False
+        use_contf = True
     else:
-      use_pcol = False
-      use_contf = True
+        use_pcol = False
+        use_contf = False
     #if use_pcol and use_contf:
     #  raise ValueError('::: Error: Only one of use_pcol or use_contf can be True. :::')
 
@@ -448,6 +453,8 @@ def shade(
       contfs = calc_conts(contfs, clim, cincr, nclev)
       clevs = contfs
       use_norm = True
+    else:
+      use_norm = False
         
     if use_norm:
       #norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)
