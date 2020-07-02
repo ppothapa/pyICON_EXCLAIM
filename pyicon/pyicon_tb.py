@@ -5,7 +5,7 @@ import numpy as np
 from scipy import interpolate
 from scipy.spatial import cKDTree
 # --- reading data 
-from netCDF4 import Dataset, num2date
+from netCDF4 import Dataset, num2date, date2num
 import datetime
 # --- plotting
 import matplotlib.pyplot as plt
@@ -122,7 +122,7 @@ def apply_ckdtree_base(data, inds, distances, radius_of_influence=1000e3):
   data_interpolated = np.ma.masked_invalid(data_interpolated)
   return data_interpolated
 
-def apply_ckdtree(data, fpath_ckdtree, coordinates='clat clon', radius_of_influence=1000e3):
+def apply_ckdtree(data, fpath_ckdtree, mask=None, coordinates='clat clon', radius_of_influence=1000e3):
   """
   * credits
     function modified from pyfesom (Nikolay Koldunov)
@@ -142,6 +142,19 @@ def apply_ckdtree(data, fpath_ckdtree, coordinates='clat clon', radius_of_influe
     inds = ddnpz['ickdtree_v'] 
   else:
     raise ValueError('::: Error: Unsupported coordinates: %s! ::: ' % (coordinates))
+
+  if mask is not None:
+    #if data.ndim==1:
+    #  data = data[mask]
+    #elif data.ndim==2:
+    #  data = data[:,mask]
+    if inds.ndim==1:
+      inds = inds[mask]
+      distances = distances[mask]
+    elif inds.ndim==2:
+      raise ValueError('::: Warning: This was never checked! Please check carefully and remove this warning.:::')
+      inds = inds[mask,:]
+      distances = distances[mask,:]
 
   data_interpolated = apply_ckdtree_base(data, inds, distances, radius_of_influence)
   return data_interpolated
