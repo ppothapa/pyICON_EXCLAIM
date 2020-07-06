@@ -197,7 +197,7 @@ for pitem in plist:
     fig_names += [pitem]
 
 # --- for debugging
-if debug:
+if iopts.debug:
   print('XXXXXXXXXXXXXXXXX Debugging mode! XXXXXXXXXXXXXXX')
   #fig_names = []
   #fig_names += ['temp30w', 'salt30w', 'dens30w']
