@@ -770,7 +770,7 @@ class IconVariable(object):
     if self.isinterpolated:
       raise ValueError('::: Variable %s is already interpolated. :::'%self.name)
     self.lon, self.lat, self.data = interp_to_rectgrid(self.data, fpath_ckdtree, coordinates=self.coordinates)
-    return times, data
+    return
 
   def interp_to_section(self, fpath_ckdtree):
     if self.isinterpolated:
