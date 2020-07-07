@@ -8,18 +8,20 @@ reload(pyic)
 
 ts = pyic.timing([0], 'start')
 
-path_tgrid    = '/mnt/lustre01/work/mh0287/users/leonidas/icon/submeso/grid/'
-fname_tgrid   = 'cell_grid-OceanOnly_SubmesoNA_2500m_srtm30-icon.nc'
-path_ckdtree  = '/mnt/lustre01/work/mh0033/m300602/proj_vmix/icon/icon_ckdtree/'
+tgname        = 'smt'
+gname         = 'OceanOnly_SubmesoNA_2500m_srtm30'
+path_tgrid    = f'/pool/data/ICON/oes/grids/OceanOnly/'
+fname_tgrid   = f'{gname}.nc'
+path_ckdtree  = f'/mnt/lustre01/work/mh0033/m300602/icon/grids/{tgname}/ckdtree/'
 path_rgrid    = path_ckdtree + 'rectgrids/' 
 path_sections = path_ckdtree + 'sections/' 
 
 all_grids = [
 #  'global_1.0',
-#  'global_0.3',
+  'global_0.3',
   #'global_0.3_nn5',
   #'global_0.3_nn20',
-  'global_0.3_nn500',
+  #'global_0.3_nn500',
 #  'global_0.1',
 #  'global_0.02',
             ]
@@ -31,19 +33,9 @@ all_secs = [
             ]
 
 #all_grids = []
-#all_secs = []
+all_secs = []
 
-tgname = 'smt'
-gnames = []
-## r2b4
-#gnames += ['OceanOnly_Icos_0158km_etopo40'] 
-## r2b6
-#gnames += ['OCEANINP_pre04_LndnoLak_039km_editSLOHH2017_G']
-## r2b8
-#gnames += ['OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min']
-## r2b9
-##gnames += ['OceanOnly_IcosSymmetric_4932m_rotatedZ37d_modified_srtm30_1min']
-gnames = ['cell_grid-OceanOnly_SubmesoNA_2500m_srtm30-icon']
+gnames = [gname]
 
 if not os.path.exists(path_rgrid): 
   os.makedirs(path_rgrid)
