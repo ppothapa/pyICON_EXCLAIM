@@ -31,8 +31,8 @@ class IconData(object):
                section_name      = "",
                # 
                run               = "auto",
-               lon_reg           = [-180, 180],
-               lat_reg           = [-90, 90],
+               lon_reg           = [],
+               lat_reg           = [],
                do_triangulation      = True,
                omit_last_file        = False,  # set to true to avoid data damage for running simulations
                load_vertical_grid    = True,
@@ -109,8 +109,14 @@ class IconData(object):
     self.long_name=dict()
     self.data=dict()
 
-    self.lon_reg = lon_reg
-    self.lat_reg = lat_reg
+    if len(lon_reg)==2:
+      self.lon_reg = lon_reg
+      self.lat_reg = lat_reg
+      self.crop_data = True
+    else:
+      self.lon_reg = [-180, 180]
+      self.lat_reg = [-90, 90]
+      self.crop_data = False
     self.use_tgrid = use_tgrid
     self.fname = fname
 
@@ -195,6 +201,15 @@ class IconData(object):
       self.diag_out('load vgrid')
       self.load_vgrid(load_vgrid_depth=load_vgrid_depth, load_vgrid_dz=load_vgrid_dz, load_vgrid_mask=load_vgrid_mask)
 
+    # --- crop the grid
+    if self.crop_data:
+      self.diag_out('crop grid')
+      self.crop_grid(lon_reg=self.lon_reg, lat_reg=self.lat_reg)
+    else:
+      self.ind_reg_rec = None
+      self.indx = 'all'
+      self.indy = 'all'
+
     # --- calculate coefficients for divergence, curl, etc.
     if calc_coeff:
       self.diag_out('calc_coeff')
@@ -204,13 +219,10 @@ class IconData(object):
       self.diag_out('calc_coeff_mappings')
       self.calc_coeff_mappings() 
 
-    #self.crop_grid(lon_reg=self.lon_reg, lat_reg=self.lat_reg)
     # --- triangulation
     if do_triangulation:
       self.diag_out('do_triangulation')
-      self.Tri = matplotlib.tri.Triangulation(self.vlon, self.vlat, 
-                                              triangles=self.vertex_of_cell)
-      self.mask_big_triangles()
+      self.make_triangulation()
 
     # --- list of variables and time steps / files
     self.diag_out('list of variables and time steps')
@@ -227,6 +239,12 @@ class IconData(object):
 
     return
 
+  def make_triangulation(self):
+    self.Tri = matplotlib.tri.Triangulation(self.vlon, self.vlat, 
+                                            triangles=self.vertex_of_cell)
+    self.mask_big_triangles()
+    return
+
   def diag_out(self, txt):
     if self.verbose==True:
       print('-v-: '+txt)
@@ -241,7 +259,7 @@ class IconData(object):
     return
   
   def get_varnames(self, fpath, skip_vars=[]):
-    skip_vars = ['clon', 'clat', 'elon', 'elat', 'time', 'depth', 'lev']
+    skip_vars = ['clon', 'clat', 'elon', 'elat', 'time', 'depth', 'lev', 'height', 'height_bnds']
     varnames = get_varnames(fpath, skip_vars)
     self.varnames = varnames
     return
@@ -292,7 +310,7 @@ class IconData(object):
       rgrid_name = 'global_0.3'
       if not rgrid_name in self.rgrid_names:
         # if default does not exist, take first of list
-        rgrid_name  = rgrid_names[0]
+        rgrid_name  =self.rgrid_names[0]
     if rgrid_name in self.rgrid_names:
       self.rgrid_fpath = self.rgrid_fpaths[
         np.where(self.rgrid_names==rgrid_name)[0][0] ]
@@ -626,7 +644,9 @@ class IconData(object):
                                          self.edge_of_cell)
     # --- crop rectangular grid
     (self.Lon, self.Lat, self.lon, self.lat, 
-     self.ind_reg_rec ) = crop_regular_grid(lon_reg, lat_reg, self.Lon, self.Lat)
+     self.ind_reg_rec, self.indx, self.indy) = crop_regular_grid(lon_reg, lat_reg, self.Lon, self.Lat)
+
+    self.crop_data = True
     return
 
   def mask_big_triangles(self):
@@ -686,7 +706,7 @@ class IconVariable(object):
     self.fpath_ckdtree = fpath_ckdtree
     return
 
-  def load_hsnap(self, fpath, it=0, iz=0, step_snap=0, fpath_ckdtree=''):
+  def load_hsnap(self, fpath, it=0, iz=0, step_snap=0, fpath_ckdtree='', mask_reg=None, indx='all', indy='all'):
     self.step_snap = step_snap
     self.it = it
     self.iz = iz
@@ -698,11 +718,11 @@ class IconVariable(object):
     if fpath_ckdtree=='':
       self.isinterpolated = False
     else:
-      self.interp_to_rectgrid(fpath_ckdtree)
+      self.interp_to_rectgrid(fpath_ckdtree, mask_reg=mask_reg, indx=indx, indy=indy)
       self.isinterpolated = True
     return
 
-  def time_average(self, IcD, t1, t2, it_ave=[], iz='all', always_use_loop=False, fpath_ckdtree=''):
+  def time_average(self, IcD, t1, t2, it_ave=[], iz='all', always_use_loop=False, fpath_ckdtree='', mask_reg=None, indx='all', indy='all'):
     self.t1 = t1
     self.t2 = t2
     self.iz = iz
@@ -712,7 +732,7 @@ class IconVariable(object):
     if fpath_ckdtree=='':
       self.isinterpolated = False
     else:
-      self.interp_to_rectgrid(fpath_ckdtree)
+      self.interp_to_rectgrid(fpath_ckdtree, mask_reg=mask_reg, indx=indx, indy=indy)
       self.isinterpolated = True
     return
   
@@ -766,10 +786,10 @@ class IconVariable(object):
     self.data[self.mask] = np.ma.masked
     return
 
-  def interp_to_rectgrid(self, fpath_ckdtree):
+  def interp_to_rectgrid(self, fpath_ckdtree, mask_reg=None, indx='all', indy='all'):
     if self.isinterpolated:
       raise ValueError('::: Variable %s is already interpolated. :::'%self.name)
-    self.lon, self.lat, self.data = interp_to_rectgrid(self.data, fpath_ckdtree, coordinates=self.coordinates)
+    self.lon, self.lat, self.data = interp_to_rectgrid(self.data, fpath_ckdtree, mask_reg=mask_reg, indx=indx, indy=indy, coordinates=self.coordinates)
     return
 
   def interp_to_section(self, fpath_ckdtree):
