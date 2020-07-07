@@ -129,7 +129,7 @@ def apply_ckdtree(data, fpath_ckdtree, mask=None, coordinates='clat clon', radiu
   """
   ddnpz = np.load(fpath_ckdtree)
   #if coordinates=='clat clon':
-  if 'clon' in coordinates:
+  if ('clon' in coordinates) or (coordinates==''):
     distances = ddnpz['dckdtree_c']
     inds = ddnpz['ickdtree_c'] 
   #elif coordinates=='elat elon':
@@ -152,20 +152,23 @@ def apply_ckdtree(data, fpath_ckdtree, mask=None, coordinates='clat clon', radiu
       inds = inds[mask]
       distances = distances[mask]
     elif inds.ndim==2:
-      raise ValueError('::: Warning: This was never checked! Please check carefully and remove this warning.:::')
+      #raise ValueError('::: Warning: This was never checked! Please check carefully and remove this warning.:::')
       inds = inds[mask,:]
       distances = distances[mask,:]
 
   data_interpolated = apply_ckdtree_base(data, inds, distances, radius_of_influence)
   return data_interpolated
 
-def interp_to_rectgrid(data, fpath_ckdtree, coordinates='clat clon'):
+def interp_to_rectgrid(data, fpath_ckdtree, indx='all', indy='all', mask_reg=None, coordinates='clat clon'):
   ddnpz = np.load(fpath_ckdtree)
   lon = ddnpz['lon'] 
   lat = ddnpz['lat'] 
-  datai = apply_ckdtree(data, fpath_ckdtree, coordinates=coordinates)
+  if not isinstance(indx, str):
+    lon = lon[indx]
+    lat = lat[indy]
+  datai = apply_ckdtree(data, fpath_ckdtree, mask=mask_reg, coordinates=coordinates)
   if datai.ndim==1:
-    datai = datai.reshape([lat.size, lon.size])
+    datai = datai.reshape(lat.size, lon.size)
   else:
     datai = datai.reshape([data.shape[0], lat.size, lon.size])
   datai[datai==0.] = np.ma.masked
@@ -879,17 +882,21 @@ def crop_regular_grid(lon_reg, lat_reg, Lon, Lat):
   # this does not work since Lon[ind_reg].shape = (64800, 360)
   # cropping needs probably done by each dimension
   # in this case cropping function for data is used as well
-  print(Lon.shape)
-  ind_reg = np.where(   (Lon>=lon_reg[0]) 
-                      & (Lon<=lon_reg[1]) 
-                      & (Lat>=lat_reg[0]) 
-                      & (Lat<=lat_reg[1]) )[0]
-  Lon = Lon[ind_reg]
-  Lat = Lat[ind_reg]
-  lon = Lon[0,:] 
-  lat = Lat[:,0] 
-  ind_reg = ind_reg
-  return Lon, Lat, lon, lat, ind_reg
+  lon = Lon[0,:]
+  lat = Lat[:,0]
+  indx = np.where((lon>=lon_reg[0]) & (lon<lon_reg[1]))[0]
+  indy = np.where((lat>=lat_reg[0]) & (lat<lat_reg[1]))[0]
+  lon = lon[indx]
+  lat = lat[indy]
+  #ind_reg = np.where(   (Lon>=lon_reg[0]) 
+  #                    & (Lon <lon_reg[1]) 
+  #                    & (Lat>=lat_reg[0]) 
+  #                    & (Lat <lat_reg[1]) )[0]
+  ind_reg = ((Lon>=lon_reg[0]) & (Lon<lon_reg[1]) & (Lat>=lat_reg[0]) & (Lat<lat_reg[1])).flatten()
+  Lon, Lat = np.meshgrid(lon, lat)
+  #Lon = Lon[ind_reg]
+  #Lat = Lat[ind_reg]
+  return Lon, Lat, lon, lat, ind_reg, indx, indy
 
 """
 Routines related to time steps of data set
