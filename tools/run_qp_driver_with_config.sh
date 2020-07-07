@@ -13,8 +13,8 @@ source /home/mpim/m300602/pyicon/tools/conda_act_mistral_pyicon_env.sh
 which python
 
 run="slo1284"
-config_file="./config_qp_${run}.py"
 path_pyicon=`(cd .. && pwd)`"/"
+config_file="${path_pyicon}/config_qp/config_qp_${run}.py"
 qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
 
 cat > ${config_file} << %eof%
