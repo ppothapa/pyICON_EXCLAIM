@@ -206,7 +206,8 @@ class IconData(object):
     # --- crop the grid
     if self.crop_data:
       self.diag_out('crop grid')
-      self.crop_grid(lon_reg=self.lon_reg, lat_reg=self.lat_reg)
+      self.crop_tgrid(lon_reg=self.lon_reg, lat_reg=self.lat_reg)
+      self.crop_rgrid(lon_reg=self.lon_reg, lat_reg=self.lat_reg)
     else:
       self.ind_reg_rec = None
       self.indx = 'all'
