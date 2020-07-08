@@ -418,11 +418,12 @@ def qp_timeseries(IcD, fname, vars_plot,
     ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
 
   FigInf = dict()
-  FigInf['ax'] = ax
-  FigInf['hl'] = hl
-  FigInf['hlt1'] = hlt1
-  FigInf['hlt2'] = hlt2
-  return FigInf
+  Dhandles = dict()
+  Dhandles['ax'] = ax
+  Dhandles['hl'] = hl
+  Dhandles['hlt1'] = hlt1
+  Dhandles['hlt2'] = hlt2
+  return FigInf, Dhandles
 
 ##def qp_hor_plot(fpath, var, IC='none', iz=0, it=0,
 ##              grid='orig', 
