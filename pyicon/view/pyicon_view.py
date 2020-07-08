@@ -79,7 +79,7 @@ def my_slide(name='slider:', bnds=[0,10]):
 class hplot(object):
   output = widgets.Output()
 
-  def __init__(self, IcD, use_tgrid=False, path_ckdtree='', logplot=False, verbose=False, lon_reg=[], lat_reg=[], rgrid_name=""):
+  def __init__(self, IcD, grid_type='igrid', use_tgrid=False, path_ckdtree='', logplot=False, verbose=False, lon_reg=[], lat_reg=[], rgrid_name=""):
     # ------------------------------------------------------------ 
     # set parameters 
     # ------------------------------------------------------------ 
@@ -93,7 +93,12 @@ class hplot(object):
     self.iz = 0
     self.step_snap = 0
     # --- grid
-    self.use_tgrid = use_tgrid
+    #self.use_tgrid = use_tgrid
+    self.grid_type = grid_type # can be tgrid, igrid, fgrid
+    if self.grid_type=='tgrid':
+      self.use_tgrid = True
+    else:
+      self.use_tgrid = False
     self.path_ckdtree = path_ckdtree
     if (rgrid_name!="") and (rgrid_name in self.IcD.rgrid_names):
       self.IcD.rgrid_name = rgrid_name
@@ -120,16 +125,15 @@ class hplot(object):
     if len(lon_reg)==2:
       self.IcD.lon_reg = lon_reg
       self.IcD.lat_reg = lat_reg
-      self.IcD.crop_data = True
-      self.IcD.crop_grid(lon_reg=self.IcD.lon_reg, lat_reg=self.IcD.lat_reg)
-      if use_tgrid:
-        self.diag_out('make_triangulation')
-        self.IcD.make_triangulation()
+      self.IcD.crop_data = True 
 
-    #else:
-    #  self.IcD.lon_reg = [-180, 180]
-    #  self.IcD.lat_reg = [-90, 90]
-    #  self.IcD.crop_data = False
+    if self.IcD.crop_data:
+      if self.grid_type=='igrid' or self.grid_type=='fgrid':
+        self.IcD.crop_rgrid(lon_reg=self.IcD.lon_reg, lat_reg=self.IcD.lat_reg)
+      if self.grid_type=='tgrid':
+        self.diag_out('make_triangulation')
+        self.IcD.crop_tgrid(lon_reg=self.IcD.lon_reg, lat_reg=self.IcD.lat_reg)
+        self.IcD.make_triangulation()
 
     # ------------------------------------------------------------ 
     # initialize plot
@@ -137,6 +141,9 @@ class hplot(object):
     self.diag_out('initialize_plot')
     self.initialize_plot()
 
+    # debugging tips: * switch off all widget by commenting out the following line
+    #                 * from Jupyter Notebook call:
+    #    PyicV.update_fig_hplot(var='to', iz=0, step_snap=10, rgrid_name=PyicV.IcD.rgrid_name)
     # ------------------------------------------------------------ 
     # make widgets
     # ------------------------------------------------------------ 
@@ -164,7 +171,7 @@ class hplot(object):
     display(Box)
 
     #print('hello world')
-    a = interactive(self.update_fig, var=d2, iz=w1, step_snap=w2, rgrid_name=d3)
+    a = interactive(self.update_fig_hplot, var=d2, iz=w1, step_snap=w2, rgrid_name=d3)
     display(self.output)
     return
 
@@ -264,11 +271,15 @@ class hplot(object):
     self.IaV = self.IcD.vars[self.var]
 
     # reload grid because it might have been cropped in a wrong way before
-    if not self.use_tgrid:
-      self.diag_out('reload grid')
+    self.diag_out('reload grid')
+    if self.grid_type=='igrid':
       self.IcD.load_rgrid()
       if self.IcD.crop_data:
-        self.IcD.crop_grid(self.IcD.lon_reg, self.IcD.lat_reg)
+        self.IcD.crop_rgrid(self.IcD.lon_reg, self.IcD.lat_reg)
+    elif self.grid_type=='fgrid':
+      self.IcD.load_grid_from_file()
+      if self.IcD.crop_data:
+        self.IcD.crop_rgrid(self.IcD.lon_reg, self.IcD.lat_reg)
 
     # synchronize with update_fig
     # --- load data 
@@ -276,15 +287,19 @@ class hplot(object):
     self.IaV.load_hsnap(fpath=self.IcD.flist_ts[self.step_snap], 
                         it=self.IcD.its[self.step_snap], 
                         iz=self.iz,
+                        iw=self.IcD.iw,
                         step_snap = self.step_snap,
+                        verbose = self.verbose,
                        ) 
     # --- interpolate data 
-    if not self.use_tgrid:
+    if self.grid_type=='igrid':
       self.diag_out('interp_to_rectgrid')
       self.IaV.interp_to_rectgrid(fpath_ckdtree=self.IcD.rgrid_fpath, mask_reg=self.IcD.ind_reg_rec, indx=self.IcD.indx, indy=self.IcD.indy)
     # --- crop data
-    elif self.IcD.crop_data:
+    elif self.IcD.crop_data and self.grid_type=='tgrid':
       self.IaV.data = self.IaV.data[self.IcD.ind_reg_tri]
+    elif self.IcD.crop_data and self.grid_type=='fgrid':
+      self.IaV.data = self.IaV.data[self.IcD.indy[:,np.newaxis], self.IcD.indx[np.newaxis,:]]
 
     # --- create axes
     # FIXME: Do we need this or can this be done by hplot_base?
@@ -339,7 +354,7 @@ class hplot(object):
     return
 
   @output.capture()
-  def update_fig(self, var, iz, step_snap, rgrid_name):
+  def update_fig_hplot(self, var, iz, step_snap, rgrid_name):
     #print('hello world')
     #print(var,iz,step_snap,rgrid_name)
     # --- update self
@@ -364,14 +379,18 @@ class hplot(object):
       self.IaV.load_hsnap(fpath=self.IcD.flist_ts[self.step_snap], 
                           it=self.IcD.its[self.step_snap], 
                           iz=self.iz,
+                          iw=self.IcD.iw,
                           step_snap = self.step_snap,
+                          verbose = self.verbose,
                          ) 
       # --- interpolate data 
-      if not self.use_tgrid:
+      if self.grid_type=='igrid':
         self.IaV.interp_to_rectgrid(fpath_ckdtree=self.IcD.rgrid_fpath, mask_reg=self.IcD.ind_reg_rec, indx=self.IcD.indx, indy=self.IcD.indy)
       # --- crop data
-      elif self.IcD.crop_data:
+      elif self.IcD.crop_data and self.grid_type=='tgrid':
         self.IaV.data = self.IaV.data[self.IcD.ind_reg_tri]
+      elif self.IcD.crop_data and self.grid_type=='fgrid':
+        self.IaV.data = self.IaV.data[self.IcD.indy, self.IcD.indx]
 
       # --- remove old plot
       self.mappable.remove()
@@ -401,14 +420,18 @@ class hplot(object):
       self.IaV.load_hsnap(fpath=self.IcD.flist_ts[self.step_snap], 
                           it=self.IcD.its[self.step_snap], 
                           iz=self.iz,
+                          iw=self.IcD.iw,
                           step_snap = self.step_snap,
+                          verbose = self.verbose,
                          ) 
       # --- interpolate data 
-      if not self.use_tgrid:
+      if self.grid_type=='igrid':
         self.IaV.interp_to_rectgrid(fpath_ckdtree=self.IcD.rgrid_fpath, mask_reg=self.IcD.ind_reg_rec, indx=self.IcD.indx, indy=self.IcD.indy)
       # --- crop data
-      elif self.IcD.crop_data:
+      elif self.IcD.crop_data and self.grid_type=='tgrid':
         self.IaV.data = self.IaV.data[self.IcD.ind_reg_tri]
+      elif self.IcD.crop_data and self.grid_type=='fgrid':
+        self.IaV.data = self.IaV.data[self.IcD.indy[:,np.newaxis], self.IcD.indx[np.newaxis,:]]
 
       # --- mask negative values for logplot 
       data = 1.*self.IaV.data
@@ -538,12 +561,13 @@ class hplot(object):
 class vplot(hplot):
   output = widgets.Output()
 
-  def __init__(self, IcD, log2vax=False, path_ckdtree='', logplot=False):
+  def __init__(self, IcD, log2vax=False, path_ckdtree='', logplot=False, verbose=False):
     # ------------------------------------------------------------ 
     # set parameters 
     # ------------------------------------------------------------ 
+    self.verbose = verbose
     # --- variable
-    self.IcD = IcD
+    self.IcD = copy.copy(IcD)
     # --- only keep 3d variables
     #vars_new = dict()
     varnames = []
@@ -598,7 +622,7 @@ class vplot(hplot):
     Box = HBox([d3, ts, bs])
     display(Box)
 
-    a = interactive(self.update_fig, var=d2, step_snap=w2, sec_name=d3)
+    a = interactive(self.update_fig_vplot, var=d2, step_snap=w2, sec_name=d3)
     display(self.output)
     return
   
@@ -625,7 +649,8 @@ class vplot(hplot):
     self.IaV.load_vsnap(fpath=self.IcD.flist_ts[self.step_snap], 
                         fpath_ckdtree=self.sec_fpath,
                         it=self.IcD.its[self.step_snap], 
-                        step_snap = self.step_snap
+                        step_snap = self.step_snap,
+                        verbose = self.verbose,
                        ) 
 
     # --- create axes
@@ -663,7 +688,7 @@ class vplot(hplot):
     return
 
   @output.capture()
-  def update_fig(self, var, step_snap, sec_name):
+  def update_fig_vplot(self, var, step_snap, sec_name):
     #print('hello world')
     #print(var, step_snap, sec_name)
     # --- update self
@@ -681,7 +706,8 @@ class vplot(hplot):
       self.IaV.load_vsnap(fpath=self.IcD.flist_ts[self.step_snap], 
                           fpath_ckdtree=self.sec_fpath,
                           it=self.IcD.its[self.step_snap], 
-                          step_snap = self.step_snap
+                          step_snap = self.step_snap,
+                          verbose = self.verbose,
                          ) 
       # --- mask negative values for logplot 
       data = 1.*self.IaV.data
