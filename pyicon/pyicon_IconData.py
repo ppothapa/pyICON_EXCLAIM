@@ -42,6 +42,7 @@ class IconData(object):
                load_triangular_grid  = True,
                load_rectangular_grid = True,
                load_variable_info    = True,
+               load_grid_from_data_file = False,
                calc_coeff            = True,
                calc_coeff_mappings   = False,
                time_mode             = 'num2date',
@@ -121,6 +122,7 @@ class IconData(object):
     self.fname = fname
 
     self.model_type = model_type
+    self.iw = None
 
     # --- constants (from src/shared/mo_physical_constants.f90)
     self.grid_sphere_radius = 6.371229e6
@@ -237,6 +239,9 @@ class IconData(object):
       self.associate_variables(fpath_data=self.flist[0], skip_vars=[])
       #self.get_timesteps(time_mode='float2date')
 
+    if load_grid_from_data_file: 
+      self.diag_out('load_grid_from_file')
+      self.load_grid_from_file()
     return
 
   def make_triangulation(self):
@@ -259,7 +264,7 @@ class IconData(object):
     return
   
   def get_varnames(self, fpath, skip_vars=[]):
-    skip_vars = ['clon', 'clat', 'elon', 'elat', 'time', 'depth', 'lev', 'height', 'height_bnds']
+    skip_vars = ['clon', 'clat', 'elon', 'elat', 'time', 'depth', 'lev', 'height', 'height_bnds', 'lon', 'lat']
     varnames = get_varnames(fpath, skip_vars)
     self.varnames = varnames
     return
@@ -423,6 +428,31 @@ class IconData(object):
     self.lon = ddnpz['lon']
     self.lat = ddnpz['lat']
     self.Lon, self.Lat = np.meshgrid(self.lon, self.lat)
+    return
+
+  def load_grid_from_file(self):
+    """ Load lon and lat from first netcdf file of list (e.g. if nc file was created by cdo)
+    """
+    # --- rectangular grid
+    f = Dataset(self.flist[0], 'r')
+    self.lon = f.variables['lon'][:]
+    self.lat = f.variables['lat'][:]
+    if (self.lon>180.).any():
+      self.iw = (self.lon<180.).sum()
+      self.lon = np.concatenate((self.lon[self.iw:], self.lon[:self.iw]))
+      self.lon[self.lon>=180.] += -360. 
+    else:
+      self.iw = None
+    try:
+      self.height = f.variables['height'][:]
+    except:
+      print('::: Warning: No variable \'height\' in netcdf file. :::')
+    try:
+      self.depth = f.variables['depth'][:]
+    except:
+      print('::: Warning: No variable \'depth\' in netcdf file. :::')
+    self.Lon, self.Lat = np.meshgrid(self.lon, self.lat)
+    f.close()
     return
 
 #  def load_hsnap(self, varnames, step_snap=0, iz=0):
@@ -632,7 +662,7 @@ class IconData(object):
     return
 
   
-  def crop_grid(self, lon_reg, lat_reg):
+  def crop_tgrid(self, lon_reg, lat_reg):
     """ Crop all cell related variables (data, clon, clat, vertex_of_cell, edge_of_cell to regin defined by lon_reg and lat_reg.
     """
     # --- crop tripolar grid
@@ -642,11 +672,14 @@ class IconData(object):
                                          self.clon, self.clat, 
                                          self.vertex_of_cell,
                                          self.edge_of_cell)
+    #self.crop_data = True
+    return
+
+  def crop_rgrid(self, lon_reg, lat_reg):
     # --- crop rectangular grid
     (self.Lon, self.Lat, self.lon, self.lat, 
      self.ind_reg_rec, self.indx, self.indy) = crop_regular_grid(lon_reg, lat_reg, self.Lon, self.Lat)
-
-    self.crop_data = True
+    #self.crop_data = True
     return
 
   def mask_big_triangles(self):
@@ -706,13 +739,13 @@ class IconVariable(object):
     self.fpath_ckdtree = fpath_ckdtree
     return
 
-  def load_hsnap(self, fpath, it=0, iz=0, step_snap=0, fpath_ckdtree='', mask_reg=None, indx='all', indy='all'):
+  def load_hsnap(self, fpath, it=0, iz=0, iw=None, step_snap=0, fpath_ckdtree='', mask_reg=None, indx='all', indy='all', verbose=True):
     self.step_snap = step_snap
     self.it = it
     self.iz = iz
     self.fpath = fpath
 
-    self.data = load_hsnap(fpath, self.name, it=it, iz=iz, fpath_ckdtree=fpath_ckdtree)
+    self.data = load_hsnap(fpath, self.name, it=it, iz=iz, iw=iw, fpath_ckdtree=fpath_ckdtree, verbose=verbose)
     self.mask = self.data.mask
 
     if fpath_ckdtree=='':
@@ -736,7 +769,7 @@ class IconVariable(object):
       self.isinterpolated = True
     return
   
-  def load_vsnap(self, fpath, fpath_ckdtree, it=0, step_snap=0):
+  def load_vsnap(self, fpath, fpath_ckdtree, it=0, step_snap=0, verbose=True):
     self.step_snap = step_snap
     self.it = it
     self.fpath = fpath
@@ -750,7 +783,8 @@ class IconVariable(object):
 
     f = Dataset(fpath, 'r')
     var = self.name
-    print("Loading %s from %s" % (var, fpath))
+    if verbose:
+      print("Loading %s from %s" % (var, fpath))
     if f.variables[var].ndim==2:
       raise ValueError('::: Warning: Cannot do section of 2D variable %s! :::'%var)
     nz = f.variables[var].shape[1]
@@ -767,13 +801,14 @@ class IconVariable(object):
     self.nz = nz
     return
 
-  def load_moc(self, fpath, it=0, step_snap=0):
+  def load_moc(self, fpath, it=0, step_snap=0, verbose=True):
     self.step_snap = step_snap
     self.it = it
     self.fpath = fpath
 
     var = self.name
-    print("Loading %s from %s" % (var, fpath))
+    if verbose:
+      print("Loading %s from %s" % (var, fpath))
 
     f = Dataset(fpath, 'r')
     self.nz = f.variables[var].shape[1]
