@@ -647,13 +647,16 @@ def cartesian_to_spherical(x, y, z):
 """
 Routines to load data
 """
-def load_hsnap(fpath, var, it=0, iz=0, fpath_ckdtree=''):
+def load_hsnap(fpath, var, it=0, iz=0, iw=None, fpath_ckdtree='', verbose=True):
   f = Dataset(fpath, 'r')
-  print("Loading %s from %s" % (var, fpath))
+  if verbose:
+    print("Loading %s from %s" % (var, fpath))
   if f.variables[var].ndim==2:
     data = f.variables[var][it,:]
   else:
     data = f.variables[var][it,iz,:]
+  if iw is not None:
+    data = np.concatenate((data[:,iw:],data[:,:iw]),axis=1)
   f.close()
 
   data[data==0.] = np.ma.masked
