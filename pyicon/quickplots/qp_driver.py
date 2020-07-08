@@ -1957,7 +1957,7 @@ for tave_int in tave_ints:
       IaV.lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
       plevi = np.concatenate(([107500],0.5*(IcD_atm3d.plevc[1:]+IcD_atm3d.plevc[:-1]),[0.]))
       dp = np.diff(plevi)
-      IaV.data = (2.*np.pi*6.371e6/9.81)*np.cos(IaV.lat_sec*np.pi/180.)* ( (data_zave[::-1,:]*dp[::-1,np.newaxis]).cumsum(axis=0) )[::-1,:]*1e-9
+      IaV.data = (-2.*np.pi*6.371e6/9.81)*np.cos(IaV.lat_sec*np.pi/180.)* ( (data_zave[::-1,:]*dp[::-1,np.newaxis]).cumsum(axis=0) )[::-1,:]*1e-9
       pyic.vplot_base(IcD_atm3d, IaV, clim=[-80,80], cincr=10., contfs='auto', cmap='RdBu_r',
                       asp=0.5, do_write_data_range=True)
       save_fig('Psi', path_pics, fig_name)
