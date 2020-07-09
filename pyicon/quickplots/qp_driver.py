@@ -181,6 +181,8 @@ if do_atmosphere_plots:
   fig_names += ['atm_tas_bias']
   fig_names += ['atm_prw_bias']
   fig_names += ['atm_psl_bias']
+  fig_names += ['sec:Above surface']
+  fig_names += ['atm_geoh_500', 'atm_temp_850']
   fig_names += ['sec:Atmosphere zonal averages']
   fig_names += ['atm_temp_zave', 'atm_temp_zave_bias', 'atm_logv_temp_zave', 'atm_logv_temp_zave_bias']
   fig_names += ['atm_u_zave', 'atm_u_zave_bias', 'atm_logv_u_zave', 'atm_logv_u_zave_bias']
@@ -199,7 +201,7 @@ for pitem in plist:
 # --- for debugging
 if iopts.debug:
   print('XXXXXXXXXXXXXXXXX Debugging mode! XXXXXXXXXXXXXXX')
-  #fig_names = []
+  fig_names = []
   #fig_names += ['temp30w', 'salt30w', 'dens30w']
   #fig_names += ['atm_psi']
   #fig_names += ['ts_tas_gmean']
@@ -239,6 +241,7 @@ if iopts.debug:
   #fig_names += ['atm_temp_zave', 'atm_temp_zave_bias', 'atm_logv_temp_zave', 'atm_logv_temp_zave_bias']
   #fig_names += ['atm_u_zave', 'atm_u_zave_bias', 'atm_logv_u_zave', 'atm_logv_u_zave_bias']
   #fig_names += ['atm_v_zave', 'atm_v_zave_bias', 'atm_logv_v_zave', 'atm_logv_v_zave_bias']
+  fig_names += ['atm_geoh_500', 'atm_temp_850']
 
 fig_names = np.array(fig_names)
 
@@ -1465,6 +1468,8 @@ for tave_int in tave_ints:
       # log10 vert ax
       IcD_atm3d.plev_log = np.array([100900,99500,97100,93900,90200,86100,81700,77200,72500,67900,63300,58800,54300,49900,45700,41600,37700,33900,30402,27015,23833,20867,18116,15578,13239,11066,9102,7406,5964,4752,3743,2914,2235,1685,1245,901,637,440,296,193,122,74,43,23,11,4,1])
       icall_log, ind_lev_log, fac_log = pyic.calc_vertical_interp_weights(pfull, IcD_atm3d.plev_log)
+      ip500 = np.argmin((IcD_atm3d.plevc-500e2)**2)
+      ip850 = np.argmin((IcD_atm3d.plevc-850e2)**2)
   
     # ---
     fig_name = 'atm_2m_temp'
@@ -1561,6 +1566,43 @@ for tave_int in tave_ints:
                       asp=0.5)
       FigInf = dict(long_name=IaV.long_name)
       save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_geoh_500'
+    if fig_name in fig_names:
+      f = Dataset(IcD_atm3d.flist_ts[0], 'r')
+      zg = f.variables['zg'][:]
+      f.close()
+      zgvi = zg[ind_lev,icall]*fac+zg[ind_lev+1,icall]*(1.-fac)
+      #lon, lat, zgvihi = pyic.interp_to_rectgrid(zgvi, fpath_ckdtree_atm, coordinates='clat clon')
+
+      IaV = pyic.IconVariable('zgvihi', 'm', 'geopotential height of 500 hPa')
+      IaV.data = zgvi[ip500,:]
+      IaV.interp_to_rectgrid(fpath_ckdtree_atm)
+      pyic.hplot_base(IcD_atm2d, IaV, clim=[5000,6000], contfs='auto', cmap='RdYlBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      do_write_data_range=True,
+                      land_facecolor='none',
+                      asp=0.5)
+      save_fig(IaV.long_name, path_pics, fig_name)
+
+    # ---
+    fig_name = 'atm_temp_850'
+    if fig_name in fig_names:
+      ta, it_ave = pyic.time_average(IcD_atm3d, 'ta', t1, t2, iz='all')
+      tavi = ta[ind_lev,icall]*fac+ta[ind_lev-1,icall]*(1.-fac)
+      tavi += -273.15
+      IaV = pyic.IconVariable('tavi', '$^o$C', 'temperature at 850 hPa')
+      IaV.data = tavi[ip850,:]
+      IaV.interp_to_rectgrid(fpath_ckdtree_atm)
+      pyic.hplot_base(IcD_atm2d, IaV, clim=30, contfs=np.arange(-30,35,5), cmap='RdYlBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      do_write_data_range=True,
+                      land_facecolor='none',
+                      asp=0.5)
+      save_fig(IaV.long_name, path_pics, fig_name)
   
     # ---
     fig_name = 'atm_tauu_bias'
