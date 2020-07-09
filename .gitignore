@@ -20,3 +20,6 @@ tools/log.o*
 
 # trash
 trash
+
+# all_qps
+all_qps
