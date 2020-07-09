@@ -14,3 +14,9 @@ doc/_build/
 
 # add directory of untracked stuff
 tests_untracked
+
+# slurm log file
+tools/log.o*
+
+# trash
+trash
