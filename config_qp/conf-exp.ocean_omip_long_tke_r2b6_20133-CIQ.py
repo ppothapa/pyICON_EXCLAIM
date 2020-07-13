@@ -18,7 +18,7 @@ path_grid     = '/mnt/lustre01/work/mh0033/m300602/icon/grids/'+gname+'/'
 path_grid_atm = '/mnt/lustre01/work/mh0033/m300602/icon/grids/'+gname_atm+'/'
 path_ckdtree  = 'auto'
 
-fpath_initial_state = '/mnt/lustre01/work/mh0033/m300602/proj_vmix/icon/icon_08/icon-oes/experiments/nib0004/initial_state.nc'
+fpath_ref_data_oce = '/mnt/lustre01/work/mh0033/m300602/proj_vmix/icon/icon_08/icon-oes/experiments/nib0004/initial_state.nc'
 fpath_tgrid  = 'auto'
 fpath_fx     = 'auto'
 

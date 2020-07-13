@@ -12,7 +12,7 @@ path_data     = '/mnt/lustre01/work/mh0033/m211054/projects/icon/icon-oes-1.3.01
 path_grid     = '/mnt/lustre01/work/mh0033/m300602/icon/grids/'+gname+'/'
 path_ckdtree  = 'auto'
 
-fpath_initial_state = '/pool/data/ICON/oes/input/r0003/OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min/ts_phc3.0_annual_icon_OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min_L128.nc'
+fpath_ref_data_oce = '/pool/data/ICON/oes/input/r0003/OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min/ts_phc3.0_annual_icon_OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min_L128.nc'
 fpath_tgrid  = 'auto'
 fpath_fx     = 'auto'
 

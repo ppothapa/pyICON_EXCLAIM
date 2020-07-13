@@ -8,6 +8,6 @@ path_data    = '/mnt/lustre01/work/mh0033/m300602/proj_vmix/icon/'+runname+'/ico
 path_grid    = '/mnt/lustre01/work/mh0033/m300602/icon/grids/'+gname+'/'
 path_ckdtree = 'auto'
 
-fpath_initial_state = path_data+'initial_state.nc'
+fpath_ref_data_oce = path_data+'initial_state.nc'
 fpath_tgrid  = 'auto'
 fpath_fx     = 'auto'

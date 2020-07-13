@@ -9,7 +9,7 @@ path_data    = '/work/mh0287/users/helmuth/icon-oes-1.3.00/experiments/'+run+'/'
 path_grid    = '/mnt/lustre01/work/mh0033/m300602/icon/grids/'+gname+'/'
 path_ckdtree = 'auto'
 
-fpath_initial_state = 'auto'
+fpath_ref_data_oce = 'auto'
 fpath_tgrid  = 'auto'
 fpath_fx     = 'auto'
 

@@ -12,7 +12,7 @@ path_data     = f'/mnt/lustre01/work/mh0033/m214056/RESOLUTION_EXPS/NEW_RUN_PAPE
 path_grid     = f'/mnt/lustre01/work/mh0033/m300602/icon/grids/{gname}/'
 path_ckdtree  = 'auto'
 
-fpath_initial_state = f'{path_data}/initial_state.nc'
+fpath_ref_data_oce = f'{path_data}/initial_state.nc'
 fpath_tgrid  = 'auto'
 fpath_fx     = 'auto'
 
