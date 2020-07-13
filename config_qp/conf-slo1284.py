@@ -5,7 +5,7 @@ path_data     = '/work/mh0469/m211032/Icon/Git_Icon/icon.oes.20200506/experiment
 
 # --- do ocean and/or atmosphere plots
 do_atmosphere_plots = True
-do_ocean_plots      = False
+do_ocean_plots      = True
 
 # --- grid information
 gname     = 'r2b6'
