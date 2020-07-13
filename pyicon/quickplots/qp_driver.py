@@ -398,10 +398,10 @@ if do_ocean_plots and not iopts.no_plots:
                 )
 
 if do_atmosphere_plots and not iopts.no_plots:
-  fname = '%s%s_%s.nc' % (run, atm_2d, tstep)
-  print('Dataset %s' % (fname))
+  fname_atm_2d = '%s%s_%s.nc' % (run, atm_2d, tstep)
+  print('Dataset %s' % (fname_atm_2d))
   IcD_atm2d = pyic.IconData(
-                 fname        = fname,
+                 fname        = fname_atm_2d,
                  path_data    = path_data,
                  path_grid    = path_grid_atm,
                  path_ckdtree = path_ckdtree_atm,
@@ -418,10 +418,10 @@ if do_atmosphere_plots and not iopts.no_plots:
                  model_type   = 'atm',
                 )
 
-  fname = '%s%s_%s.nc' % (run, atm_3d, tstep)
-  print('Dataset %s' % (fname))
+  fname_atm_3d = '%s%s_%s.nc' % (run, atm_3d, tstep)
+  print('Dataset %s' % (fname_atm_3d))
   IcD_atm3d = pyic.IconData(
-                 fname        = fname,
+                 fname        = fname_atm_3d,
                  path_data    = path_data,
                  path_grid    = path_grid_atm,
                  path_ckdtree = path_ckdtree_atm,
@@ -439,10 +439,10 @@ if do_atmosphere_plots and not iopts.no_plots:
                 )
   fpath_ckdtree_atm = IcD_atm3d.rgrid_fpath_dict[rgrid_name_atm]
 
-  fname = '%s%s_%s.nc' % (run, atm_mon, tstep)
-  print('Dataset %s' % (fname))
+  fname_atm_mon = '%s%s_%s.nc' % (run, atm_mon, tstep)
+  print('Dataset %s' % (fname_atm_mon))
   IcD_atm_mon = pyic.IconData(
-                 fname        = fname,
+                 fname        = fname_atm_mon,
                  path_data    = path_data,
                  path_grid    = path_grid_atm,
                  path_ckdtree = path_ckdtree_atm,
@@ -459,6 +459,8 @@ if do_atmosphere_plots and not iopts.no_plots:
                  model_type   = 'atm',
                 )
   
+  if do_ocean_plots==False:
+    IcD_monthly = IcD_atm_mon
 print('Done reading datasets')
 
 
@@ -899,52 +901,55 @@ for tave_int in tave_ints:
       save_fig('Snow equiv. thickness SH', path_pics, fig_name, FigInf)
 
     # --------------------------------------------------------------------------------
+    # Load 3D ocean data
+    # --------------------------------------------------------------------------------
+    if do_ocean_plots:
+      calc_bias = False
+      for fig_name in fig_names:
+        if '_bias' in fig_name: 
+          calc_bias = True
+
+      tmp_list = ['temp30w', 'temp_gzave', 'temp_azave', 'temp_ipzave', 
+                  'salt30w', 'salt_gzave', 'salt_azave', 'salt_ipzave',
+                  'arctic_budgets'
+                 ]
+      if np.any(np.in1d(fig_names, tmp_list)) or calc_bias:
+        print('load temp and salt')
+        temp, it_ave = pyic.time_average(IcD, 'to', t1, t2, iz='all')
+        salt, it_ave = pyic.time_average(IcD, 'so', t1, t2, iz='all')
+        temp[temp==0.]=np.ma.masked
+        salt[salt==0.]=np.ma.masked
+
+      tmp_plist = ['arctic_budgets']
+      if np.any(np.in1d(fig_names, tmp_plist)):
+        print('load uo and vo')
+        uo, it_ave = pyic.time_average(IcD, 'u', t1, t2, iz='all')
+        vo, it_ave = pyic.time_average(IcD, 'v', t1, t2, iz='all')
+        uo[uo==0.]=np.ma.masked
+        vo[vo==0.]=np.ma.masked
+
+      tmp_plist = ['bstr', 'arctic_budgets', 'passage_transports']
+      if np.any(np.in1d(fig_names, tmp_plist)):
+        print('load mass_flux')
+        mass_flux, it_ave = pyic.time_average(IcD, 'mass_flux', t1, t2, iz='all')
+
+      if calc_bias:
+        print('Calculate bias')
+        fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
+      
+        f = Dataset(fpath_ref_data_oce, 'r')
+        temp_ref = f.variables['T'][0,:,:]
+        salt_ref = f.variables['S'][0,:,:]
+        f.close()
+        temp_ref[temp_ref==0.]=np.ma.masked
+        salt_ref[salt_ref==0.]=np.ma.masked
+      
+        tbias = temp-temp_ref
+        sbias = salt-salt_ref
+    
+    # --------------------------------------------------------------------------------
     # biases
     # --------------------------------------------------------------------------------
-    fname = '%s%s_%s.nc' % (run, oce_def, tstep)
-    calc_bias = False
-    for fig_name in fig_names:
-      if '_bias' in fig_name: 
-        calc_bias = True
-
-    TS_plots = ['temp30w', 'temp_gzave', 'temp_azave', 'temp_ipzave', 
-                'salt30w', 'salt_gzave', 'salt_azave', 'salt_ipzave',
-                'arctic_budgets'
-               ]
-    if np.any(np.in1d(fig_names, TS_plots)) or calc_bias:
-      print('load temp and salt')
-      temp, it_ave = pyic.time_average(IcD, 'to', t1, t2, iz='all')
-      salt, it_ave = pyic.time_average(IcD, 'so', t1, t2, iz='all')
-      temp[temp==0.]=np.ma.masked
-      salt[salt==0.]=np.ma.masked
-
-    tmp_plist = ['arctic_budgets']
-    if np.any(np.in1d(fig_names, tmp_plist)):
-      print('load uo and vo')
-      uo, it_ave = pyic.time_average(IcD, 'u', t1, t2, iz='all')
-      vo, it_ave = pyic.time_average(IcD, 'v', t1, t2, iz='all')
-      uo[uo==0.]=np.ma.masked
-      vo[vo==0.]=np.ma.masked
-
-    tmp_plist = ['bstr', 'arctic_budgets', 'passage_transports']
-    if np.any(np.in1d(fig_names, tmp_plist)):
-      print('load mass_flux')
-      mass_flux, it_ave = pyic.time_average(IcD, 'mass_flux', t1, t2, iz='all')
-
-    if calc_bias:
-      print('Calculate bias')
-      fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
-    
-      f = Dataset(fpath_ref_data_oce, 'r')
-      temp_ref = f.variables['T'][0,:,:]
-      salt_ref = f.variables['S'][0,:,:]
-      f.close()
-      temp_ref[temp_ref==0.]=np.ma.masked
-      salt_ref[salt_ref==0.]=np.ma.masked
-    
-      tbias = temp-temp_ref
-      sbias = salt-salt_ref
-    
     # ---
     fig_name = 'sst_bias'
     if fig_name in fig_names:
@@ -1439,82 +1444,78 @@ for tave_int in tave_ints:
     # -------------------------------------------------------------------------------- 
     # time series
     # -------------------------------------------------------------------------------- 
-    #fname = f'{run}{oce_mon}_????????????????.nc'
-    fname = fname_mon
-    
+    # --- ocean monitoring
     fig_name = 'ts_amoc'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, ['amoc26n'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname_mon, ['amoc26n'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_heat_content'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, ['global_heat_content'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname_mon, ['global_heat_content'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_ssh'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, ['ssh_global'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname_mon, ['ssh_global'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_sst'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, ['sst_global'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname_mon, ['sst_global'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_sss'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, ['sss_global'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname_mon, ['sss_global'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_hfl'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, ['HeatFlux_Total_global'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname_mon, ['HeatFlux_Total_global'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_wfl'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname_mon, 
         ['FrshFlux_Precipitation_global', 'FrshFlux_SnowFall_global', 'FrshFlux_Evaporation_global', 'FrshFlux_Runoff_global', 'FrshFlux_VolumeIce_global', 'FrshFlux_TotalOcean_global', 'FrshFlux_TotalIce_global', 'FrshFlux_VolumeTotal_global'], 
         title='Fresh water flux [m/s]',
         t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_ice_volume_nh'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname_mon, 
         ['ice_volume_nh', 'ice_volume_nh'], 
         title='sea ice volume Northern hemisphere [km^3]',
         t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'])
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_ice_volume_sh'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname_mon, 
         ['ice_volume_sh', 'ice_volume_sh'], 
         title='sea ice volume Southern hemisphere [km^3]',
         t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'])
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_ice_extent_nh'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname_mon, 
         ['ice_extent_nh', 'ice_extent_nh'], 
         title='sea ice extent Northern hemisphere [km^2]',
         t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'])
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_ice_extent_sh'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname_mon, 
         ['ice_extent_sh', 'ice_extent_sh'], 
         title='sea ice extent Southern hemisphere [km^2]',
         t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'])
       save_fig(fig_name, path_pics, fig_name)
   
-    if do_atmosphere_plots:
-      fname = f'{run}{atm_mon}_????????????????.nc'
-    
+    # --- atmosphere monitoring
     fig_name = 'ts_tas_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, ['tas_gmean'], 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['tas_gmean'], 
         t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file,
         var_add=-273.15, units=' [$^o$C]')
       save_fig(fig_name, path_pics, fig_name)
 
     fig_name = 'ts_radtop_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, ['radtop_gmean'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['radtop_gmean'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name)
 
     # -------------------------------------------------------------------------------- 
@@ -1612,7 +1613,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_wek'
     if fig_name in fig_names:
-      w_ek = pyic.calc_curl(IcD_atm2d, ptp_tau/IcD_atm2d.fe/IcD.rho0)
+      w_ek = pyic.calc_curl(IcD_atm2d, ptp_tau/IcD_atm2d.fe/IcD_atm2d.rho0)
       w_ek = w_ek[0,:]
       w_ek[np.abs(IcD_atm2d.vlat)<5.] = np.ma.masked
       IaV = pyic.IconVariable('w_ek', 'm / year', 'Ekman pumping', coordinates='vlat vlon')
