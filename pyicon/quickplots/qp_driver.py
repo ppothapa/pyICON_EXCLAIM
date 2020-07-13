@@ -160,6 +160,8 @@ projection = 'PlateCarree'
 # --- structure of web page
 fig_names = []
 if do_ocean_plots:
+  fig_names += ['sec:Overview']
+  fig_names += ['tab_overview']
   fig_names += ['sec:Upper ocean']
   fig_names += ['ssh', 'ssh_variance', 'sst', 'sss', 'mld_mar', 'mld_sep'] 
   fig_names += ['sec:Ice']
@@ -221,7 +223,7 @@ if iopts.debug:
   #fig_names += ['ts_tas_gmean']
   #fig_names += ['sst']
   #fig_names += ['ts_amoc']
-  fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
+  #fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
   #fig_names += ['mld_mar', 'mld_sep']
   #fig_names = ['temp_bias_gzave']
   #fig_names = ['sss']
@@ -257,6 +259,7 @@ if iopts.debug:
   #fig_names += ['arctic_budgets']
   #fig_names += ['passage_transports', 'tab_passage_transports']
   #fig_names += ['tab_passage_transports']
+  fig_names += ['tab_overview']
 
 fig_names = np.array(fig_names)
 
@@ -1522,6 +1525,44 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['radtop_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name)
+
+    # -------------------------------------------------------------------------------- 
+    # Overview table 
+    # -------------------------------------------------------------------------------- 
+    fig_name = 'tab_overview'
+    if fig_name in fig_names:
+      data = []
+      toprow = []
+
+#var = 'amoc26n'
+#Dd['tab_name'] = 'AMOC 26N [kg/s]'
+#Dd['fac']      = 1e9
+#Dd['prec']     = '.1f'
+
+      if do_ocean_plots:
+        varlist = ['amoc26n', 'ice_volume_nh', 'ice_volume_sh']
+        Dd = pyicqp.time_averages_monitoring(IcD_mon, t1, t2, varlist)
+        for var in varlist:
+          val = Dd[var]['ave']*Dd[var]['fac']
+          data.append( f"{val:{Dd[var]['prec']}}" )
+          if Dd[var]['tab_name']=='':
+            tab_name = f"{Dd[var]['long_name']} [{Dd[var]['units']}]"
+          toprow.append( tab_name )
+
+      if do_atmosphere_plots:
+        varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean']
+        Dd = pyicqp.time_averages_monitoring(IcD_atm_mon, t1, t2, varlist)
+        for var in varlist:
+          val = Dd[var]['ave']*Dd[var]['fac']
+          data.append( f"{val:{Dd[var]['prec']}}" )
+          if Dd[var]['tab_name']=='':
+            tab_name = f"{Dd[var]['long_name']} [{Dd[var]['units']}]"
+          toprow.append( tab_name )
+
+      data = np.array(data)[np.newaxis,:]
+      leftcol = [run]
+      text = pyicqp.write_table_html(data, leftcol=leftcol, toprow=toprow, prec='.5g', width='100%') 
+      save_tab(text, 'Tab: Overview', path_pics, fig_name)
 
     # -------------------------------------------------------------------------------- 
     # Additional plots
