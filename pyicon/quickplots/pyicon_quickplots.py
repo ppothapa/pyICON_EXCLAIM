@@ -332,8 +332,8 @@ def time_averages_monitoring(IcD, t1, t2, varlist, ):
     Dvars[var]['units'] = f.variables[var].units
     f.close()
     ind = (IcD.times>=t1) & (IcD.times<t2)
-    mean = (data*dt).sum()/dt.sum()
-    std = np.sqrt( (data**2*dt).sum()/dt.sum()-mean**2 )
+    mean = (data[ind]*dt[ind]).sum()/dt[ind].sum()
+    std = np.sqrt( (data[ind]**2*dt[ind]).sum()/dt[ind].sum()-mean**2 )
     Dvars[var]['ave'] = mean
     Dvars[var]['std'] = std
     Dvars[var]['min'] = data[ind].min()
