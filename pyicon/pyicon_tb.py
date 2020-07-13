@@ -662,7 +662,13 @@ def load_hsnap(fpath, var, it=0, iz=0, iw=None, fpath_ckdtree='', verbose=True):
   data[data==0.] = np.ma.masked
   return data
 
-def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use_loop=False):
+def datetime64_to_float(dates):
+  years  = (dates.astype('datetime64[Y]').astype(int) + 1970).astype(int)
+  months = (dates.astype('datetime64[M]').astype(int) % 12 + 1).astype(int)
+  days   = (dates - dates.astype('datetime64[M]') + 1).astype(int)
+  return years, months, days
+
+def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use_loop=False, verbose=False):
   it_ave = np.array(it_ave)
   # --- if no it_ave is given use t1 and t2 to determine averaging indices it_ave
   if it_ave.size==0:
@@ -681,6 +687,26 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
 
   if it_ave.size==0:
     raise ValueError(f'::: Could not find any time steps in interval t1={t1} and t2={t2}! :::')
+  
+  # --- decide whether the file consists monthly or yearly averages (or something else)
+  dt1 = (IcD.times[it_ave][1]-IcD.times[it_ave][0]).astype(float)/(86400)
+  if dt1==365 or dt1==366:
+    ave_mode = 'yearly'
+  elif dt1==28 or dt1==29 or dt1==30 or dt1==31:
+    ave_mode = 'monthly'
+  else:
+    ave_mode = 'unknown'
+       
+  dt64type = IcD.times[0].dtype
+  time_bnds = IcD.times[it_ave]
+  yy, mm, dd = datetime64_to_float(time_bnds[0])
+  if ave_mode=='yearly':
+    time_bnds = np.concatenate(([np.datetime64(f'{yy-1:04d}-{mm:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+  elif ave_mode=='monthly':
+    time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+  elif ave_mode=='unknown':
+    time_bnds = np.concatenate(([time_bnds[0]-(time_bnds[1]-time_bnds[0])], time_bnds))
+  dt = np.diff(time_bnds).astype(float)
 
   # --- get dimensions to allocate data
   f = Dataset(IcD.flist_ts[0], 'r')
@@ -691,12 +717,12 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
     nt, nc, nx = f.variables[var].shape
     nz = 0
     load_hfl_type = True
-  elif f.variables[var].dimensions == ('time', 'depth', 'lat', 'lon'): # is the case for moc data
+  elif f.variables[var].dimensions == ('time', 'depth', 'lat', 'lon'): # e.g. for MOC 
     nt, nz, nc, ndummy = f.variables[var].shape 
     load_moc_type = True
   elif f.variables[var].ndim==3:
     nt, nz, nc = f.variables[var].shape
-  elif f.variables[var].ndim==2: # for 2D variables like zos and mld
+  elif f.variables[var].ndim==2: # e.g. for 2D variables like zos and mld
     nt, nc = f.variables[var].shape
     nz = 0
   f.close()
@@ -712,13 +738,15 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
   if (fpaths.size==1) and not always_use_loop:
     f = Dataset(fpaths[0], 'r')
     if load_hfl_type:
-      data_ave = f.variables[var][IcD.its[it_ave],:,0].mean(axis=0)
+      data_ave = (f.variables[var][IcD.its[it_ave],:,0]*dt[:,np.newaxis]).sum(axis=0)/dt.sum()
     elif load_moc_type:
-      data_ave = f.variables[var][IcD.its[it_ave],:,:,0].mean(axis=0)
-    elif nz>0:
-      data_ave = f.variables[var][IcD.its[it_ave],iz,:].mean(axis=0)
+      data_ave = (f.variables[var][IcD.its[it_ave],:,:,0]*dt[:,np.newaxis,np.newaxis]).sum(axis=0)/dt.sum()
+    elif nz>0 and isinstance(iz,(int,np.integer)): # data has no depth dim afterwards
+      data_ave = (f.variables[var][IcD.its[it_ave],iz,:]*dt[:,np.newaxis]).sum(axis=0)/dt.sum()
+    elif nz>0 and not isinstance(iz,(int,np.integer)): # data has depth dim afterwards
+      data_ave = (f.variables[var][IcD.its[it_ave],iz,:]*dt[:,np.newaxis,np.newaxis]).sum(axis=0)/dt.sum()
     else:
-      data_ave = f.variables[var][IcD.its[it_ave],:].mean(axis=0)
+      data_ave = (f.variables[var][IcD.its[it_ave],:]*dt[:,np.newaxis]).sum(axis=0)/dt.sum()
     f.close()
   # --- otherwise loop ovar all files is needed
   else:
@@ -729,18 +757,20 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
       data_ave = np.ma.zeros((iz.size,nc))
 
     # --- average by looping over all files and time steps
-    for l in it_ave:
+    for ll, it in enumerate(it_ave):
       f = Dataset(IcD.flist_ts[l], 'r')
       if load_hfl_type:
-        data_ave += f.variables[var][IcD.its[l],:,0]/it_ave.size
+        data_ave += f.variables[var][IcD.its[it],:,0]*dt[ll]/dt.sum()
       elif load_moc_type:
-        data_ave += f.variables[var][IcD.its[l],:,:,0]/it_ave.size
+        data_ave += f.variables[var][IcD.its[it],:,:,0]*dt[ll]/dt.sum()
       elif nz>0:
-        data_ave += f.variables[var][IcD.its[l],iz,:]/it_ave.size
+        data_ave += f.variables[var][IcD.its[it],iz,:]*dt[ll]/dt.sum()
       else:
-        data_ave += f.variables[var][IcD.its[l],:]/it_ave.size
+        data_ave += f.variables[var][IcD.its[it],:]*dt[ll]/dt.sum()
       f.close()
-  print(f'pyicon.time_average: var={var}: it_ave={it_ave}')
+  if verbose:
+    #print(f'pyicon.time_average: var={var}: it_ave={it_ave}')
+    print(f'pyicon.time_average: var={var}: it_ave={IcD.times[it_ave]}')
   return data_ave, it_ave
 
 def timing(ts, string=''):
