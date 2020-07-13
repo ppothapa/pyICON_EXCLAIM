@@ -6,11 +6,13 @@ runname = ''
 oce_def = ''
 oce_moc = '_MOC'
 oce_mon = '_oceanMonitor'
+oce_ice = oce_def
 oce_monthly = oce_def
 do_atmosphere_plots = False
 do_ocean_plots = True
 path_quickplots = '../../all_qps/'
 omit_last_file = False
+tstep     = '????????????????'  # use this line for all data
 
 #rgrid_name = 'global_1.0'
 sec_name_30w = '30W_300pts'
@@ -18,11 +20,13 @@ sec_name_30w = '30W_300pts'
 rgrid_name = 'global_0.3'
 rgrid_name_atm = 'global_1.0_era'
 
+path_ckdtree_atm = 'auto'
+
 
 t1 = 'auto'
 t2 = 'auto'
 
-fpath_ref_atm = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_era.nc'
+fpath_ref_data_atm = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_era.nc'
 #fpath_ERAin_zonmean_L47 = '/pool/data/ICON/post/QuickPlots_1x1/ERAin/ERAinL47_1x1_zonmean_1979-2016.nc'
 #fpath_ERAin_zonmean_L17 = '/pool/data/ICON/post/QuickPlots_1x1/ERAin/ERAinL17_1x1_zonmean_1979-2016.nc'
 
@@ -73,6 +77,8 @@ parser.add_argument('--tave_int', metavar='tave_int', type=str, default='none',
                     help='specify time averaging interval e.g. --tave_int=1600-01-01, 1700-12-31')
 parser.add_argument('--run', metavar='run', type=str, default='none',
                     help='name of simulation; if specified, it is used to alter path_data by replacing "run" from config file')
+parser.add_argument('--path_data', metavar='path_data', type=str, default='none',
+                    help='path of simulation data; if specified, it is used to replace path_data')
 iopts = parser.parse_args()
 
 print('--------------------------------------------------------------------------------')
@@ -132,6 +138,10 @@ if not os.path.isfile(fpath_config):
 exec(open(fpath_config).read())
 
 # --- overwrite variables if given by argument parsing
+if iopts.path_data!='none':
+  path_data = iopts.path_data
+if not path_data.endswith('/'):
+  path_data += '/'
 if iopts.run!='none':
   path_data = path_data.replace(run, iopts.run)
   run = iopts.run
@@ -147,26 +157,28 @@ projection = 'PlateCarree'
 
 # --- structure of web page
 fig_names = []
-fig_names += ['sec:Upper ocean']
-fig_names += ['ssh', 'ssh_variance', 'sst', 'sss', 'mld_mar', 'mld_sep'] 
-fig_names += ['sec:Ice']
-fig_names += ['ice_concentration_nh', 'ice_thickness_nh', 'snow_thickness_nh',] 
-fig_names += ['ice_concentration_sh', 'ice_thickness_sh', 'snow_thickness_sh',]
-fig_names += ['sec:Sections']
-fig_names += ['temp30w', 'salt30w', 'dens30w']
-fig_names += ['sec:Zonal averages']
-fig_names += ['temp_gzave', 'temp_azave', 'temp_ipzave']
-fig_names += ['salt_gzave', 'salt_azave', 'salt_ipzave']
-fig_names += ['sec:Transports']
-fig_names += ['bstr', 'amoc', 'pmoc', 'gmoc']
-fig_names += ['ke_100m', 'ke_2000m']
-fig_names += ['heat_flux', 'freshwater_flux']
-fig_names += ['sec:Biases']
-fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
-fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
-fig_names += ['sec:Time series']
-#fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent',]
-fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
+if do_ocean_plots:
+  fig_names += ['sec:Upper ocean']
+  fig_names += ['ssh', 'ssh_variance', 'sst', 'sss', 'mld_mar', 'mld_sep'] 
+  fig_names += ['sec:Ice']
+  fig_names += ['ice_concentration_nh', 'ice_thickness_nh', 'snow_thickness_nh',] 
+  fig_names += ['ice_concentration_sh', 'ice_thickness_sh', 'snow_thickness_sh',]
+  fig_names += ['sec:Sections']
+  fig_names += ['temp30w', 'salt30w', 'dens30w']
+  fig_names += ['sec:Zonal averages']
+  fig_names += ['temp_gzave', 'temp_azave', 'temp_ipzave']
+  fig_names += ['salt_gzave', 'salt_azave', 'salt_ipzave']
+  fig_names += ['sec:Transports']
+  fig_names += ['bstr', 'passage_transports', 'tab_passage_transports']
+  fig_names += ['arctic_budgets']
+  fig_names += ['amoc', 'pmoc', 'gmoc']
+  fig_names += ['ke_100m', 'ke_2000m']
+  fig_names += ['heat_flux', 'freshwater_flux']
+  fig_names += ['sec:Biases']
+  fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
+  fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
+  fig_names += ['sec:Time series']
+  fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
 if do_atmosphere_plots:
   fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
   fig_names += ['sec:Surface fluxes']
@@ -207,7 +219,7 @@ if iopts.debug:
   #fig_names += ['ts_tas_gmean']
   #fig_names += ['sst']
   #fig_names += ['ts_amoc']
-  #fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent',]
+  fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
   #fig_names += ['mld_mar', 'mld_sep']
   #fig_names = ['temp_bias_gzave']
   #fig_names = ['sss']
@@ -234,14 +246,15 @@ if iopts.debug:
   #fig_names += ['amoc', 'pmoc', 'gmoc']
   #fig_names += ['temp_gzave', 'temp_azave', 'temp_ipzave']
   #fig_names += ['salt30w', 'temp30w']
-  #fig_names += ['ts_amoc']
-  #fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
   #fig_names += ['ts_ice_extent_sh']
   #fig_names += ['atm_temp_zave_bias', 'atm_logv_temp_zave_bias', 'atm_logv_temp_zave', 'atm_temp_zave']
   #fig_names += ['atm_temp_zave', 'atm_temp_zave_bias', 'atm_logv_temp_zave', 'atm_logv_temp_zave_bias']
   #fig_names += ['atm_u_zave', 'atm_u_zave_bias', 'atm_logv_u_zave', 'atm_logv_u_zave_bias']
   #fig_names += ['atm_v_zave', 'atm_v_zave_bias', 'atm_logv_v_zave', 'atm_logv_v_zave_bias']
-  fig_names += ['atm_geoh_500', 'atm_temp_850']
+  #fig_names += ['atm_geoh_500', 'atm_temp_850']
+  #fig_names += ['arctic_budgets']
+  #fig_names += ['passage_transports', 'tab_passage_transports']
+  #fig_names += ['tab_passage_transports']
 
 fig_names = np.array(fig_names)
 
@@ -261,6 +274,17 @@ def save_fig(title, path_pics, fig_name, FigInf=dict()):
     plt.close('all')
   return
 plt.close('all')
+
+def save_tab(text, title, path_pics, fig_name, FigInf=dict()):
+  FigInf['name']  = fig_name+'.html'
+  FigInf['fpath'] = path_pics+FigInf['name']
+  FigInf['title'] = title
+  print('Saving {:<40} {:<40}'.format(FigInf['fpath'], FigInf['title']))
+  with open(FigInf['fpath'], 'w') as f:
+    f.write(text)
+  with open(path_pics+fig_name+'.json', 'w') as fj:
+    json.dump(FigInf, fj, sort_keys=True, indent=4)
+  return
 
 def indfind(array, vals):
   vals = np.array(vals)
@@ -286,14 +310,16 @@ if do_ocean_plots and not iopts.no_plots:
                  fname        = fname,
                  path_data    = path_data,
                  path_grid    = path_grid,
+                 path_ckdtree = path_ckdtree,
                  gname        = gname,
                  lev          = lev,
                  rgrid_name   = rgrid_name,
-                 do_triangulation   = False,
-                 omit_last_file     = omit_last_file,
-                 load_vertical_grid = True,
-                 load_triangular_grid = True, # needed for bstr
-                 calc_coeff         = False,
+                 do_triangulation       = False,
+                 omit_last_file         = omit_last_file,
+                 load_vertical_grid     = True,
+                 load_triangular_grid   = True, # needed for bstr
+                 load_rectangular_grid  = True,
+                 calc_coeff             = False,
                 )
   fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
   [k100, k500, k800, k1000, k2000, k3000] = indfind(IcD.depthc, [100., 500., 800., 1000., 2000., 3000.])
@@ -304,14 +330,16 @@ if do_ocean_plots and not iopts.no_plots:
                  fname        = fname_moc,
                  path_data    = path_data,
                  path_grid    = path_grid,
+                 path_ckdtree = path_ckdtree,
                  gname        = gname,
                  lev          = lev,
                  rgrid_name   = rgrid_name,
-                 do_triangulation   = False,
-                 omit_last_file     = omit_last_file,
-                 load_vertical_grid = False,
-                 load_triangular_grid = False,
-                 calc_coeff         = False,
+                 do_triangulation       = False,
+                 omit_last_file         = omit_last_file,
+                 load_vertical_grid     = False,
+                 load_triangular_grid   = False,
+                 load_rectangular_grid  = True,
+                 calc_coeff             = False,
                 )
   IcD_moc.depthc = IcD.depthc
   IcD_moc.depthi = IcD.depthi
@@ -322,16 +350,52 @@ if do_ocean_plots and not iopts.no_plots:
                  fname        = fname_monthly,
                  path_data    = path_data,
                  path_grid    = path_grid,
+                 path_ckdtree = path_ckdtree,
                  gname        = gname,
                  lev          = lev,
                  rgrid_name   = rgrid_name,
-                 do_triangulation   = False,
-                 omit_last_file     = omit_last_file,
-                 load_vertical_grid = False,
-                 load_triangular_grid = False,
-                 calc_coeff         = False,
+                 do_triangulation       = False,
+                 omit_last_file         = omit_last_file,
+                 load_vertical_grid     = False,
+                 load_triangular_grid   = False,
+                 load_rectangular_grid  = True,
+                 calc_coeff             = False,
                 )
   IcD_monthly.wet_c = IcD.wet_c
+
+  fname_ice = '%s%s_%s.nc' % (run, oce_ice, tstep)
+  print('Dataset %s' % (fname_monthly))
+  IcD_ice = pyic.IconData(
+                 fname        = fname_ice,
+                 path_data    = path_data,
+                 path_grid    = path_grid,
+                 path_ckdtree = path_ckdtree,
+                 gname        = gname,
+                 lev          = lev,
+                 do_triangulation       = False,
+                 omit_last_file         = omit_last_file,
+                 load_vertical_grid     = False,
+                 load_triangular_grid   = False,
+                 load_rectangular_grid  = False,
+                 calc_coeff             = False,
+                )
+
+  fname_mon = '%s%s_%s.nc' % (run, oce_mon, tstep)
+  print('Dataset %s' % (fname_mon))
+  IcD_mon = pyic.IconData(
+                 fname        = fname_mon,
+                 path_data    = path_data,
+                 path_grid    = path_grid,
+                 path_ckdtree = path_ckdtree,
+                 gname        = gname,
+                 lev          = lev,
+                 do_triangulation       = False,
+                 omit_last_file         = omit_last_file,
+                 load_vertical_grid     = False,
+                 load_triangular_grid   = False,
+                 load_rectangular_grid  = False,
+                 calc_coeff             = False,
+                )
 
 if do_atmosphere_plots and not iopts.no_plots:
   fname = '%s%s_%s.nc' % (run, atm_2d, tstep)
@@ -340,13 +404,16 @@ if do_atmosphere_plots and not iopts.no_plots:
                  fname        = fname,
                  path_data    = path_data,
                  path_grid    = path_grid_atm,
+                 path_ckdtree = path_ckdtree_atm,
                  gname        = gname_atm,
                  lev          = lev_atm,
                  rgrid_name   = rgrid_name_atm,
-                 do_triangulation   = False,
-                 omit_last_file     = omit_last_file,
-                 load_vertical_grid = False,
-                 calc_coeff         = True,
+                 do_triangulation       = False,
+                 omit_last_file         = omit_last_file,
+                 load_vertical_grid     = False,
+                 load_triangular_grid   = True,
+                 load_rectangular_grid  = True,
+                 calc_coeff             = True,
                  time_mode    = 'float2date',
                  model_type   = 'atm',
                 )
@@ -357,17 +424,40 @@ if do_atmosphere_plots and not iopts.no_plots:
                  fname        = fname,
                  path_data    = path_data,
                  path_grid    = path_grid_atm,
+                 path_ckdtree = path_ckdtree_atm,
                  gname        = gname_atm,
                  lev          = lev_atm,
                  rgrid_name   = rgrid_name_atm,
-                 do_triangulation   = False,
-                 omit_last_file     = omit_last_file,
-                 load_vertical_grid = False,
-                 calc_coeff         = False,
+                 do_triangulation       = False,
+                 omit_last_file         = omit_last_file,
+                 load_vertical_grid     = False,
+                 load_triangular_grid   = False,
+                 load_rectangular_grid  = True,
+                 calc_coeff             = False,
                  time_mode    = 'float2date',
                  model_type   = 'atm',
                 )
   fpath_ckdtree_atm = IcD_atm3d.rgrid_fpath_dict[rgrid_name_atm]
+
+  fname = '%s%s_%s.nc' % (run, atm_mon, tstep)
+  print('Dataset %s' % (fname))
+  IcD_atm_mon = pyic.IconData(
+                 fname        = fname,
+                 path_data    = path_data,
+                 path_grid    = path_grid_atm,
+                 path_ckdtree = path_ckdtree_atm,
+                 gname        = gname_atm,
+                 lev          = lev_atm,
+                 rgrid_name   = rgrid_name_atm,
+                 do_triangulation       = False,
+                 omit_last_file         = omit_last_file,
+                 load_vertical_grid     = False,
+                 load_triangular_grid   = False,
+                 load_rectangular_grid  = False,
+                 calc_coeff             = False,
+                 #time_mode    = 'float2date',
+                 model_type   = 'atm',
+                )
   
 print('Done reading datasets')
 
@@ -464,9 +554,15 @@ for tave_int in tave_ints:
     # -------------------------------------------------------------------------------- 
     # specify time averaging indices
     # -------------------------------------------------------------------------------- 
-    it_ave = np.where( (IcD_monthly.times>=t1) & (IcD_monthly.times<=t2) )[0]
-    it_ave_mar = it_ave[2::12]
-    it_ave_sep = it_ave[8::12]
+    mask_int = (IcD_monthly.times>=t1) & (IcD_monthly.times<=t2)
+    months = IcD_monthly.times.astype('datetime64[M]').astype(int) % 12 + 1
+    it_ave = np.where( mask_int )[0]
+    # Note: In ICON the date of an average is set to the end of the averaging interval
+    #       Thus, the 4th month corresponds to March and the 10th to September
+    it_ave_mar = np.where( mask_int & (months==4)  )[0]
+    it_ave_sep = np.where( mask_int & (months==10) )[0]
+    #it_ave_mar = it_ave[2::12] # this only workes if tave_int start with Feb. E.g.: 1610-02-01,1620-01-01
+    #it_ave_sep = it_ave[8::12] # this only workes if tave_int start with Feb. E.g.: 1610-02-01,1620-01-01
     print('ave_mar: ', IcD_monthly.times[it_ave_mar])
     print('ave_sep: ', IcD_monthly.times[it_ave_sep])
 
@@ -812,7 +908,9 @@ for tave_int in tave_ints:
         calc_bias = True
 
     TS_plots = ['temp30w', 'temp_gzave', 'temp_azave', 'temp_ipzave', 
-                'salt30w', 'salt_gzave', 'salt_azave', 'salt_ipzave',]
+                'salt30w', 'salt_gzave', 'salt_azave', 'salt_ipzave',
+                'arctic_budgets'
+               ]
     if np.any(np.in1d(fig_names, TS_plots)) or calc_bias:
       print('load temp and salt')
       temp, it_ave = pyic.time_average(IcD, 'to', t1, t2, iz='all')
@@ -820,11 +918,24 @@ for tave_int in tave_ints:
       temp[temp==0.]=np.ma.masked
       salt[salt==0.]=np.ma.masked
 
+    tmp_plist = ['arctic_budgets']
+    if np.any(np.in1d(fig_names, tmp_plist)):
+      print('load uo and vo')
+      uo, it_ave = pyic.time_average(IcD, 'u', t1, t2, iz='all')
+      vo, it_ave = pyic.time_average(IcD, 'v', t1, t2, iz='all')
+      uo[uo==0.]=np.ma.masked
+      vo[vo==0.]=np.ma.masked
+
+    tmp_plist = ['bstr', 'arctic_budgets', 'passage_transports']
+    if np.any(np.in1d(fig_names, tmp_plist)):
+      print('load mass_flux')
+      mass_flux, it_ave = pyic.time_average(IcD, 'mass_flux', t1, t2, iz='all')
+
     if calc_bias:
       print('Calculate bias')
       fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
     
-      f = Dataset(fpath_initial_state, 'r')
+      f = Dataset(fpath_ref_data_oce, 'r')
       temp_ref = f.variables['T'][0,:,:]
       salt_ref = f.variables['S'][0,:,:]
       f.close()
@@ -1142,11 +1253,9 @@ for tave_int in tave_ints:
     
     # ---
     fig_name = 'bstr'
-    
     if fig_name in fig_names:
       print('calc_bstr_vgrid')
       fname = '%s%s_%s.nc' % (run, oce_def, tstep)
-      mass_flux, it_ave = pyic.time_average(IcD, 'mass_flux', t1, t2, iz='all')
       mass_flux_vint = mass_flux.sum(axis=0)
     
       # --- derive and interp bstr
@@ -1162,6 +1271,73 @@ for tave_int in tave_ints:
                       do_write_data_range=True,
                      )
       save_fig('Barotropic streamfunction', path_pics, fig_name)
+
+    # ---
+    fig_name = 'passage_transports'
+    if fig_name in fig_names and os.path.exists(path_grid+'section_mask_'+gname+'.nc'):
+      #ax, cax, mappable, Dstr = pyic.hplot_base(IcD, IaV, cmap='RdBu_r',
+      #                clim=200, clevs=[-200,-160,-120,-80,-40,-30,-25,-20,-15,-10,-5,5,10,15,20,25,30,40,80,120,160,200], 
+      #                projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
+      #                do_write_data_range=True,
+      #               )
+      hca, hcb = pyic.arrange_axes(1,1, plot_cb=True, asp=0.5, fig_size_fac=2,
+                                   projection=ccrs.PlateCarree(),
+                                  )
+      ax = hca[0]
+      cax = hcb[0]
+      pyic.plot_settings(ax, template='global')
+      mass_flux_vint = mass_flux.sum(axis=0)
+
+      f = Dataset(path_grid+'section_mask_'+gname+'.nc', 'r')
+      snames = []
+      for var in f.variables.keys():
+          if var.startswith('mask'):
+              snames += [var[5:]]
+      #snames = ['drake_passage']
+      Dmask = dict()
+      Die = dict()
+      Div = dict()
+      Dtransp = dict()
+      for var in snames:
+          data = f.variables['mask_'+var][:]
+          Dmask[var] = data
+          exec('mask_%s = data' %var)
+          data = f.variables['ie_'+var][:]
+          data = data[data.mask==False]
+          Die[var] = data
+          exec('ie_%s = data'%var)
+          data = f.variables['iv_'+var][:]
+          data = data[data.mask==False]
+          Div[var] = data
+          exec('iv_%s = data'%var)
+          Dtransp[var] = (mass_flux_vint*IcD.edge_length*Dmask[var]).sum()/1e6
+      f.close()
+      for var in snames:
+          ax.plot(IcD.vlon[Div[var]], IcD.vlat[Div[var]], color='r')
+          ax.text(IcD.vlon[Div[var]].mean()+3, IcD.vlat[Div[var]].mean(), 
+                  '%.1f Sv'%np.abs(Dtransp[var]), 
+                  color='r', fontsize=8,
+                  bbox=dict(fc='w', ec='none', alpha=0.5))
+      save_fig('Passage transports', path_pics, fig_name)
+
+    # ---
+    fig_name = 'tab_passage_transports'
+    if fig_name in fig_names:
+      data = np.zeros((len(snames),1))
+      leftcol = []
+      toprow  = ['transport [Sv]']
+      for nn, var in enumerate(snames):
+        data[nn,0] = np.abs(Dtransp[var]) 
+        leftcol.append(var.replace('_',' ').title())
+      text = pyicqp.write_table_html(data, leftcol=leftcol, toprow=toprow, prec='4.1f', width='40%') 
+      save_tab(text, 'Tab: Passage transports', path_pics, fig_name)
+
+    # ---
+    fig_name = 'arctic_budgets'
+    if fig_name in fig_names:
+      from qp_arctic_budgets import arctic_budgets
+      arctic_budgets(IcD, IcD_ice, IcD_monthly, t1, t2, temp, salt, mass_flux, uo, vo)
+      save_fig('Arctic heat/water budgets', path_pics, fig_name)
     
     # --- 
     #Ddict = dict(
@@ -1263,7 +1439,8 @@ for tave_int in tave_ints:
     # -------------------------------------------------------------------------------- 
     # time series
     # -------------------------------------------------------------------------------- 
-    fname = f'{run}{oce_mon}_????????????????.nc'
+    #fname = f'{run}{oce_mon}_????????????????.nc'
+    fname = fname_mon
     
     fig_name = 'ts_amoc'
     if fig_name in fig_names:
@@ -1339,7 +1516,7 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD, fname, ['radtop_gmean'], t1=t1, t2=t2, ave_freq=12, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name)
-    
+
     # -------------------------------------------------------------------------------- 
     # Additional plots
     # -------------------------------------------------------------------------------- 
@@ -1504,7 +1681,7 @@ for tave_int in tave_ints:
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
       datai = data2di
       # --- reference
-      f = Dataset(fpath_ref_atm, 'r')
+      f = Dataset(fpath_ref_data_atm, 'r')
       data_ref = f.variables[var][:]
       f.close()
       # --- calculate bias
@@ -1528,7 +1705,7 @@ for tave_int in tave_ints:
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
       datai = data2di
       # --- reference
-      f = Dataset(fpath_ref_atm, 'r')
+      f = Dataset(fpath_ref_data_atm, 'r')
       data_ref = f.variables[var][:]
       f.close()
       # --- calculate bias
@@ -1552,7 +1729,7 @@ for tave_int in tave_ints:
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
       datai = data2di
       # --- reference
-      f = Dataset(fpath_ref_atm, 'r')
+      f = Dataset(fpath_ref_data_atm, 'r')
       data_ref = f.variables[var][:]
       f.close()
       # --- calculate bias
@@ -1613,7 +1790,7 @@ for tave_int in tave_ints:
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
       datai = data2di
       # --- reference
-      f = Dataset(fpath_ref_atm, 'r')
+      f = Dataset(fpath_ref_data_atm, 'r')
       data_ref = f.variables[var][:]
       f.close()
       # --- calculate bias
@@ -1637,7 +1814,7 @@ for tave_int in tave_ints:
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
       datai = data2di
       # --- reference
-      f = Dataset(fpath_ref_atm, 'r')
+      f = Dataset(fpath_ref_data_atm, 'r')
       data_ref = f.variables[var][:]
       f.close()
       # --- calculate bias
@@ -1759,7 +1936,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_temp_zave_bias'
     if fig_name in fig_names:
-      f = Dataset(fpath_ref_atm, 'r')
+      f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables['ta_L17'][:]
       f.close()
 
@@ -1790,7 +1967,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_logv_temp_zave_bias'
     if fig_name in fig_names:
-      f = Dataset(fpath_ref_atm , 'r')
+      f = Dataset(fpath_ref_data_atm , 'r')
       data_ref_zave = f.variables['ta_L47'][:]
       f.close()
       
@@ -1820,7 +1997,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_u_zave_bias'
     if fig_name in fig_names:
-      f = Dataset(fpath_ref_atm, 'r')
+      f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables['ua_L17'][:]
       f.close()
 
@@ -1850,7 +2027,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_logv_u_zave_bias'
     if fig_name in fig_names:
-      f = Dataset(fpath_ref_atm , 'r')
+      f = Dataset(fpath_ref_data_atm , 'r')
       data_ref_zave = f.variables['ua_L47'][:]
       f.close()
       
@@ -1880,7 +2057,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_v_zave_bias'
     if fig_name in fig_names:
-      f = Dataset(fpath_ref_atm, 'r')
+      f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables['va_L17'][:]
       f.close()
 
@@ -1910,7 +2087,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_logv_v_zave_bias'
     if fig_name in fig_names:
-      f = Dataset(fpath_ref_atm , 'r')
+      f = Dataset(fpath_ref_data_atm , 'r')
       data_ref_zave = f.variables['va_L47'][:]
       f.close()
       
@@ -2039,6 +2216,15 @@ for tave_int in tave_ints:
     fpath = path_pics+plot+'.json'
     if plot.startswith('sec'):
       qp.add_section(plot.split(':')[1])
+    elif plot.startswith('tab'):
+      if os.path.exists(fpath):
+        print(fpath)
+        flist_all.remove(fpath)
+        with open(fpath) as file_json:
+          FigInf = json.load(file_json)
+        qp.add_subsection(FigInf['title'])
+        #rfpath_pics = rpath_pics+FigInf['name']
+        qp.add_html(FigInf['fpath'])
     else:
       if os.path.exists(fpath):
         print(fpath)
@@ -2073,6 +2259,9 @@ for tave_int in tave_ints:
 print("Executing qp_link_all.py")
 #os.system(f"python {path_qp_driver}qp_link_all.py")
 pyicqp.link_all(path_quickplots=path_quickplots)
+
+# --- add page for additional information
+pyicqp.add_info(run=run, path_data=path_data, path_qp_sim=path_qp_sim)
 
 ### --------------------------------------------------------------------------------
 ### show figures
