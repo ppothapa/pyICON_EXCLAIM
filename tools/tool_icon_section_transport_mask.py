@@ -1,11 +1,22 @@
 import sys
 import numpy as np
 from netCDF4 import Dataset
+from ipdb import set_trace as mybreak
+from cartopy import crs as ccrs
 
 # --- dummy object to collect variables
+class Section(object):
+  def __init__(self, name, p1, p2):
+    self.name = name
+    self.along_const_lat = False
+    self.lon1 = p1[0]
+    self.lat1 = p1[1]
+    self.lon2 = p2[0]
+    self.lat2 = p2[1]
+    return
+
 class Obj(object):
   def __init__(self):
-    self.along_const_lat = False
     return
 
 # --- function to load the tripolar grid
@@ -88,8 +99,12 @@ def find_section_edges_orientation(IcD, lon1, lat1, lon2, lat2, along_const_lat=
   # --- delete vertices that only occur once - but not start and end vertex
   itmp, ind, cnts = np.unique(iv_all, return_index=True, return_counts=True)
   iv_inval = itmp[cnts==1]
+  #try:
   iv_s = iv_all.flatten()[np.argmin((vlon[iv_all]-lon1)**2+(vlat[iv_all]-lat1)**2)]
   iv_e = iv_all.flatten()[np.argmin((vlon[iv_all]-lon2)**2+(vlat[iv_all]-lat2)**2)]
+  #except:
+  #  print('::: Warning: Cannot continue finding section points. :::')
+  #  return
   iv_inval = iv_inval[iv_inval!=iv_s]
   iv_inval = iv_inval[iv_inval!=iv_e]
   # --- all edges
@@ -194,37 +209,109 @@ fpath_tgrid = f'{path_grid}/{gname}_tgrid.nc'
 # --- path to output netcdf file
 fpath_ncfile_out = f'{path_grid}section_mask_{gname}.nc'
 
-# --- sec: barents_opening
-M = Obj()
-M.lon1, M.lat1 = 16.6, 77.
-M.lon2, M.lat2 = 19.5, 69.8
-M.name = 'barents_opening'
-Ms.append(M)
+### --- sec: barents_opening
+##M = Obj()
+##M.lon1, M.lat1 = 16.6, 77.
+##M.lon2, M.lat2 = 19.5, 69.8
+##M.name = 'barents_opening'
+##Ms.append(M)
+##
+### --- sec: bering_strait
+##M = Obj()
+##M.lon1, M.lat1 = -171, 66.2
+##M.lon2, M.lat2 = -166, 65
+##M.name = 'bering_strait'
+##Ms.append(M)
+##
+### --- sec: drake_passage
+##M = Obj()
+##M.lon1, M.lat1 = -60.5, -64.3                                                        
+##M.lon2, M.lat2 = -67, -55. 
+### Does not work in r2b6, keep for testing debug mode
+###M.lon1, M.lat1 = -60, -64.7 
+###M.lon2, M.lat2 = -68, -54.
+##M.name = 'drake_passage'
+##Ms.append(M)
+##
+### --- sec: 26N
+##M = Obj()
+##M.lon1, M.lat1 = -80.5, 26.
+##M.lon2, M.lat2 = -14., 26.
+##M.along_const_lat = True
+##M.name = 'atl26N'
+##Ms.append(M)
 
-# --- sec: bering_strait
-M = Obj()
-M.lon1, M.lat1 = -171, 66.2
-M.lon2, M.lat2 = -166, 65
-M.name = 'bering_strait'
-Ms.append(M)
-
-# --- sec: drake_passage
-M = Obj()
-M.lon1, M.lat1 = -60.5, -64.3                                                        
-M.lon2, M.lat2 = -67, -55. 
-# Does not work in r2b6, keep for testing debug mode
-#M.lon1, M.lat1 = -60, -64.7 
-#M.lon2, M.lat2 = -68, -54.
-M.name = 'drake_passage'
-Ms.append(M)
-
-# --- sec: 26N
-M = Obj()
-M.lon1, M.lat1 = -80.5, 26.
-M.lon2, M.lat2 = -14., 26.
-M.along_const_lat = True
-M.name = 'atl26N'
-Ms.append(M)
+# --- 
+Ms.append(Section('barents_opening',
+            p1=[16.6, 77.],
+            p2=[19.5, 69.8],
+         ))
+Ms.append(Section('bering_strait',
+            p1=[-171, 66.2],
+            p2=[-166, 65],
+         ))
+Ms.append(Section('caribbean_windward_passage',
+            p1=[-75, 20.2],
+            p2=[-72.6, 19.7],
+         ))
+Ms.append(Section('davis_strait',
+            p1=[-50, 65],
+            p2=[-62.6, 66],
+         ))
+Ms.append(Section('denmark_strait',
+            p1=[-37, 66.1],
+            p2=[-22.5, 66.],
+         ))
+Ms.append(Section('drake_passage',
+#            p1=[-68, -54],
+#            p2=[-60, -64.7],
+            p1=[-67, -55],
+            p2=[-60.5, -64.3],
+         ))
+Ms.append(Section('english_channel',
+#            p1=[1.5, 51.1],
+#            p2=[1.7, 51.0],
+            p1=[0.9, 51.4],
+            p2=[1.9, 50.4],
+         ))
+Ms.append(Section('faroe_scotland_channel',
+            p1=[-6.9, 62,],
+            p2=[-5, 58.7],
+         ))
+Ms.append(Section('florida_bahamas_strait',
+            p1=[-78.5, 26],
+            p2=[-80.5, 27],
+         ))
+Ms.append(Section('fram_strait',
+            p1=[-20, 79,],
+            p2=[ 11, 79],
+         ))
+Ms.append(Section('gilbraltar_strait',
+#            p1=[-5.6, 35.8],
+#            p2=[-5.6, 36],
+            p1=[-5.6, 35.0],
+            p2=[-5.6, 36.6],
+         ))
+Ms.append(Section('iceland_faroe_channel',
+            p1=[-13.6, 64.9],
+            p2=[-7.4, 62.2],
+         ))
+Ms.append(Section('indonesian_throughflow',
+            p1=[100, -6],
+            p2=[140, -6],
+         ))
+Ms.append(Section('mozambique_channel',
+            p1=[39, -16],
+            p2=[45, -18,],
+         ))
+Ms.append(Section('pacific_equatorial_undercurrent',
+            p1=[-155, -2],
+            p2=[-155, 2],
+         ))
+Ms.append(Section('taiwan_and_luzon_straits',
+            p1=[121.8, 18.3],
+            p2=[121.8, 22.3],
+         ))
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
 # END USER INPUT
@@ -305,20 +392,24 @@ if do_plot_sections_in_the_end:
   empt_data = np.zeros(IcD.clon.shape)
 
   plt.close("all")
-  hca, hcb = pyic.arrange_axes(1,1, plot_cb=True, asp=0.5, fig_size_fac=2.,
-                              sharex=True, sharey=True, xlabel="", ylabel="")
+  ccrs_proj = ccrs.PlateCarree()
+  hca, hcb = pyic.arrange_axes(1,1, plot_cb=False, asp=0.5, fig_size_fac=2.,
+                              sharex=True, sharey=True, xlabel="", ylabel="", projection=ccrs_proj)
   ii=-1
   
   ii+=1; ax=hca[ii]; cax=hcb[ii]
   #ax.plot([lon1, lon2], [lat1, lat2])
   #pyic.shade(IcD.Tri, empt_data, ax=ax, cax=cax, edgecolor='k', clim=1)
-  ax.triplot(IcD.Tri, color='k', zorder=1., linewidth=0.25)
+  #ax.triplot(IcD.Tri, color='k', zorder=1., linewidth=0.2, transform=ccrs_proj)
+  ax.triplot(IcD.Tri, color='k', zorder=1., linewidth=0.2)
+  pyic.plot_settings(ax, template='global', land_facecolor='none', coastlines_color='orange')
   #for var in vlist:
   for M in Ms:
     var = M.name
     print(var)
     exec('mask = 1.*mask_%s'%var)
     ax.scatter(elon[mask!=0], elat[mask!=0], c='b', s=10, zorder=3)
+    ax.text(elon[mask!=0].mean(), elat[mask!=0].mean(), var, ha='center', va='center', color='r')
     ax.scatter(M.lon1, M.lat1, c='g', s=20, zorder=3)
     ax.scatter(M.lon2, M.lat2, c='r', s=20, zorder=3)
 
