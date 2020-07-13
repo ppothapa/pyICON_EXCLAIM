@@ -145,7 +145,7 @@ if iopts.path_data!='none':
 if not path_data.endswith('/'):
   path_data += '/'
 if iopts.run!='none':
-  path_data = path_data.replace(run, iopts.run)
+  #path_data = path_data.replace(run, iopts.run)
   run = iopts.run
 
 print(f'path_data = {path_data}')
@@ -569,6 +569,9 @@ for tave_int in tave_ints:
     #it_ave_sep = it_ave[8::12] # this only workes if tave_int start with Feb. E.g.: 1610-02-01,1620-01-01
     print('ave_mar: ', IcD_monthly.times[it_ave_mar])
     print('ave_sep: ', IcD_monthly.times[it_ave_sep])
+
+    if mask_int.sum()==0:
+      raise ValueError(f'::: Error: Cannot find any data in {path_data} for time period from {t1} unitl {t2}! :::')
 
     # ================================================================================ 
     # start with plotting
