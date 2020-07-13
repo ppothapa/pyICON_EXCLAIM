@@ -18,6 +18,9 @@ config_file="./config_qp_${rand}.py"
 qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
 
 cat > ${config_file} << %eof%
+# --- path to quickplots
+path_quickplots = '../all_qps/'
+
 # --- do ocean and/or atmosphere plots
 do_atmosphere_plots = True
 do_ocean_plots      = True

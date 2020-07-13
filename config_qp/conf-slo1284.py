@@ -3,6 +3,9 @@ runname   = ''
 run       = 'slo1284'
 path_data     = '/work/mh0469/m211032/Icon/Git_Icon/icon.oes.20200506/experiments/'+run+'/'
 
+# --- path to quickplots
+path_quickplots = '../../all_qps/'
+
 # --- do ocean and/or atmosphere plots
 do_atmosphere_plots = True
 do_ocean_plots      = True
