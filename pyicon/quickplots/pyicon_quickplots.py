@@ -1,6 +1,7 @@
 import sys, glob, os
 import json
 import shutil
+import copy
 # --- calculations
 import numpy as np
 # --- reading data 
@@ -316,27 +317,42 @@ def qp_timeseries(IcD, fname, vars_plot,
                   do_write_data_range=True,
                   ax='none',
                  ): 
+
   if len(mode_ave)==1:
     mode_ave = [mode_ave[0]]*len(vars_plot)
     dfigb = 0.7
   else:
     do_write_data_range = False
     dfigb = 0.0
+
+  # --- identify all files and time points belonging to time series
   # start: not needed if IcD.load_timeseries is used
   flist = glob.glob(IcD.path_data+fname)
   flist.sort()
   if omit_last_file:
     flist = flist[:-1]
   times, flist_ts, its = pyic.get_timesteps(flist)
+  # end: not needed if IcD.load_timeseries is used
+
   if ave_freq>0:
+    # --- skip all time points which do not fit in final year
     nskip = times.size%ave_freq
     if nskip>0:
       times = times[:-nskip]
+    # --- define time bounds for correct time averaging
+    time_bnds = np.copy(times)
+    dt64type = time_bnds[0].dtype
+    # find year, month and day integers of first time step
+    yy, mm, dd = pyic.datetime64_to_float(time_bnds[0])
+    # first time value is first value of time series minus one month
+    time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+    # dt is the length of a time interval
+    dt = np.diff(time_bnds).astype(float)
+    # --- finally define times as center or averaging time intervall
     nresh = int(times.size/ave_freq)
     times = np.reshape(times, (nresh, ave_freq)).transpose()
     #times_ave = times.mean(axis=0)
     times = times[int(ave_freq/2),:] # get middle of ave_freq
-  # end: not needed if IcD.load_timeseries is used
 
   if isinstance(ax, str) and ax=='none':
     hca, hcb = pyic.arrange_axes(1,1, plot_cb=False, asp=0.5, fig_size_fac=2.,
@@ -366,8 +382,10 @@ def qp_timeseries(IcD, fname, vars_plot,
       #  raise ValueError(f'::: Time series has wrong size: {times.size} for ave_req={ave_freq}! :::')
       print(f'{var}: {data.size} {times.size}')
       data = np.reshape(data, (nresh, ave_freq)).transpose()
+      dt   = np.reshape(dt  , (nresh, ave_freq)).transpose()
       if mode_ave[mm]=='mean':
-        data = data.mean(axis=0)
+        #data = data.mean(axis=0))
+        data = (data*dt).sum(axis=0)/dt.sum(axis=0)
       elif mode_ave[mm]=='min':
         data = data.min(axis=0)
       elif mode_ave[mm]=='max':
@@ -423,7 +441,6 @@ def qp_timeseries(IcD, fname, vars_plot,
   Dhandles['hl'] = hl
   Dhandles['hlt1'] = hlt1
   Dhandles['hlt2'] = hlt2
-  Dhandles['mean'] = data[ind].mean()
   return FigInf, Dhandles
 
 def write_table_html(data, leftcol=[], toprow=[], prec='.1f', width='80%'):
