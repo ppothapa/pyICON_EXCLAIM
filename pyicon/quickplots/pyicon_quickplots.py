@@ -305,6 +305,44 @@ def qp_vplot(fpath, var, IcD='none', it=0,
   #FigInf['IcD'] = IcD
   return FigInf
 
+def time_averages_monitoring(IcD, t1, t2, varlist, ): 
+
+  # --- define time bounds for correct time averaging
+  time_bnds = np.copy(IcD.times)
+  dt64type = time_bnds[0].dtype
+  # find year, month and day integers of first time step
+  yy, mm, dd = pyic.datetime64_to_float(time_bnds[0])
+  # first time value is first value of time series minus one month
+  time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+  # dt is the length of a time interval
+  dt = np.diff(time_bnds).astype(float)
+
+  Dvars = dict()
+  for var in varlist:
+    #print(var)
+    Dvars[var] = dict()
+    data = np.array([])
+    for nn, fpath in enumerate(IcD.flist):
+      f = Dataset(fpath, 'r')
+      data_file = f.variables[var][:,0,0]
+      data = np.concatenate((data, data_file))
+      f.close()
+    f = Dataset(fpath, 'r')
+    Dvars[var]['long_name'] = f.variables[var].long_name
+    Dvars[var]['units'] = f.variables[var].units
+    f.close()
+    ind = (IcD.times>=t1) & (IcD.times<t2)
+    mean = (data*dt).sum()/dt.sum()
+    std = np.sqrt( (data**2*dt).sum()/dt.sum()-mean**2 )
+    Dvars[var]['ave'] = mean
+    Dvars[var]['std'] = std
+    Dvars[var]['min'] = data[ind].min()
+    Dvars[var]['max'] = data[ind].max()
+    Dvars[var]['tab_name'] = ''
+    Dvars[var]['fac'] = 1.
+    Dvars[var]['prec'] = '.5g'
+  return Dvars
+
 def qp_timeseries(IcD, fname, vars_plot, 
                   var_fac=1., var_add=0.,
                   title='', units='',
@@ -471,7 +509,10 @@ def write_table_html(data, leftcol=[], toprow=[], prec='.1f', width='80%'):
       text += f'    <th>{leftcol[jj]}</th>'
     for ii in range(data.shape[1]):
       # main entries
-      text += f'    <td>{data[jj,ii]:{prec}}</td>'
+      if data.dtype.type is np.str_:
+        text += f'    <td>{data[jj,ii]}</td>'
+      else:
+        text += f'    <td>{data[jj,ii]:{prec}}</td>'
     text += '  </tr>\n'
   text += '</table>\n'
   text += '<p></p>\n'
