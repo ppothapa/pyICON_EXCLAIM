@@ -423,7 +423,42 @@ def qp_timeseries(IcD, fname, vars_plot,
   Dhandles['hl'] = hl
   Dhandles['hlt1'] = hlt1
   Dhandles['hlt2'] = hlt2
+  Dhandles['mean'] = data[ind].mean()
   return FigInf, Dhandles
+
+def write_table_html(data, leftcol=[], toprow=[], prec='.1f', width='80%'):
+  data = np.array(data)
+  toprow = np.array(toprow)
+  leftcol = np.array(leftcol)
+  if toprow.size!=0 and toprow.size!=data.shape[1]:
+    raise ValueError('::: Error: Wrong number of entries in toprow! :::')
+  if leftcol.size!=0 and leftcol.size!=data.shape[0]:
+    raise ValueError('::: Error: Wrong number of entries in leftcol! :::')
+  text = ""
+  text += '<p></p>\n'
+  text += f'<table style="width:{width}">\n'
+  # header title row toprow
+  if toprow.size!=0:
+    text += '  <tr>'
+    # upper left empy entry
+    if leftcol.size!=0:
+      text += '    <th></th>'
+    for el in toprow:
+      text += f'    <th>{el}</th>'
+    text += '  </tr>\n'
+  # table body
+  for jj in range(data.shape[0]):
+    text += '  <tr>'
+    # left title column leftcol
+    if leftcol.size!=0:
+      text += f'    <th>{leftcol[jj]}</th>'
+    for ii in range(data.shape[1]):
+      # main entries
+      text += f'    <td>{data[jj,ii]:{prec}}</td>'
+    text += '  </tr>\n'
+  text += '</table>\n'
+  text += '<p></p>\n'
+  return text
 
 ##def qp_hor_plot(fpath, var, IC='none', iz=0, it=0,
 ##              grid='orig', 
@@ -538,6 +573,7 @@ qp.write_to_file()
       links = """
 &emsp; <a href="../qp_index.html">list time averages</a>
 &emsp; <a href="../../index.html">list simulations</a>
+&emsp; <a href="../add_info/add_info.html">additional information</a>
 """
 
     self.header = """
@@ -623,6 +659,15 @@ qp.write_to_file()
     self.main += '\n'
     return
    
+  def add_html(self, fpath):
+    f = open(fpath, 'r')
+    text = f.read()
+    f.close()
+    self.main += text
+    #self.main += f'    <!--#include virtual="{fpath}" -->'
+    self.main += '\n'
+    return
+
   def add_fig(self, fpath, width="1000"):
     self.main += f'    <div class="figure"> <img src="{fpath}" width="{width}" /> </div>'
     self.main += '\n'
@@ -715,6 +760,8 @@ To link sub pages for time averages for a specific simulation:
   # --- add link to pyicon docu
   if top_level:
     text += '<p><li><a href="pyicon_doc/html/index.html">pyicon documentation</a></>\n'
+  else:
+    text += '<p><li><a href="add_info/add_info.html">additional information</a></>\n'
   # --- add link to experiments / timeaverages
   for fpath in flist:
     name = fpath.split('/')[-2]#[3:]
@@ -736,4 +783,52 @@ To link sub pages for time averages for a specific simulation:
     print(qp.toc)
     print(qp.main)
     print(qp.footer)
+  return
+
+def add_info(run, path_data, path_qp_sim, verbose=True):
+  path_add_info = path_qp_sim+'add_info/'
+  if not os.path.exists(path_add_info):
+    os.makedirs(path_add_info)
+
+  # --- make header
+  qp = QuickPlotWebsite(
+    title='Additional information',
+    author=os.environ.get('USER'),
+    date=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    #path_data=path_quickplots,
+    info='ICON data plotted by pyicon.quickplots',
+    fpath_css='../qp_css.css',
+    fpath_html=path_add_info+'add_info.html'
+    )
+  
+  """
+<p><li><a href="README">README</a></>
+<p><li>Run script: <a href="exp.slo1284.run">exp.slo1284.run</a></>
+<p><li><a href="icon_ruby_na_circ_mov_dap7023-r0.mov">Movie</a></>
+  """
+  text = ""
+  #f = open(f'{path_data}/../../run/README', 'r')
+  #text += f.read()
+  #f.close()
+  #text += '\n'
+  flist = [] 
+  flist += [f'{path_data}/README']
+  flist += [f'{path_data}/../../run/exp.{run}.run']
+  flist += [f'{path_data}/NAMELIST_ICON_output_atm']
+  flist += [f'{path_data}/NAMELIST_{run}_atm']
+  flist += [f'{path_data}/NAMELIST_{run}_lnd']
+  flist += [f'{path_data}/NAMELIST_{run}_oce']
+  flist += [f'{path_data}/NAMELIST_{run}_oce.log']
+  flist += [f'{path_data}/NAMELIST_{run}_oce_output']
+  for fpath in flist:
+    try:
+      shutil.copy(fpath, f'{path_add_info}')
+      fname = fpath.split('/')[-1]
+      text += f'<p><li><a href="{fname}">{fname}</a></>'
+    except:
+      if verbose:
+        print(f'::: Warning: Cannot find {fpath}! :::')
+
+  qp.main = text
+  qp.write_to_file()
   return
