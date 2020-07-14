@@ -86,7 +86,7 @@ def arctic_budgets(IcD, IcD_ice, IcD_dbg, t1, t2, to, so, mass_flux, uo, vo):
   conc, it_ave      = pyic.time_average(IcD_ice, 'conc', t1=t1, t2=t2, iz='all')
   ice_u, it_ave     = pyic.time_average(IcD_ice, 'ice_u', t1=t1, t2=t2, iz='all')
   ice_v, it_ave     = pyic.time_average(IcD_ice, 'ice_v', t1=t1, t2=t2, iz='all')
-  zUnderIce, it_ave = pyic.time_average(IcD_dbg, 'zUnderIce', t1=t1, t2=t2, iz='all')
+  #zUnderIce, it_ave = pyic.time_average(IcD_dbg, 'zUnderIce', t1=t1, t2=t2, iz='all')
   
   #mass_flux = mass_flux.astype(np.float64)
   #uo = uo.astype(np.float64)
