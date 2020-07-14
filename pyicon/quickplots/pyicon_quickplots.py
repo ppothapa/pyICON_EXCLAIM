@@ -405,7 +405,8 @@ def qp_timeseries(IcD, fname, vars_plot,
                  )
     ii=-1
     ii+=1; ax=hca[ii]; cax=hcb[ii]
-    adjust_xylim = True
+    #adjust_xylim = True
+    adjust_xylim = False
   else:
     adjust_xylim = False
 

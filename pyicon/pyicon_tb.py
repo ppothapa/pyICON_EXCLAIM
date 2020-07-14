@@ -688,7 +688,7 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
   if it_ave.size==0:
     raise ValueError(f'::: Could not find any time steps in interval t1={t1} and t2={t2}! :::')
   
-  # --- decide whether the file consists monthly or yearly averages (or something else)
+  # --- decide whether the file consists of monthly or yearly averages (or something else)
   dt1 = (IcD.times[it_ave][1]-IcD.times[it_ave][0]).astype(float)/(86400)
   if dt1==365 or dt1==366:
     ave_mode = 'yearly'
