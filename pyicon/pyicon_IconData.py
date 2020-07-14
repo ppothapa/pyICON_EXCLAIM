@@ -598,6 +598,7 @@ class IconData(object):
     self.div_coeff = (  self.edge_length[self.edge_of_cell] 
                       * self.orientation_of_normal 
                       / self.cell_area_p[:,np.newaxis] )
+    self.grad_coeff = (1./self.dual_edge_length)
     # Necessary to scale with grid_rescale_factor? (configure_model/mo_grid_config.f90)
     #grid_sphere_radius = 1.
     rot_coeff = (  self.dual_edge_length[self.edges_of_vertex]/self.grid_sphere_radius
