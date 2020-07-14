@@ -21,6 +21,9 @@ cat > ${config_file} << %eof%
 # --- path to quickplots
 path_quickplots = '../all_qps/'
 
+# --- set this to True if the simulation is still running
+omit_last_file = True
+
 # --- do ocean and/or atmosphere plots
 do_atmosphere_plots = True
 do_ocean_plots      = True
@@ -69,7 +72,7 @@ startdate=`date +%Y-%m-%d\ %H:%M:%S`
 run="slo1284"
 path_data="/work/mh0469/m211032/Icon/Git_Icon/icon.oes.20200506/experiments/${run}/"
 python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1570-02-01,1580-01-01'
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1670-02-01,1680-01-01'
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1640-02-01,1650-01-01'
 
 #run="dap1234"
 #path_data="/different/path_data/${run}/"

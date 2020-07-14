@@ -23,10 +23,10 @@ path_ckdtree     = path_grid+'/ckdtree/'
 
 # --- grid files and reference data
 fpath_tgrid         = 'auto'
-fpath_ref_data_oce  = 'auto'
+fpath_ref_data_oce  = '/mnt/lustre01/work/mh0033/m214056/RESOLUTION_EXPS/startfile_Helmuth/ts_phc3.0_annual_icon_OceanOnly_Global_NAtalntic_0020km_modified_srtm30_1min.nc_L128.nc'
 fpath_fx            = 'auto'
 
 # --- time average information (can be overwritten by qp_driver call)
 tave_ints = [
-['1950-02-01', '1955-01-01'],
+['1950-02-01', '1952-01-01'],
 ]

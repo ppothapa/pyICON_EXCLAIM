@@ -43,7 +43,7 @@ fpath_fx            = 'auto'
 
 # --- time average information (can be overwritten by qp_driver call)
 tave_ints = [
-['1950-02-01', '1955-01-01'],
+['1950-02-01', '1952-01-01'],
 ]
 ~                                       
 
@@ -54,7 +54,7 @@ startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
 run="sillsncep"
 path_data="/mnt/lustre01/work/mh0033/m214056/RESOLUTION_EXPS/NEW_RUN_PAPER2019/icon-oes-1.3.01/experiments/${run}/"
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1950-02-01,1955-01-01'
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1950-02-01,1952-01-01'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 
