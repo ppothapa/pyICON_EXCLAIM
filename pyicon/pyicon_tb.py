@@ -703,6 +703,9 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
   if ave_mode=='yearly':
     time_bnds = np.concatenate(([np.datetime64(f'{yy-1:04d}-{mm:02d}-{dd:02d}').astype(dt64type)],time_bnds))
   elif ave_mode=='monthly':
+    if mm==1:
+      yy += -1
+      mm = 13
     time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
   elif ave_mode=='unknown':
     time_bnds = np.concatenate(([time_bnds[0]-(time_bnds[1]-time_bnds[0])], time_bnds))
@@ -758,7 +761,7 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
 
     # --- average by looping over all files and time steps
     for ll, it in enumerate(it_ave):
-      f = Dataset(IcD.flist_ts[l], 'r')
+      f = Dataset(IcD.flist_ts[it], 'r')
       if load_hfl_type:
         data_ave += f.variables[var][IcD.its[it],:,0]*dt[ll]/dt.sum()
       elif load_moc_type:

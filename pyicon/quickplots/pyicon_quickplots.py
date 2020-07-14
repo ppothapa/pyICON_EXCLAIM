@@ -312,6 +312,9 @@ def time_averages_monitoring(IcD, t1, t2, varlist, ):
   dt64type = time_bnds[0].dtype
   # find year, month and day integers of first time step
   yy, mm, dd = pyic.datetime64_to_float(time_bnds[0])
+  if mm==1:
+    yy += -1
+    mm = 13
   # first time value is first value of time series minus one month
   time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
   # dt is the length of a time interval
@@ -382,6 +385,9 @@ def qp_timeseries(IcD, fname, vars_plot,
     dt64type = time_bnds[0].dtype
     # find year, month and day integers of first time step
     yy, mm, dd = pyic.datetime64_to_float(time_bnds[0])
+    if mm==1:
+      yy += -1
+      mm = 13
     # first time value is first value of time series minus one month
     time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
     # dt is the length of a time interval
