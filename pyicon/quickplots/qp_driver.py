@@ -182,7 +182,7 @@ if do_ocean_plots:
   fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
   fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
   fig_names += ['sec:Time series']
-  fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
+  fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
 if do_atmosphere_plots:
   fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
   fig_names += ['sec:Surface fluxes']
@@ -259,7 +259,7 @@ if iopts.debug:
   #fig_names += ['arctic_budgets']
   #fig_names += ['passage_transports', 'tab_passage_transports']
   #fig_names += ['tab_passage_transports']
-  fig_names += ['tab_overview']
+  fig_names += ['ts_amoc', 'tab_overview']
 
 fig_names = np.array(fig_names)
 
@@ -922,7 +922,7 @@ for tave_int in tave_ints:
                   'arctic_budgets'
                  ]
       if np.any(np.in1d(fig_names, tmp_list)) or calc_bias:
-        print('load temp and salt')
+        print('Load temp and salt...')
         temp, it_ave = pyic.time_average(IcD, 'to', t1, t2, iz='all')
         salt, it_ave = pyic.time_average(IcD, 'so', t1, t2, iz='all')
         temp[temp==0.]=np.ma.masked
@@ -930,7 +930,7 @@ for tave_int in tave_ints:
 
       tmp_plist = ['arctic_budgets']
       if np.any(np.in1d(fig_names, tmp_plist)):
-        print('load uo and vo')
+        print('Load uo and vo...')
         uo, it_ave = pyic.time_average(IcD, 'u', t1, t2, iz='all')
         vo, it_ave = pyic.time_average(IcD, 'v', t1, t2, iz='all')
         uo[uo==0.]=np.ma.masked
@@ -938,7 +938,7 @@ for tave_int in tave_ints:
 
       tmp_plist = ['bstr', 'arctic_budgets', 'passage_transports']
       if np.any(np.in1d(fig_names, tmp_plist)):
-        print('load mass_flux')
+        print('Load mass_flux...')
         mass_flux, it_ave = pyic.time_average(IcD, 'mass_flux', t1, t2, iz='all')
 
       if calc_bias:
@@ -1267,7 +1267,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'bstr'
     if fig_name in fig_names:
-      print('calc_bstr_vgrid')
+      print('Execute calc_bstr_vgrid...')
       fname = '%s%s_%s.nc' % (run, oce_def, tstep)
       mass_flux_vint = mass_flux.sum(axis=0)
     
@@ -1288,11 +1288,11 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'passage_transports'
     if fig_name in fig_names and os.path.exists(path_grid+'section_mask_'+gname+'.nc'):
-      #ax, cax, mappable, Dstr = pyic.hplot_base(IcD, IaV, cmap='RdBu_r',
-      #                clim=200, clevs=[-200,-160,-120,-80,-40,-30,-25,-20,-15,-10,-5,5,10,15,20,25,30,40,80,120,160,200], 
-      #                projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
-      #                do_write_data_range=True,
-      #               )
+      ax, cax, mappable, Dstr = pyic.hplot_base(IcD, IaV, cmap='RdBu_r',
+                      clim=200, clevs=[-200,-160,-120,-80,-40,-30,-25,-20,-15,-10,-5,5,10,15,20,25,30,40,80,120,160,200], 
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
+                      do_write_data_range=True,
+                     )
       hca, hcb = pyic.arrange_axes(1,1, plot_cb=True, asp=0.5, fig_size_fac=2,
                                    projection=ccrs.PlateCarree(),
                                   )
@@ -1306,7 +1306,6 @@ for tave_int in tave_ints:
       for var in f.variables.keys():
           if var.startswith('mask'):
               snames += [var[5:]]
-      #snames = ['drake_passage']
       Dmask = dict()
       Die = dict()
       Div = dict()
@@ -1333,24 +1332,27 @@ for tave_int in tave_ints:
                   bbox=dict(fc='w', ec='none', alpha=0.5))
       save_fig('Passage transports', path_pics, fig_name)
 
-    # ---
-    fig_name = 'tab_passage_transports'
-    if fig_name in fig_names:
-      data = np.zeros((len(snames),1))
-      leftcol = []
-      toprow  = ['transport [Sv]']
-      for nn, var in enumerate(snames):
-        data[nn,0] = np.abs(Dtransp[var]) 
-        leftcol.append(var.replace('_',' ').title())
-      text = pyicqp.write_table_html(data, leftcol=leftcol, toprow=toprow, prec='4.1f', width='40%') 
-      save_tab(text, 'Tab: Passage transports', path_pics, fig_name)
+      # ---
+      fig_name = 'tab_passage_transports'
+      if fig_name in fig_names:
+        data = np.zeros((len(snames),1))
+        leftcol = []
+        toprow  = ['transport [Sv]']
+        for nn, var in enumerate(snames):
+          data[nn,0] = np.abs(Dtransp[var]) 
+          leftcol.append(var.replace('_',' ').title())
+        text = pyicqp.write_table_html(data, leftcol=leftcol, toprow=toprow, prec='4.1f', width='40%') 
+        save_tab(text, 'Tab: Passage transports', path_pics, fig_name)
 
     # ---
     fig_name = 'arctic_budgets'
     if fig_name in fig_names:
-      from qp_arctic_budgets import arctic_budgets
-      arctic_budgets(IcD, IcD_ice, IcD_monthly, t1, t2, temp, salt, mass_flux, uo, vo)
-      save_fig('Arctic heat/water budgets', path_pics, fig_name)
+      try:
+        from qp_arctic_budgets import arctic_budgets
+        arctic_budgets(IcD, IcD_ice, IcD_monthly, t1, t2, temp, salt, mass_flux, uo, vo)
+        save_fig('Arctic heat/water budgets', path_pics, fig_name)
+      except:
+        print(f'::: Warning: Could not make plot {fig_name}. :::')
     
     # --- 
     #Ddict = dict(
@@ -1459,8 +1461,11 @@ for tave_int in tave_ints:
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_heat_content'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon, ['global_heat_content'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
-      save_fig(fig_name, path_pics, fig_name)
+      try:
+        FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon, ['global_heat_content'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+        save_fig(fig_name, path_pics, fig_name)
+      except:
+        print(f'::: Warning: Could not make plot {fig_name}. :::')
     fig_name = 'ts_ssh'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon, ['ssh_global'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
@@ -1684,7 +1689,7 @@ for tave_int in tave_ints:
   
     ## ---
     if do_atmosphere_plots:
-      print('Calculate atmosphere pressure interpolation weights.')
+      print('Calculate atmosphere pressure interpolation weights...')
       pfull, it_ave = pyic.time_average(IcD_atm3d, 'pfull', t1, t2, iz='all')
       # linear vert ax
       IcD_atm3d.plevc = np.array([100000,92500,85000,77500,70000,60000,50000,40000,30000,25000,20000,15000,10000,7000,5000,3000,1000])
@@ -2272,6 +2277,9 @@ for tave_int in tave_ints:
         qp.add_subsection(FigInf['title'])
         #rfpath_pics = rpath_pics+FigInf['name']
         qp.add_html(FigInf['fpath'])
+      else:
+        print('::: Warning: file does not exist: %s!:::' %fpath)
+        #raise ValueError('::: Error: file does not exist: %s!:::' %fpath)
     else:
       if os.path.exists(fpath):
         print(fpath)
@@ -2282,7 +2290,8 @@ for tave_int in tave_ints:
         rfpath_pics = rpath_pics+FigInf['name']
         qp.add_fig(rfpath_pics)
       else:
-        raise ValueError('::: Error: file does not exist: %s!:::' %fpath)
+        print('::: Warning: file does not exist: %s!:::' %fpath)
+        #raise ValueError('::: Error: file does not exist: %s!:::' %fpath)
   
   # --- execute qp_link_all to add all residual figs that can be found
   qp.add_section('More plots')
