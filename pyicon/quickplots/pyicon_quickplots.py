@@ -334,7 +334,7 @@ def time_averages_monitoring(IcD, t1, t2, varlist, ):
     Dvars[var]['long_name'] = f.variables[var].long_name
     Dvars[var]['units'] = f.variables[var].units
     f.close()
-    ind = (IcD.times>=t1) & (IcD.times<t2)
+    ind = (IcD.times>=t1) & (IcD.times<=t2)
     mean = (data[ind]*dt[ind]).sum()/dt[ind].sum()
     std = np.sqrt( (data[ind]**2*dt[ind]).sum()/dt[ind].sum()-mean**2 )
     Dvars[var]['ave'] = mean
@@ -375,12 +375,14 @@ def qp_timeseries(IcD, fname, vars_plot,
   times, flist_ts, its = pyic.get_timesteps(flist)
   # end: not needed if IcD.load_timeseries is used
 
+  # --- prepare time averaging
+  times_plot = np.copy(times)
   if ave_freq>0:
-    # --- skip all time points which do not fit in final year
+    # skip all time points which do not fit in final year
     nskip = times.size%ave_freq
     if nskip>0:
       times = times[:-nskip]
-    # --- define time bounds for correct time averaging
+    # define time bounds for correct time averaging
     time_bnds = np.copy(times)
     dt64type = time_bnds[0].dtype
     # find year, month and day integers of first time step
@@ -392,12 +394,13 @@ def qp_timeseries(IcD, fname, vars_plot,
     time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
     # dt is the length of a time interval
     dt = np.diff(time_bnds).astype(float)
-    # --- finally define times as center or averaging time intervall
     nresh = int(times.size/ave_freq)
     times = np.reshape(times, (nresh, ave_freq)).transpose()
+    # finally define times_plot as center or averaging time intervall
     #times_ave = times.mean(axis=0)
-    times = times[int(ave_freq/2),:] # get middle of ave_freq
+    times_plot = times[int(ave_freq/2),:] # get middle of ave_freq
 
+  # --- make axes if they are not given as arguement
   if isinstance(ax, str) and ax=='none':
     hca, hcb = pyic.arrange_axes(1,1, plot_cb=False, asp=0.5, fig_size_fac=2.,
                  sharex=True, sharey=True, xlabel="time [years]", ylabel="", 
@@ -410,7 +413,9 @@ def qp_timeseries(IcD, fname, vars_plot,
   else:
     adjust_xylim = False
 
+  # --- loop over all variables which should be plotted
   for mm, var in enumerate(vars_plot):
+    # --- load the data
     # start: not needed if IcD.load_timeseries is used
     data = np.array([])
     for nn, fpath in enumerate(flist):
@@ -418,45 +423,54 @@ def qp_timeseries(IcD, fname, vars_plot,
       data_file = f.variables[var][:,0,0]
       data = np.concatenate((data, data_file))
       f.close()
-    #print(f'{var}: {data.size}')
-    # --- apply time averaging
+    # end: not needed if IcD.load_timeseries is used
+
+    # --- time averaging
+    dtsum = np.ones((times.size))
     if ave_freq>0:
       if nskip>0:
         data = data[:-nskip]
-      #if times.size%ave_freq != 0:
-      #  raise ValueError(f'::: Time series has wrong size: {times.size} for ave_req={ave_freq}! :::')
-      print(f'{var}: {data.size} {times.size}')
+      #print(f'{var}: {data.size} {times_plot.size}')
       data = np.reshape(data, (nresh, ave_freq)).transpose()
       dt   = np.reshape(dt  , (nresh, ave_freq)).transpose()
       if mode_ave[mm]=='mean':
         #data = data.mean(axis=0))
         data = (data*dt).sum(axis=0)/dt.sum(axis=0)
+        dtsum = dt.sum(axis=0)
       elif mode_ave[mm]=='min':
         data = data.min(axis=0)
       elif mode_ave[mm]=='max':
         data = data.max(axis=0)
-    # end: not needed if IcD.load_timeseries is used
 
-    if labels is None:
-      label = var
-    else:
-      label = labels[mm]
+    # --- modify data if var_fac or var_add are given
     data *= var_fac
     data += var_add
+
+    # --- skip data at start and end if lstart and lend are defined
     if lstart=='none':
       lstart=0
     if lend=='none':
       lend=data.size
-    times = times[lstart:lend]
+    times_plot = times_plot[lstart:lend]
     data  = data[lstart:lend]
 
-    hl, = ax.plot(times, data, label=label)
+    # --- define labels
+    if labels is None:
+      label = var
+    else:
+      label = labels[mm]
+
+    # --- finally plotting
+    hl, = ax.plot(times_plot, data, label=label)
 
     if adjust_xylim:
-      ax.set_xlim([times.min(), times.max()])
+      ax.set_xlim([times_plot.min(), times_plot.max()])
       ax.set_ylim([data.min(), data.max()])
 
+  # --- grid
   ax.grid(True)
+
+  # --- title
   if len(vars_plot)==1:
     f = Dataset(fpath, 'r')
     if units=='':
@@ -467,17 +481,25 @@ def qp_timeseries(IcD, fname, vars_plot,
       title = long_name+units
     f.close()
   ax.set_title(title)
+
+  # --- legend
   if len(vars_plot)>1:
     ax.legend()
 
+  # --- vertical lines indicating time frame
   if not (isinstance(t1,str) and t1=='none'):
     hlt1 = ax.axvline(t1, color='k')
   if not (isinstance(t2,str) and t2=='none'):
     hlt2 = ax.axvline(t2, color='k')
 
+  # --- data range information below figure
   if do_write_data_range:
-    ind = (times<t2) & (times>=t1)
-    info_str = 'in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data[ind].min(), data[ind].mean(), data[ind].std(), data[ind].max())
+    ind = (times_plot>=t1) & (times_plot<=t2)
+    #data_mean = data[ind].mean()  # inaccurate if data consists of monthly means
+    data_mean = (data[ind]*dtsum[ind]).sum()/dtsum[ind].sum()
+    #print(f'old: {data[ind].mean()}') 
+    #print(f'new: {(data[ind]*dtsum[ind]).sum()/dtsum[ind].sum()}') 
+    info_str = 'in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data[ind].min(), data_mean, data[ind].std(), data[ind].max())
     ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
 
   FigInf = dict()
