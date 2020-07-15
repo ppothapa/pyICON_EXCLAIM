@@ -305,7 +305,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
   #FigInf['IcD'] = IcD
   return FigInf
 
-def time_averages_monitoring(IcD, t1, t2, varlist, ): 
+def time_averages_monitoring(IcD, t1, t2, varlist, var_fac_list=[], var_add_list=[], var_units_list=[]): 
 
   # --- define time bounds for correct time averaging
   time_bnds = np.copy(IcD.times)
@@ -320,8 +320,22 @@ def time_averages_monitoring(IcD, t1, t2, varlist, ):
   # dt is the length of a time interval
   dt = np.diff(time_bnds).astype(float)
 
+  if len(var_fac_list)==0:
+    var_fac_list = [1]*len(varlist)
+  if len(var_add_list)==0:
+    var_add_list = [0]*len(varlist)
+  if len(var_units_list)==0:
+    var_units_list = ['']*len(varlist)
+
+  if len(var_fac_list)!=len(varlist):
+    raise ValueError('::: Error: len(var_fac_list)!=len(varlist)! :::')
+  if len(var_add_list)!=len(varlist):
+    raise ValueError('::: Error: len(var_add_list)!=len(varlist)! :::')
+  if len(var_units_list)!=len(varlist):
+    raise ValueError('::: Error: len(var_units_list)!=len(varlist)! :::')
+
   Dvars = dict()
-  for var in varlist:
+  for mm, var in enumerate(varlist):
     #print(var)
     Dvars[var] = dict()
     data = np.array([])
@@ -330,9 +344,14 @@ def time_averages_monitoring(IcD, t1, t2, varlist, ):
       data_file = f.variables[var][:,0,0]
       data = np.concatenate((data, data_file))
       f.close()
+    data *= var_fac_list[mm]
+    data += var_add_list[mm]
     f = Dataset(fpath, 'r')
     Dvars[var]['long_name'] = f.variables[var].long_name
-    Dvars[var]['units'] = f.variables[var].units
+    if var_units_list[mm]=='':
+      Dvars[var]['units'] = f.variables[var].units
+    else: 
+      Dvars[var]['units'] = var_units_list[mm]
     f.close()
     ind = (IcD.times>=t1) & (IcD.times<=t2)
     mean = (data[ind]*dt[ind]).sum()/dt[ind].sum()

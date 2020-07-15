@@ -1560,7 +1560,10 @@ for tave_int in tave_ints:
 
       if do_atmosphere_plots:
         varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean']
-        Dd = pyicqp.time_averages_monitoring(IcD_atm_mon, t1, t2, varlist)
+        var_fac_list = [1, 1, 1, 1]
+        var_add_list = [-273.15, 0, 0, 0]
+        var_units_list = ['deg C', '', '', '']
+        Dd = pyicqp.time_averages_monitoring(IcD_atm_mon, t1, t2, varlist, var_add_list=var_add_list, var_fac_list=var_fac_list, var_units_list=var_units_list)
         for var in varlist:
           val = Dd[var]['ave']*Dd[var]['fac']
           data.append( f"{val:{Dd[var]['prec']}}" )
