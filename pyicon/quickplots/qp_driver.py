@@ -259,7 +259,8 @@ if iopts.debug:
   #fig_names += ['arctic_budgets']
   #fig_names += ['passage_transports', 'tab_passage_transports']
   #fig_names += ['tab_passage_transports']
-  fig_names += ['ts_amoc', 'tab_overview']
+  #fig_names += ['ts_amoc', 'tab_overview']
+  fig_names += ['ts_radtop_gmean', 'tab_overview']
 
 fig_names = np.array(fig_names)
 
@@ -563,15 +564,18 @@ for tave_int in tave_ints:
     # -------------------------------------------------------------------------------- 
     mask_int = (IcD_monthly.times>=t1) & (IcD_monthly.times<=t2)
     months = IcD_monthly.times.astype('datetime64[M]').astype(int) % 12 + 1
-    it_ave = np.where( mask_int )[0]
+    it_ave_months = np.where( mask_int )[0]
     # Note: In ICON the date of an average is set to the end of the averaging interval
     #       Thus, the 4th month corresponds to March and the 10th to September
     it_ave_mar = np.where( mask_int & (months==4)  )[0]
     it_ave_sep = np.where( mask_int & (months==10) )[0]
     #it_ave_mar = it_ave[2::12] # this only workes if tave_int start with Feb. E.g.: 1610-02-01,1620-01-01
     #it_ave_sep = it_ave[8::12] # this only workes if tave_int start with Feb. E.g.: 1610-02-01,1620-01-01
-    print('ave_mar: ', IcD_monthly.times[it_ave_mar])
-    print('ave_sep: ', IcD_monthly.times[it_ave_sep])
+    it_ave_years = (IcD.times>=t1) & (IcD.times<=t2)
+    print('tpoints for year average from yearly data:  ', IcD.times[it_ave_years])
+    print('tpoints for year average from monthly data: ', IcD_monthly.times[it_ave_months])
+    print('tpoints for Mar average:                    ', IcD_monthly.times[it_ave_mar])
+    print('tpoints for Sep avarage:                    ', IcD_monthly.times[it_ave_sep])
 
     if mask_int.sum()==0:
       raise ValueError(f'::: Error: Cannot find any data in {path_data} for time period from {t1} unitl {t2}! :::')
