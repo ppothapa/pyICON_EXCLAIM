@@ -1,5 +1,6 @@
 import sys, glob, os
 import argparse
+from ipdb import set_trace as mybreak
 
 # --- default values for config file
 runname = ''
@@ -90,7 +91,6 @@ for var in iopts.__dict__.keys():
 print('--------------------------------------------------------------------------------')
 
 fpath_config = iopts.fpath_config
-path_quickplots = iopts.path_quickplots
 
 if iopts.batch or iopts.slurm:
   print('using batch mode')
@@ -104,7 +104,6 @@ import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
-from ipdb import set_trace as mybreak
 import json
 #sys.path.append('/home/mpim/m300602/pyicon')
 import pyicon as pyic
@@ -147,6 +146,8 @@ if not path_data.endswith('/'):
 if iopts.run!='none':
   #path_data = path_data.replace(run, iopts.run)
   run = iopts.run
+if iopts.path_quickplots!='none':
+  path_quickplots = iopts.path_quickplots
 
 print(f'path_data = {path_data}')
 print(f'run = {run}')
@@ -185,6 +186,7 @@ if do_ocean_plots:
   fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
 if do_atmosphere_plots:
   fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
+  fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_fwfoce_gmean']
   fig_names += ['sec:Surface fluxes']
   fig_names += ['atm_zonal_wind_stress', 'atm_meridional_wind_stress']
   fig_names += ['atm_curl_tau', 'atm_wek']
@@ -261,6 +263,7 @@ if iopts.debug:
   #fig_names += ['tab_passage_transports']
   #fig_names += ['ts_amoc', 'tab_overview']
   fig_names += ['ts_radtop_gmean', 'tab_overview']
+  fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_fwfoce_gmean']
 
 fig_names = np.array(fig_names)
 
@@ -1529,10 +1532,33 @@ for tave_int in tave_ints:
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file,
         var_add=-273.15, units=' [$^o$C]')
       save_fig(fig_name, path_pics, fig_name)
-
     fig_name = 'ts_radtop_gmean'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['radtop_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_rsdt_gmean'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsdt_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_rsut_gmean'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsut_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_rlut_gmean'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rlut_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_prec_gmean'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['prec_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_evap_gmean'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['evap_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_fwfoce_gmean'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['fwfoce_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
       save_fig(fig_name, path_pics, fig_name)
 
     # -------------------------------------------------------------------------------- 
@@ -1559,10 +1585,10 @@ for tave_int in tave_ints:
           toprow.append( tab_name )
 
       if do_atmosphere_plots:
-        varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean']
-        var_fac_list = [1, 1, 1, 1]
-        var_add_list = [-273.15, 0, 0, 0]
-        var_units_list = ['deg C', '', '', '']
+        varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'fwfoce_gmean']
+        var_fac_list = [1]*len(varlist)
+        var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0]
+        var_units_list = ['deg C', '', '', '', '', '', '', '']
         Dd = pyicqp.time_averages_monitoring(IcD_atm_mon, t1, t2, varlist, var_add_list=var_add_list, var_fac_list=var_fac_list, var_units_list=var_units_list)
         for var in varlist:
           val = Dd[var]['ave']*Dd[var]['fac']
