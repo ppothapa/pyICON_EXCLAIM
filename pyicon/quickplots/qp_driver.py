@@ -2,6 +2,12 @@ import sys, glob, os
 import argparse
 from ipdb import set_trace as mybreak
 
+#class DS_attributes(object):
+#  def __init__(self, prefix, output_freq='yearly'):
+#    self.prefix = prefix
+#    self.output_freq = output_freq
+#  return
+
 # --- default values for config file
 runname = ''
 oce_def = ''
@@ -32,6 +38,8 @@ t2 = 'auto'
 fpath_ref_data_atm = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_era.nc'
 #fpath_ERAin_zonmean_L47 = '/pool/data/ICON/post/QuickPlots_1x1/ERAin/ERAinL47_1x1_zonmean_1979-2016.nc'
 #fpath_ERAin_zonmean_L17 = '/pool/data/ICON/post/QuickPlots_1x1/ERAin/ERAinL17_1x1_zonmean_1979-2016.nc'
+
+verbose = False
 
 help_text = """
 Driver for pyicon quickplots.
@@ -329,6 +337,7 @@ if do_ocean_plots and not iopts.no_plots:
                  load_triangular_grid   = True, # needed for bstr
                  load_rectangular_grid  = True,
                  calc_coeff             = False,
+                 verbose                = verbose,
                 )
   fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
   [k100, k500, k800, k1000, k2000, k3000] = indfind(IcD.depthc, [100., 500., 800., 1000., 2000., 3000.])
@@ -349,6 +358,7 @@ if do_ocean_plots and not iopts.no_plots:
                  load_triangular_grid   = False,
                  load_rectangular_grid  = True,
                  calc_coeff             = False,
+                 verbose                = verbose,
                 )
   IcD_moc.depthc = IcD.depthc
   IcD_moc.depthi = IcD.depthi
@@ -369,6 +379,7 @@ if do_ocean_plots and not iopts.no_plots:
                  load_triangular_grid   = False,
                  load_rectangular_grid  = True,
                  calc_coeff             = False,
+                 verbose                = verbose,
                 )
   IcD_monthly.wet_c = IcD.wet_c
 
@@ -387,6 +398,7 @@ if do_ocean_plots and not iopts.no_plots:
                  load_triangular_grid   = False,
                  load_rectangular_grid  = False,
                  calc_coeff             = False,
+                 verbose                = verbose,
                 )
 
   fname_mon = '%s%s_%s.nc' % (run, oce_mon, tstep)
@@ -404,6 +416,7 @@ if do_ocean_plots and not iopts.no_plots:
                  load_triangular_grid   = False,
                  load_rectangular_grid  = False,
                  calc_coeff             = False,
+                 verbose                = verbose,
                 )
 
 if do_atmosphere_plots and not iopts.no_plots:
@@ -423,6 +436,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_triangular_grid   = True,
                  load_rectangular_grid  = True,
                  calc_coeff             = True,
+                 verbose                = verbose,
                  time_mode    = 'float2date',
                  model_type   = 'atm',
                 )
@@ -443,6 +457,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_triangular_grid   = False,
                  load_rectangular_grid  = True,
                  calc_coeff             = False,
+                 verbose                = verbose,
                  time_mode    = 'float2date',
                  model_type   = 'atm',
                 )
@@ -464,6 +479,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_triangular_grid   = False,
                  load_rectangular_grid  = False,
                  calc_coeff             = False,
+                 verbose                = verbose,
                  #time_mode    = 'float2date',
                  model_type   = 'atm',
                 )
