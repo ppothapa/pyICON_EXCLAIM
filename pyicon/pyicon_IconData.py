@@ -47,6 +47,7 @@ class IconData(object):
                calc_coeff_mappings   = False,
                time_mode             = 'num2date',
                model_type            = 'oce',
+               output_freq           = 'auto',
                verbose               = False,
               ):
 
@@ -234,6 +235,20 @@ class IconData(object):
       if omit_last_file:
         self.flist = self.flist[:-1]
       self.get_timesteps(time_mode=time_mode)
+    
+    # --- decide whether the data set consists of monthly or yearly averages (or something else)
+    if output_freq=='auto':
+      if self.times.size<2:
+        raise ValueError("::: Error: Only one time step in data set found. Cannot determine output frequency from this. Either use longer time series or specify output frequency in IconData. :::")
+      dt1 = (self.times[1]-self.times[0]).astype(float)/(86400)
+      if dt1==365 or dt1==366:
+        self.output_freq = 'yearly'
+      elif dt1==28 or dt1==29 or dt1==30 or dt1==31:
+        self.output_freq = 'monthly'
+      else:
+        self.output_freq = 'unknown'
+    else:
+      self.output_freq = output_freq
 
     if load_variable_info:
       self.get_varnames(self.flist[0])

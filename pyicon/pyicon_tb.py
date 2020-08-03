@@ -688,26 +688,26 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
   if it_ave.size==0:
     raise ValueError(f'::: Could not find any time steps in interval t1={t1} and t2={t2}! :::')
   
-  # --- decide whether the file consists of monthly or yearly averages (or something else)
-  dt1 = (IcD.times[it_ave][1]-IcD.times[it_ave][0]).astype(float)/(86400)
-  if dt1==365 or dt1==366:
-    ave_mode = 'yearly'
-  elif dt1==28 or dt1==29 or dt1==30 or dt1==31:
-    ave_mode = 'monthly'
-  else:
-    ave_mode = 'unknown'
+  ## --- decide whether the file consists of monthly or yearly averages (or something else)
+  #dt1 = (IcD.times[it_ave][1]-IcD.times[it_ave][0]).astype(float)/(86400)
+  #if dt1==365 or dt1==366:
+  #  ave_mode = 'yearly'
+  #elif dt1==28 or dt1==29 or dt1==30 or dt1==31:
+  #  ave_mode = 'monthly'
+  #else:
+  #  ave_mode = 'unknown'
        
   dt64type = IcD.times[0].dtype
   time_bnds = IcD.times[it_ave]
   yy, mm, dd = datetime64_to_float(time_bnds[0])
-  if ave_mode=='yearly':
+  if IcD.output_freq=='yearly':
     time_bnds = np.concatenate(([np.datetime64(f'{yy-1:04d}-{mm:02d}-{dd:02d}').astype(dt64type)],time_bnds))
-  elif ave_mode=='monthly':
+  elif IcD.output_freq=='monthly':
     if mm==1:
       yy += -1
       mm = 13
     time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
-  elif ave_mode=='unknown':
+  elif IcD.output_freq=='unknown':
     time_bnds = np.concatenate(([time_bnds[0]-(time_bnds[1]-time_bnds[0])], time_bnds))
   dt = np.diff(time_bnds).astype(float)
 
