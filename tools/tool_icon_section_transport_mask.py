@@ -206,6 +206,7 @@ gname = 'r2b6'
 #gname = 'r2b8'
 path_grid = f'/mnt/lustre01/work/mh0033/m300602/icon/grids/{gname}/'
 fpath_tgrid = f'{path_grid}/{gname}_tgrid.nc'
+fpath_fx = f'/mnt/lustre01/work/mh0033/m300602/icon/grids/{gname}/{gname}_L64_fx.nc'
 # --- path to output netcdf file
 fpath_ncfile_out = f'{path_grid}section_mask_{gname}.nc'
 
@@ -371,6 +372,10 @@ if do_plot_sections_in_the_end:
     exec('%s = fo.variables[var][:]'%var)
   fo.close()
 
+  f = Dataset(fpath_fx, 'r')
+  wet_c = f.variables['wet_c'][0,:]
+  f.close()
+
   elon = IcD.elon
   elat = IcD.elat
   clon = IcD.clon
@@ -402,15 +407,21 @@ if do_plot_sections_in_the_end:
   #pyic.shade(IcD.Tri, empt_data, ax=ax, cax=cax, edgecolor='k', clim=1)
   #ax.triplot(IcD.Tri, color='k', zorder=1., linewidth=0.2, transform=ccrs_proj)
   ax.triplot(IcD.Tri, color='k', zorder=1., linewidth=0.2)
+  if True:
+    pyic.shade(IcD.Tri, wet_c, ax=ax, cax=cax)
   pyic.plot_settings(ax, template='global', land_facecolor='none', coastlines_color='orange')
   #for var in vlist:
   for M in Ms:
     var = M.name
     print(var)
     exec('mask = 1.*mask_%s'%var)
+    exec('iv_list = 1*iv_%s'%var)
     ax.scatter(elon[mask!=0], elat[mask!=0], c='b', s=10, zorder=3)
+    ax.scatter(vlon[iv_list], vlat[iv_list], c='m', s=10, zorder=3)
     ax.text(elon[mask!=0].mean(), elat[mask!=0].mean(), var, ha='center', va='center', color='r')
     ax.scatter(M.lon1, M.lat1, c='g', s=20, zorder=3)
     ax.scatter(M.lon2, M.lat2, c='r', s=20, zorder=3)
 
+  #print(f'Saving figure tool_icon_section_transport_mask_{gname}.pdf')
+  #plt.savefig(f'tool_icon_section_transport_mask_{gname}.pdf')
   plt.show()
