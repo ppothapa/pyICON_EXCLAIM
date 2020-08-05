@@ -8,11 +8,12 @@ reload(pyic)
 
 ts = pyic.timing([0], 'start')
 
-tgname        = 'r2b4'
+rev           = f'r0004'
+tgname        = f'r2b4_oce_{rev}'
 gname         = 'icon_grid_0036_R02B04_O'
-path_tgrid    = f'/pool/data/ICON/oes/input/r0004/{gname}/'
+path_tgrid    = f'/pool/data/ICON/oes/input/{rev}/{gname}/'
 fname_tgrid   = f'{gname}.nc'
-path_ckdtree  = f'/mnt/lustre01/work/mh0033/m211054/projects/icon/grids/{tgname}/ckdtree/'
+path_ckdtree  = f'/mnt/lustre01/work/mh0033/m300602/icon/grids/{tgname}/ckdtree/'
 path_rgrid    = path_ckdtree + 'rectgrids/' 
 path_sections = path_ckdtree + 'sections/' 
 
@@ -38,6 +39,9 @@ if not os.path.exists(path_rgrid):
   os.makedirs(path_rgrid)
 if not os.path.exists(path_sections): 
   os.makedirs(path_sections)
+fpath = f'{path_ckdtree}/../{tgname}_tgrid.nc'
+if not os.path.exists(fpath):
+  os.symlink(path_tgrid+fname_tgrid, fpath)
 
 for gname in gnames:
   ts = pyic.timing(ts, gname)
