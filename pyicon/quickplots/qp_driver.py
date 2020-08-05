@@ -82,7 +82,7 @@ parser.add_argument('--debug', default=False,
                     help='only limitted number of plots are made (specified in qp_driver debugging section)')
 parser.add_argument('fpath_config', metavar='fpath_config', type=str,
                     help='path to quickplot configure file')
-parser.add_argument('--path_quickplots', metavar='path_quickplots', type=str, default='../../all_qps/',
+parser.add_argument('--path_quickplots', metavar='path_quickplots', type=str, default='none',
                     help='path where the quickplots website and figures are storred')
 parser.add_argument('--tave_int', metavar='tave_int', type=str, default='none',
                     help='specify time averaging interval e.g. --tave_int=1600-01-01, 1700-12-31')
@@ -270,8 +270,9 @@ if iopts.debug:
   #fig_names += ['passage_transports', 'tab_passage_transports']
   #fig_names += ['tab_passage_transports']
   #fig_names += ['ts_amoc', 'tab_overview']
-  fig_names += ['ts_radtop_gmean', 'tab_overview']
-  fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_fwfoce_gmean']
+  #fig_names += ['ts_radtop_gmean', 'tab_overview']
+  #fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_fwfoce_gmean']
+  fig_names += ['tab_overview']
 
 fig_names = np.array(fig_names)
 
