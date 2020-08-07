@@ -41,6 +41,12 @@ fpath_ref_data_atm = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_
 
 verbose = False
 
+# --- list containing figures which should not be plotted
+red_list = []
+
+# --- list containing figures which should be plotted (if empty all figures will be plotted)
+green_list = []
+
 help_text = """
 Driver for pyicon quickplots.
 
@@ -221,8 +227,12 @@ if do_atmosphere_plots:
 plist = fig_names
 fig_names = []
 for pitem in plist:
-  if not pitem.startswith('sec:'):
+  if not pitem.startswith('sec:') and not pitem in red_list:
     fig_names += [pitem]
+
+# --- use green list if it hast entries
+if not len(green_list)==0:
+  fig_names = green_list
 
 # --- for debugging
 if iopts.debug:
