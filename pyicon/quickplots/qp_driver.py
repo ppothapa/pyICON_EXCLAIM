@@ -946,24 +946,11 @@ for tave_int in tave_ints:
                   'arctic_budgets'
                  ]
       if np.any(np.in1d(fig_names, tmp_list)) or calc_bias:
-        print('Load temp and salt...')
+        print('Load 3D temp and salt...')
         temp, it_ave = pyic.time_average(IcD, 'to', t1, t2, iz='all')
         salt, it_ave = pyic.time_average(IcD, 'so', t1, t2, iz='all')
         temp[temp==0.]=np.ma.masked
         salt[salt==0.]=np.ma.masked
-
-      tmp_plist = ['arctic_budgets']
-      if np.any(np.in1d(fig_names, tmp_plist)):
-        print('Load uo and vo...')
-        uo, it_ave = pyic.time_average(IcD, 'u', t1, t2, iz='all')
-        vo, it_ave = pyic.time_average(IcD, 'v', t1, t2, iz='all')
-        uo[uo==0.]=np.ma.masked
-        vo[vo==0.]=np.ma.masked
-
-      tmp_plist = ['bstr', 'arctic_budgets', 'passage_transports']
-      if np.any(np.in1d(fig_names, tmp_plist)):
-        print('Load mass_flux...')
-        mass_flux, it_ave = pyic.time_average(IcD, 'mass_flux', t1, t2, iz='all')
 
       if calc_bias:
         print('Calculate bias')
@@ -1287,6 +1274,12 @@ for tave_int in tave_ints:
                       title='log$_{10}$(kinetic energy) at %dm [m$^2$/s$^2$]'%(IcD.depthc[k2000])
                       )
       save_fig('Kinetic energy 2000m', path_pics, fig_name)
+   
+    if do_ocean_plots:
+      tmp_plist = ['bstr', 'arctic_budgets', 'passage_transports']
+      if np.any(np.in1d(fig_names, tmp_plist)):
+        print('Load 3D mass_flux...')
+        mass_flux, it_ave = pyic.time_average(IcD, 'mass_flux', t1, t2, iz='all')
     
     # ---
     fig_name = 'bstr'
@@ -1367,6 +1360,15 @@ for tave_int in tave_ints:
           leftcol.append(var.replace('_',' ').title())
         text = pyicqp.write_table_html(data, leftcol=leftcol, toprow=toprow, prec='4.1f', width='40%') 
         save_tab(text, 'Tab: Passage transports', path_pics, fig_name)
+
+    if do_ocean_plots:
+      tmp_plist = ['arctic_budgets']
+      if np.any(np.in1d(fig_names, tmp_plist)):
+        print('Load 3D uo and vo...')
+        uo, it_ave = pyic.time_average(IcD, 'u', t1, t2, iz='all')
+        vo, it_ave = pyic.time_average(IcD, 'v', t1, t2, iz='all')
+        uo[uo==0.]=np.ma.masked
+        vo[vo==0.]=np.ma.masked
 
     # ---
     fig_name = 'arctic_budgets'
