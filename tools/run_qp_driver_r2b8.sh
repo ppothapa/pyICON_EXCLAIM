@@ -54,6 +54,12 @@ oce_monthly = ''
 tave_ints = [
 ['1630-02-01', '1640-01-01'],
 ]
+
+red_list = []
+# uncomment this to omit plots which require loading 3D mass_flux
+#red_list += ['bstr', 'arctic_budgets', 'passage_transports']
+# uncomment this to omit plots which require loading 3D u, v
+#red_list += ['arctic_budgets']
 %eof%
 
 # --- start qp_driver
