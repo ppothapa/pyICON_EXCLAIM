@@ -19,6 +19,7 @@ import cmocean
 # --- debugging
 from ipdb import set_trace as mybreak  
 #from importlib import reload
+import xarray as xr
 
 """
 pyicon
@@ -104,10 +105,16 @@ def apply_ckdtree_base(data, inds, distances, radius_of_influence=1000e3):
   if distances.ndim == 1:
     #distances_ma = np.ma.masked_greater(distances, radius_of_influence)
     if data.ndim==1:
-      data_interpolated = data[inds]
+      if isinstance(data, xr.core.dataarray.DataArray):
+        data_interpolated = data.load()[inds]
+      else:
+        data_interpolated = data[inds]
       data_interpolated[distances>=radius_of_influence] = np.nan
     elif data.ndim==2:
-      data_interpolated = data[:,inds]
+      if isinstance(data, xr.core.dataarray.DataArray):
+        data_interpolated = data.load()[:,inds]
+      else:
+        data_interpolated = data[:,inds]
       data_interpolated[:,distances>=radius_of_influence] = np.nan
   else:
     #raise ValueError("::: distances.ndim>1 is not properly supported yet. :::")
@@ -668,7 +675,7 @@ def datetime64_to_float(dates):
   days   = (dates - dates.astype('datetime64[M]') + 1).astype(int)
   return years, months, days
 
-def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use_loop=False, verbose=False):
+def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use_loop=False, verbose=False, use_xr=False, load_xr_data=False):
   it_ave = np.array(it_ave)
   # --- if no it_ave is given use t1 and t2 to determine averaging indices it_ave
   if it_ave.size==0:
@@ -709,7 +716,9 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
     time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
   elif IcD.output_freq=='unknown':
     time_bnds = np.concatenate(([time_bnds[0]-(time_bnds[1]-time_bnds[0])], time_bnds))
-  dt = np.diff(time_bnds).astype(float)
+  dt = np.diff(time_bnds).astype(IcD.dtype)
+  #dt = np.ones((it_ave.size), dtype=IcD.dtype)
+  #print('Warning dt set to ones!!!')
 
   # --- get dimensions to allocate data
   f = Dataset(IcD.flist_ts[0], 'r')
@@ -738,26 +747,42 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
 
   # --- if all data is coming from one file take faster approach
   fpaths = np.unique(IcD.flist_ts[it_ave])
-  if (fpaths.size==1) and not always_use_loop:
+  if use_xr:
+    #print(dt)
+    if load_hfl_type:
+      data_ave = (IcD.ds[var][it_ave,:,0]*dt[:,np.newaxis]).sum(axis=0, dtype='float64')/dt.sum()
+    elif load_moc_type:
+      data_ave = (IcD.ds[var][it_ave,:,:,0]*dt[:,np.newaxis,np.newaxis]).sum(axis=0, dtype='float64')/dt.sum()
+    elif nz>0 and isinstance(iz,(int,np.integer)): # data has no depth dim afterwards
+      #data_ave = (IcD.ds[var][it_ave,iz,:]*dt[:,np.newaxis]).sum(axis=0)/dt.sum()
+      data_ave = (IcD.ds[var][it_ave,iz,:]*dt[:,np.newaxis]).sum(axis=0, dtype='float64')/dt.sum()
+    elif nz>0 and not isinstance(iz,(int,np.integer)): # data has depth dim afterwards
+      data_ave = (IcD.ds[var][it_ave,iz,:]*dt[:,np.newaxis,np.newaxis]).sum(axis=0, dtype='float64')/dt.sum()
+    else:
+      data_ave = (IcD.ds[var][it_ave,:]*dt[:,np.newaxis]).sum(axis=0, dtype='float64')/dt.sum()
+    #dataxr = dsxr[var][it_ave,:,:].mean(axis=0)
+    if load_xr_data:
+      data_ave = data_ave.load().data
+  elif (fpaths.size==1) and not always_use_loop:
     f = Dataset(fpaths[0], 'r')
     if load_hfl_type:
-      data_ave = (f.variables[var][IcD.its[it_ave],:,0]*dt[:,np.newaxis]).sum(axis=0)/dt.sum()
+      data_ave = (f.variables[var][IcD.its[it_ave],:,0]*dt[:,np.newaxis]).sum(axis=0, dtype='float64')/dt.sum()
     elif load_moc_type:
-      data_ave = (f.variables[var][IcD.its[it_ave],:,:,0]*dt[:,np.newaxis,np.newaxis]).sum(axis=0)/dt.sum()
+      data_ave = (f.variables[var][IcD.its[it_ave],:,:,0]*dt[:,np.newaxis,np.newaxis]).sum(axis=0, dtype='float64')/dt.sum()
     elif nz>0 and isinstance(iz,(int,np.integer)): # data has no depth dim afterwards
-      data_ave = (f.variables[var][IcD.its[it_ave],iz,:]*dt[:,np.newaxis]).sum(axis=0)/dt.sum()
+      data_ave = (f.variables[var][IcD.its[it_ave],iz,:]*dt[:,np.newaxis]).sum(axis=0, dtype='float64')/dt.sum()
     elif nz>0 and not isinstance(iz,(int,np.integer)): # data has depth dim afterwards
-      data_ave = (f.variables[var][IcD.its[it_ave],iz,:]*dt[:,np.newaxis,np.newaxis]).sum(axis=0)/dt.sum()
+      data_ave = (f.variables[var][IcD.its[it_ave],iz,:]*dt[:,np.newaxis,np.newaxis]).sum(axis=0, dtype='float64')/dt.sum()
     else:
-      data_ave = (f.variables[var][IcD.its[it_ave],:]*dt[:,np.newaxis]).sum(axis=0)/dt.sum()
+      data_ave = (f.variables[var][IcD.its[it_ave],:]*dt[:,np.newaxis]).sum(axis=0, dtype='float64')/dt.sum()
     f.close()
   # --- otherwise loop ovar all files is needed
   else:
     # --- allocate data
     if isinstance(iz,(int,np.integer)) or nz==0:
-      data_ave = np.ma.zeros((nc))
+      data_ave = np.ma.zeros((nc), dtype=IcD.dtype)
     else:
-      data_ave = np.ma.zeros((iz.size,nc))
+      data_ave = np.ma.zeros((iz.size,nc), dtype=IcD.dtype)
 
     # --- average by looping over all files and time steps
     for ll, it in enumerate(it_ave):
@@ -771,17 +796,19 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
       else:
         data_ave += f.variables[var][IcD.its[it],:]*dt[ll]/dt.sum()
       f.close()
+  data_ave = data_ave.astype(IcD.dtype)
   if verbose:
     #print(f'pyicon.time_average: var={var}: it_ave={it_ave}')
     print(f'pyicon.time_average: var={var}: it_ave={IcD.times[it_ave]}')
   return data_ave, it_ave
 
-def timing(ts, string=''):
+def timing(ts, string='', verbose=True):
   if ts[0]==0:
     ts = np.array([datetime.datetime.now()])
   else:
     ts = np.append(ts, [datetime.datetime.now()])
-    print(ts[-1]-ts[-2], ' ', (ts[-1]-ts[0]), ' '+string)
+    if verbose:
+      print(ts[-1]-ts[-2], ' ', (ts[-1]-ts[0]), ' '+string)
   return ts
 
 def conv_gname(gname):
