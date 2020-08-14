@@ -22,3 +22,5 @@ dependencies:
   - seawater    # not used by pyicon so far
   - xarray      # not used by pyicon so far
   - dask        # not used by pyicon so far
+  - dask-jobqueue
+  - python-graphviz
