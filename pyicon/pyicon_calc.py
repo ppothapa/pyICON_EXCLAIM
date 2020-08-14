@@ -256,7 +256,7 @@ def edges2edges_via_cell_scalar(IcD, vn_e, scalar, dze='const'):
 def calc_wvel(IcD, mass_flux):
   div_mass_flux = (
     mass_flux[:,IcD.edge_of_cell]*IcD.div_coeff[np.newaxis,:,:]).sum(axis=2)
-  wvel = np.zeros((IcD.nz+1, IcD.clon.size))
+  wvel = np.zeros((IcD.nz+1, IcD.clon.size), dtype=IcD.dtype)
   wvel[:IcD.nz,:] = -div_mass_flux[::-1,:].cumsum(axis=0)[::-1,:]
   return wvel
 
@@ -354,7 +354,7 @@ def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90.):
   orientation_path = np.zeros((IcD.elon.size), dtype=int)
   source_vertex_list = np.zeros((IcD.vlon.size), dtype=int)
   target_vertex_list = np.zeros((IcD.vlon.size), dtype=int)
-  vertexIsAccounted_list = np.zeros((IcD.vlon.size))
+  vertexIsAccounted_list = np.zeros((IcD.vlon.size), dtype=IcD.dtype)
   next_vertex_list = []
   
   # --- start vertex
@@ -395,7 +395,7 @@ def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90.):
   
   # --- calculate streamfunction
   print('start calculating stream')
-  stream_variable = np.zeros((IcD.vlon.size))
+  stream_variable = np.zeros((IcD.vlon.size), dtype=IcD.dtype)
   for target_list_index in range(target_vertex_list.size):
     #if target_list_index%100==0:
     #  print(f'target_list_index = {target_list_index}')
@@ -416,7 +416,7 @@ def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90.):
 
   return bstr
 
-def calc_bstr_rgrid(IcD, mass_flux_vint, lon_rg, lat_rg):
+def calc_bstr_rgrid(IcD, mass_flux_vint, lon_rg, lat_rg, dtype='float64'):
   """ Calculates barotropic streamfunction in Sv from mass_flux_vint on regular grid.
 
   """
@@ -424,9 +424,11 @@ def calc_bstr_rgrid(IcD, mass_flux_vint, lon_rg, lat_rg):
   ny = lat_rg.size
   Lon_rg, Lat_rg = np.meshgrid(lon_rg, lat_rg)
 
+  mass_flux_vint = mass_flux_vint.astype(dtype)
+
   imat_edge = np.zeros((IcD.elon.size), dtype=int)
   jmat_edge = np.zeros((IcD.elon.size), dtype=int)
-  orie_edge = np.zeros((IcD.elon.size))
+  orie_edge = np.zeros((IcD.elon.size), dtype=dtype)
   #nx = 10
   #ny = 5
   for i in range(nx-1):
@@ -470,7 +472,7 @@ def calc_bstr_rgrid(IcD, mass_flux_vint, lon_rg, lat_rg):
       orie_edge[iedge_west] = oedge_west
   
   # <\> for u integration
-  bstr = np.zeros((ny,nx))
+  bstr = np.zeros((ny,nx), dtype=dtype)
   for i in range(nx-1):
     if (i%5==0):
       print(f'i = {i}/{nx}')
@@ -491,6 +493,8 @@ def calc_bstr_rgrid(IcD, mass_flux_vint, lon_rg, lat_rg):
   jl, il = np.unravel_index(np.argmin((Lon_rg-37)**2+(Lat_rg-55)**2), Lon_rg.shape)
   bstr += -bstr[jl,il]
   bstr *= 1e-6
+
+  bstr = bstr.astype(IcD.dtype)
   
   # DEBUGGIN:
   if False:
@@ -535,7 +539,7 @@ def calc_bstr_rgrid(IcD, mass_flux_vint, lon_rg, lat_rg):
   
   return bstr
 
-def calc_moc(clat, wTransp, basin='global', fpath_fx='', res=1.0):
+def calc_moc(clat, wTransp, basin='global', fpath_fx='', res=1.0, dtype='float32'):
   if not os.path.exists(fpath_fx):
     raise ValueError('::: Error: Cannot find file %s! :::' % (fpath_fx))
 
@@ -560,7 +564,7 @@ def calc_moc(clat, wTransp, basin='global', fpath_fx='', res=1.0):
 
   lat_mg = np.arange(-90.,90.,res)
   ny = lat_mg.size
-  moc = np.zeros((wTransp.shape[0],lat_mg.size))
+  moc = np.zeros((wTransp.shape[0],lat_mg.size), dtype=dtype)
   for j in range(lat_mg.size-1):
     #ind = (clat>=lat_mg[j]) & (clat<lat_mg[j+1])
     #moc[:,j+1] = moc[:,j] + (wTransp[:,ind]*mask_basin[np.newaxis,ind]).sum(axis=1)

@@ -43,12 +43,15 @@ class IconData(object):
                load_rectangular_grid = True,
                load_variable_info    = True,
                load_grid_from_data_file = False,
+               load_xarray_dset      = False,
+               xr_chunks             = None,
                calc_coeff            = True,
                calc_coeff_mappings   = False,
                time_mode             = 'num2date',
                model_type            = 'oce',
                output_freq           = 'auto',
                verbose               = False,
+               dtype                 = 'float32',
               ):
 
 
@@ -62,6 +65,8 @@ class IconData(object):
     self.path_grid     = path_grid
     self.gname         = gname
     self.lev           = lev
+
+    self.dtype         = dtype
     
     # --- automatically identify grid from data
     # (does not work anymore, maybe not necessary)
@@ -235,6 +240,17 @@ class IconData(object):
       if omit_last_file:
         self.flist = self.flist[:-1]
       self.get_timesteps(time_mode=time_mode)
+    
+    # --- load xarray data set
+    if load_xarray_dset:
+      self.diag_out('open xarray mfdataset')
+      self.ds = xr.open_mfdataset(
+        self.path_data+self.fname, combine='nested', concat_dim='time', data_vars='minimal',
+        coords='minimal', compat='override', join='override', 
+        decode_times=False,
+        chunks = xr_chunks,
+      )
+      self.ds['times'] = self.times
     
     # --- decide whether the data set consists of monthly or yearly averages (or something else)
     if output_freq=='auto':
@@ -577,23 +593,23 @@ class IconData(object):
     self.edge_sea_land_mask = f.variables['edge_sea_land_mask'][:]
 
     # --- coordinates
-    self.cell_cart_vec = np.ma.zeros((self.clon.size,3))
+    self.cell_cart_vec = np.ma.zeros((self.clon.size,3), dtype=self.dtype)
     self.cell_cart_vec[:,0] = f.variables['cell_circumcenter_cartesian_x'][:]
     self.cell_cart_vec[:,1] = f.variables['cell_circumcenter_cartesian_y'][:]
     self.cell_cart_vec[:,2] = f.variables['cell_circumcenter_cartesian_z'][:]
-    self.vert_cart_vec = np.ma.zeros((self.vlon.size,3))
+    self.vert_cart_vec = np.ma.zeros((self.vlon.size,3), dtype=self.dtype)
     self.vert_cart_vec[:,0] = f.variables['cartesian_x_vertices'][:]
     self.vert_cart_vec[:,1] = f.variables['cartesian_y_vertices'][:]
     self.vert_cart_vec[:,2] = f.variables['cartesian_z_vertices'][:]
-    self.edge_cart_vec = np.ma.zeros((self.elon.size,3))
+    self.edge_cart_vec = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
     self.edge_cart_vec[:,0] = f.variables['edge_middle_cartesian_x'][:]
     self.edge_cart_vec[:,1] = f.variables['edge_middle_cartesian_y'][:]
     self.edge_cart_vec[:,2] = f.variables['edge_middle_cartesian_z'][:]
-    #self.edge_cart_vec = np.ma.zeros((self.elon.size,3))
+    #self.edge_cart_vec = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
     #self.edge_cart_vec[:,0] = f.variables['edge_dual_middle_cartesian_x'][:]
     #self.edge_cart_vec[:,1] = f.variables['edge_dual_middle_cartesian_y'][:]
     #self.edge_cart_vec[:,2] = f.variables['edge_dual_middle_cartesian_z'][:]
-    self.edge_prim_norm = np.ma.zeros((self.elon.size,3))
+    self.edge_prim_norm = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
     self.edge_prim_norm[:,0] = f.variables['edge_primal_normal_cartesian_x'][:]
     self.edge_prim_norm[:,1] = f.variables['edge_primal_normal_cartesian_y'][:]
     self.edge_prim_norm[:,2] = f.variables['edge_primal_normal_cartesian_z'][:]
@@ -624,7 +640,7 @@ class IconData(object):
     if self.model_type=='oce':
       #iv = 3738
       self.zarea_fraction = 0.
-      self.rot_coeff = np.ma.zeros((self.nz, self.vlon.size, 6))
+      self.rot_coeff = np.ma.zeros((self.nz, self.vlon.size, 6), dtype=self.dtype)
       for k in range(self.nz):
         #print(k)
         for ii in range(6):
@@ -805,7 +821,7 @@ class IconVariable(object):
     if f.variables[var].ndim==2:
       raise ValueError('::: Warning: Cannot do section of 2D variable %s! :::'%var)
     nz = f.variables[var].shape[1]
-    data = np.ma.zeros((nz,self.dist_sec.size))
+    data = np.ma.zeros((nz,self.dist_sec.size), dtype=self.dtype)
     for k in range(nz):
       #print('k = %d/%d'%(k,nz))
       data_hsec = f.variables[var][it,k,:]
