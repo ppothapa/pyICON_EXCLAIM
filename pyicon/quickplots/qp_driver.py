@@ -17,6 +17,7 @@ oce_ice = oce_def
 oce_monthly = oce_def
 do_atmosphere_plots = False
 do_ocean_plots = True
+do_hamocc_plots = False
 path_quickplots = '../../all_qps/'
 omit_last_file = False
 tstep     = '????????????????'  # use this line for all data
@@ -223,6 +224,17 @@ if do_atmosphere_plots:
   fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave', 'atm_psi']
 #fig_names += ['sec:TKE and IDEMIX']
 #fig_names += ['tke30w', 'iwe30w', 'kv30w']
+if do_hamocc_plots:
+  fig_names += ['sec:Hamocc time series']
+  fig_names += ['ts_global_npp', 'ts_global_nppcya', 'ts_global_zoograzing', 'ts_global_netco2flux']
+  fig_names += ['ts_global_surface_alk', 'ts_global_surface_dic', 'ts_global_surface_sil', 'ts_global_surface_phos']
+  fig_names += ['ts_WC_denit', 'ts_sed_denit', 'ts_n2fix', 'ts_global_opal_prod', 'ts_global_caco3_prod']
+  fig_names += ['ts_global_OMexp90', 'ts_global_calcexp90', 'ts_global_opalexp90']
+  fig_names += ['sec:Hamocc surface maps']
+  fig_names += ['srf_phyp', 'srf_zoop', 'srf_cya', 'srf_silicate', 'srf_nitrate', 'srf_phosphate']
+  fig_names += ['srf_alk', 'srf_dic', 'srf_pH', 'srf_co2flux'] # srf_hion
+  fig_names += ['sec:Hamocc sections']
+  fig_names += ['dic_gzave', 'dic_azave', 'dic_ipzave', 'o2_gzave', 'o2_azave', 'o2_ipzave']
 
 plist = fig_names
 fig_names = []
@@ -497,6 +509,107 @@ if do_atmosphere_plots and not iopts.no_plots:
   
   if do_ocean_plots==False:
     IcD_monthly = IcD_atm_mon
+
+if do_hamocc_plots and not iopts.no_plots:
+  if not do_ocean_plots:
+    fname = '%s%s_%s.nc' % (run, oce_def, tstep)
+    print('Dataset %s' % (fname))
+    IcD = pyic.IconData(
+                   fname        = fname,
+                   path_data    = path_data,
+                   path_grid    = path_grid,
+                   path_ckdtree = path_ckdtree,
+                   gname        = gname,
+                   lev          = lev,
+                   rgrid_name   = rgrid_name,
+                   do_triangulation       = False,
+                   omit_last_file         = omit_last_file,
+                   load_vertical_grid     = True,
+                   load_triangular_grid   = True, # needed for bstr
+                   load_rectangular_grid  = True,
+                   calc_coeff             = False,
+                   verbose                = verbose,
+                  )
+    fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
+    [k100, k500, k800, k1000, k2000, k3000] = indfind(IcD.depthc, [100., 500., 800., 1000., 2000., 3000.])
+
+    fname_monthly = '%s%s_%s.nc' % (run, oce_monthly, tstep)
+    print('Dataset %s' % (fname_monthly))
+    IcD_monthly = pyic.IconData(
+                   fname        = fname_monthly,
+                   path_data    = path_data,
+                   path_grid    = path_grid,
+                   path_ckdtree = path_ckdtree,
+                   gname        = gname,
+                   lev          = lev,
+                   rgrid_name   = rgrid_name,
+                   do_triangulation       = False,
+                   omit_last_file         = omit_last_file,
+                   load_vertical_grid     = False,
+                   load_triangular_grid   = False,
+                   load_rectangular_grid  = True,
+                   calc_coeff             = False,
+                   verbose                = verbose,
+                  )
+    IcD_monthly.wet_c = IcD.wet_c
+
+  fname_ham_inv = '%s%s_%s.nc' % (run, ham_inv, tstep)
+  print('Dataset %s' % (fname_ham_inv))
+  IcD_ham_inv = pyic.IconData(
+                 fname        = fname_ham_inv,
+                 path_data    = path_data,
+                 path_grid    = path_grid,
+                 path_ckdtree = path_ckdtree,
+                 gname        = gname,
+                 lev          = lev,
+                 rgrid_name   = rgrid_name,
+                 do_triangulation       = False,
+                 omit_last_file         = omit_last_file,
+                 load_vertical_grid     = True,
+                 load_triangular_grid   = False,
+                 load_rectangular_grid  = True,
+                 calc_coeff             = False,
+                 verbose                = verbose,
+                )
+  IcD_ham_inv.wet_c = IcD.wet_c
+
+  fname_ham_2d = '%s%s_%s.nc' % (run, ham_2d, tstep)
+  print('Dataset %s' % (fname_ham_2d))
+  IcD_ham_2d = pyic.IconData(
+                 fname        = fname_ham_2d,
+                 path_data    = path_data,
+                 path_grid    = path_grid,
+                 path_ckdtree = path_ckdtree,
+                 gname        = gname,
+                 lev          = lev,
+                 rgrid_name   = rgrid_name,
+                 do_triangulation       = False,
+                 omit_last_file         = omit_last_file,
+                 load_vertical_grid     = False,
+                 load_triangular_grid   = False,
+                 load_rectangular_grid  = True,
+                 calc_coeff             = False,
+                 verbose                = verbose,
+                )
+  IcD_ham_2d.wet_c = IcD.wet_c
+
+  fname_ham_mon = '%s%s_%s.nc' % (run, ham_mon, tstep)
+  print('Dataset %s' % (fname_ham_mon))
+  IcD_ham_mon = pyic.IconData(
+                 fname        = fname_ham_mon,
+                 path_data    = path_data,
+                 path_grid    = path_grid,
+                 path_ckdtree = path_ckdtree,
+                 gname        = gname,
+                 lev          = lev,
+                 do_triangulation       = False,
+                 omit_last_file         = omit_last_file,
+                 load_vertical_grid     = False,
+                 load_triangular_grid   = False,
+                 load_rectangular_grid  = False,
+                 calc_coeff             = False,
+                 verbose                = verbose,
+                )
 print('Done reading datasets')
 
 
@@ -517,6 +630,14 @@ if do_atmosphere_plots and not iopts.no_plots:
   print(f'gname_atm         = {gname_atm}')
   print(f'lev_atm           = {lev_atm}')
   print(f'rgrid_name_atm    = {rgrid_name_atm}')
+if do_hamocc_plots and not iopts.no_plots:
+  print(f'--- hamocc:')
+  print(f'fpath_fx          = {IcD.fpath_fx}')
+  print(f'fpath_tgrid       = {IcD.fpath_tgrid}')
+  print(f'path_data         = {path_data}')
+  print(f'gname             = {gname}')
+  print(f'lev               = {lev}')
+  print(f'rgrid_name        = {rgrid_name}')
 print(f'--------------------------------------------------------------------------------')
 
 # -------------------------------------------------------------------------------- 
@@ -975,6 +1096,18 @@ for tave_int in tave_ints:
       
         tbias = temp-temp_ref
         sbias = salt-salt_ref
+
+    if do_hamocc_plots:
+      # go through tracers seperately to avoid unncessary loading of all tracers
+      tmp_list = ['dic_gzave', 'dic_azave', 'dic_ipzave']
+      if np.any(np.in1d(fig_names, tmp_list)):
+        dissic, it_ave = pyic.time_average(IcD_ham_inv, 'dissic', t1, t2, iz='all')
+        dissic[dissic==0.]=np.ma.masked
+
+      tmp_list = ['o2_gzave', 'o2_azave', 'o2_ipzave']
+      if np.any(np.in1d(fig_names, tmp_list)):
+        o2, it_ave = pyic.time_average(IcD_ham_inv, 'o2', t1, t2, iz='all')
+        o2[o2==0.]=np.ma.masked
     
     # --------------------------------------------------------------------------------
     # biases
@@ -1193,7 +1326,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD, IaV, 
                       clim=[-2., 30.], cincr=2.0, cmap='cmo.thermal',
                       asp=0.5, xlim=[-30,65], do_write_data_range=True)
-      save_fig('Temperature Atlantic zon. ave.', path_pics, fig_name)
+      save_fig('Temperature Indo-Pac. zon. ave.', path_pics, fig_name)
       #FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='to', it=0,
       #                    t1=t1, t2=t2,
       #                    clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
@@ -1244,7 +1377,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD, IaV, 
                       clim=[32., 37.], cincr=0.25, cmap='cmo.haline',
                       asp=0.5, xlim=[-30,65], do_write_data_range=True)
-      save_fig('Salinity Atlantic zon. ave.', path_pics, fig_name)
+      save_fig('Salinity Indo-Pac. zon. ave.', path_pics, fig_name)
       #FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='so', it=0,
       #                    t1=t1, t2=t2,
       #                    clim=[32.,37.], cincr=0.25, cmap='cmo.haline',
@@ -2319,6 +2452,260 @@ for tave_int in tave_ints:
       plt.show()
       sys.exit()
       save_fig('zonal wind stress', path_pics, fig_name, FigInf)
+
+    # ------------------------------------------------------------------------------
+    # HAMOCC timeseries
+    # ------------------------------------------------------------------------------
+
+    # --- 
+    fig_name = 'ts_global_npp'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_primary_production'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_global_nppcya'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_npp_cya'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_global_zoograzing'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_zooplankton_grazing'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_global_netco2flux'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_net_co2_flux'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_n2fix'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['N2_fixation'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_WC_denit'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['WC_denit'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_sed_denit'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['SED_denit'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_global_surface_alk'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_surface_alk'], t1=t1, t2=t2, ave_freq=ave_freq, var_fac=1e6, units=' [mmol m$^{-3}$]', omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_global_surface_dic'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_surface_dic'], t1=t1, t2=t2, ave_freq=ave_freq, var_fac=1e6, units=' [mmol C m$^{-3}$]', omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_global_surface_phos'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_surface_phosphate'], t1=t1, t2=t2, ave_freq=ave_freq, var_fac=1e6, units=' [mmol P m$^{-3}$]', omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_global_surface_sil'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_surface_silicate'], t1=t1, t2=t2, ave_freq=ave_freq, var_fac=1e6, units=' [mmol Si m$^{-3}$]', omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_global_opal_prod'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_opal_production'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_global_caco3_prod'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_caco3_production'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_global_OMexp90'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_OM_export_at_90m'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_global_calcexp90'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_calc_export_at_90m'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_global_opalexp90'
+    if fig_name in fig_names:
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_opal_export_at_90m'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      save_fig(fig_name, path_pics, fig_name)
+
+    # ------------------------------------------------------------------------------
+    # HAMOCC surface maps
+    # ------------------------------------------------------------------------------
+
+    # ---
+    fig_name = 'srf_phyp'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname_ham_inv, var='phyp', depth=0, it=0,
+                               t1=t1, t2=t2,
+                               clim=[0,0.8], cincr=0.05, cmap='cmo.algae',
+                               var_fac=1e6, units='mmol P m$^{-3}$',
+                               IcD=IcD_ham_inv, **Ddict_global)
+      save_fig('Surface phytoplankton', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'srf_zoop'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname_ham_inv, var='zoop', depth=0, it=0,
+                               t1=t1, t2=t2,
+                               clim=[0,0.08], cincr=0.005, cmap='cmo.dense',
+                               var_fac=1e6, units='mmol P m$^{-3}$',
+                               IcD=IcD_ham_inv, **Ddict_global)
+      save_fig('Surface zooplankton', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'srf_cya'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname_ham_inv, var='phydiaz', depth=0, it=0,
+                               t1=t1, t2=t2,
+                               clim=[0,0.5], cincr=0.025, cmap='cmo.amp',
+                               var_fac=1e6, units='mmol P m$^{-3}$',
+                               IcD=IcD_ham_inv, **Ddict_global)
+      save_fig('Surface cyanobacteria', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'srf_alk'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname_ham_inv, var='talk', depth=0, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1e6, units='mmol m$^{-3}$',
+                               clim=[2000,2600], cincr=40., cmap='cmo.haline',
+                               IcD=IcD_ham_inv, **Ddict_global)
+      save_fig('Surface alkalinity', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'srf_dic'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname_ham_inv, var='dissic', depth=0, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1e6, units='mmol m$^{-3}$',
+                               clim=[1700,2300], cincr=40., cmap='cmo.haline',
+                               IcD=IcD_ham_inv, **Ddict_global)
+      save_fig('Surface DIC', path_pics, fig_name, FigInf)
+    # ---
+    fig_name = 'srf_hion'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname_ham_inv, var='hi', depth=0, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1e6, units='mmol m$^{-3}$',
+                               clim=[0.0,0.015], cincr=0.001, cmap='cmo.thermal',
+                               IcD=IcD_ham_inv, **Ddict_global)
+      save_fig('Surface h+ ion conc.', path_pics, fig_name, FigInf)
+    # ---
+    fig_name = 'srf_pH'
+    if fig_name in fig_names:
+      hion, it_ave   = pyic.time_average(IcD_ham_inv, 'hi', t1=t1, t2=t2, iz=0)
+      ph = - np.log10(hion)
+      IaV = pyic.IconVariable('pH', '', 'pH')
+      IaV.data = ph
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD_ham_inv, IaV, clim=[7.8,8.4], cincr=0.025, cmap='plasma_r',
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
+                      do_write_data_range=True,
+                      title='surface pH'
+                      )
+      save_fig('Surface pH', path_pics, fig_name)
+    # ---
+    fig_name = 'srf_nitrate'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname_ham_inv, var='no3', depth=0, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1e6, units='mmol N m$^{-3}$',
+                               clim=[0,40], cincr=2.5, cmap='cmo.matter',
+                               IcD=IcD_ham_inv, **Ddict_global)
+      save_fig('Surface nitrate', path_pics, fig_name, FigInf)
+    # ---
+    fig_name = 'srf_phosphate'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname_ham_inv, var='po4', depth=0, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1e6, units='mmol P m$^{-3}$',
+                               clim=[0,4.0], cincr=0.25, cmap='cmo.matter',
+                               IcD=IcD_ham_inv, **Ddict_global)
+      save_fig('Surface phosphate', path_pics, fig_name, FigInf)
+    # ---
+    fig_name = 'srf_silicate'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname_ham_inv, var='si', depth=0, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1e6, units='mmol Si m$^{-3}$',
+                               clim=[0,90], cincr=6, cmap='cmo.matter',
+                               IcD=IcD_ham_inv, **Ddict_global)
+      save_fig('Surface silicate', path_pics, fig_name, FigInf)
+    # ---
+    fig_name = 'srf_co2flux'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname_ham_2d, var='co2flux', depth=0, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1e9, units='$\mu$mol C m$^{-1}$ s$^{-1}$',
+                               clim=[-0.3,0.3], cincr=0.03, cmap='cmo.balance',
+                               IcD=IcD_ham_2d, **Ddict_global)
+      save_fig('CO2 flux', path_pics, fig_name, FigInf)
+
+    # ------------------------------------------------------------------------------
+    # HAMOCC sections
+    # ------------------------------------------------------------------------------
+    # ---
+    fig_name = 'dic_gzave'
+    if fig_name in fig_names:
+      IaV = IcD_ham_inv.vars['dissic']
+      IaV.units='mmol m$^{-3}$'
+      IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(dissic*1e6, basin='global', 
+                                 fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
+      pyic.vplot_base(IcD_ham_inv, IaV, 
+                      clim=[2000,2450], cincr=25.0, cmap='cmo.haline',
+                      asp=0.5, do_write_data_range=True)
+      save_fig('DIC global zon. ave.', path_pics, fig_name)
+    # ---
+    fig_name = 'dic_azave'
+    if fig_name in fig_names:
+      IaV = IcD_ham_inv.vars['dissic']
+      IaV.units='mmol m$^{-3}$'
+      IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(dissic*1e6, basin='atl', 
+                                 fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
+      pyic.vplot_base(IcD_ham_inv, IaV, 
+                      clim=[2000,2450], cincr=25.0, cmap='cmo.haline',
+                      asp=0.5, xlim=[-30,90], do_write_data_range=True)
+      save_fig('DIC Atlantic zon. ave.', path_pics, fig_name)
+    # ---
+    fig_name = 'dic_ipzave'
+    if fig_name in fig_names:
+      IaV = IcD_ham_inv.vars['dissic']
+      IaV.units='mmol m$^{-3}$'
+      IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(dissic*1e6, basin='indopac', 
+                                 fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
+      pyic.vplot_base(IcD_ham_inv, IaV, 
+                      clim=[2000,2450], cincr=25.0, cmap='cmo.haline',
+                      asp=0.5, xlim=[-30,65], do_write_data_range=True)
+      save_fig('DIC Indo-Pac. zon. ave.', path_pics, fig_name)
+
+    # ---
+    fig_name = 'o2_gzave'
+    if fig_name in fig_names:
+      IaV = IcD_ham_inv.vars['o2']
+      IaV.units='mmol m$^{-3}$'
+      IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(o2*1e6, basin='global', 
+                                 fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
+      pyic.vplot_base(IcD_ham_inv, IaV, 
+                      clim=[0,450], cincr=15, cmap='RdYlBu',
+                      asp=0.5, do_write_data_range=True)
+      save_fig('O2 global zon. ave.', path_pics, fig_name)
+    # ---
+    fig_name = 'o2_azave'
+    if fig_name in fig_names:
+      IaV = IcD_ham_inv.vars['o2']
+      IaV.units='mmol m$^{-3}$'
+      IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(o2*1e6, basin='atl', 
+                                 fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
+      pyic.vplot_base(IcD_ham_inv, IaV, 
+                      clim=[0,450], cincr=15, cmap='RdYlBu',
+                      asp=0.5, xlim=[-30,90], do_write_data_range=True)
+      save_fig('O2 Atlantic zon. ave.', path_pics, fig_name)  
+    # ---
+    fig_name = 'o2_ipzave'
+    if fig_name in fig_names:
+      IaV = IcD_ham_inv.vars['o2']
+      IaV.units='mmol m$^{-3}$'
+      IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(o2*1e6, basin='indopac', 
+                                 fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
+      pyic.vplot_base(IcD_ham_inv, IaV, 
+                      clim=[0,450], cincr=15, cmap='RdYlBu',
+                      asp=0.5, xlim=[-30,65], do_write_data_range=True)
+      save_fig('O2 Indo-Pac. zon. ave.', path_pics, fig_name)
 
   # --------------------------------------------------------------------------------
   # Website
