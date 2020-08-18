@@ -1110,18 +1110,6 @@ for tave_int in tave_ints:
         tbias = temp-temp_ref
         sbias = salt-salt_ref
 
-    if do_hamocc_plots:
-      # go through tracers seperately to avoid unncessary loading of all tracers
-      tmp_list = ['dic_gzave', 'dic_azave', 'dic_ipzave']
-      if np.any(np.in1d(fig_names, tmp_list)):
-        dissic, it_ave = pyic.time_average(IcD_ham_inv, 'dissic', t1, t2, iz='all')
-        dissic[dissic==0.]=np.ma.masked
-
-      tmp_list = ['o2_gzave', 'o2_azave', 'o2_ipzave']
-      if np.any(np.in1d(fig_names, tmp_list)):
-        o2, it_ave = pyic.time_average(IcD_ham_inv, 'o2', t1, t2, iz='all')
-        o2[o2==0.]=np.ma.masked
-    
     # --------------------------------------------------------------------------------
     # biases
     # --------------------------------------------------------------------------------
@@ -2540,6 +2528,18 @@ for tave_int in tave_ints:
     # ------------------------------------------------------------------------------
     # HAMOCC surface maps
     # ------------------------------------------------------------------------------
+    if do_hamocc_plots:
+      # go through tracers seperately to avoid unncessary loading of all tracers
+      tmp_list = ['dic_gzave', 'dic_azave', 'dic_ipzave']
+      if np.any(np.in1d(fig_names, tmp_list)):
+        dissic, it_ave = pyic.time_average(IcD_ham_inv, 'dissic', t1, t2, iz='all')
+        dissic[dissic==0.]=np.ma.masked
+
+      tmp_list = ['o2_gzave', 'o2_azave', 'o2_ipzave']
+      if np.any(np.in1d(fig_names, tmp_list)):
+        o2, it_ave = pyic.time_average(IcD_ham_inv, 'o2', t1, t2, iz='all')
+        o2[o2==0.]=np.ma.masked
+    
 
     # ---
     fig_name = 'srf_phyp'
@@ -2590,6 +2590,7 @@ for tave_int in tave_ints:
                                clim=[1700,2300], cincr=40., cmap='cmo.haline',
                                IcD=IcD_ham_inv, **Ddict_global)
       save_fig('Surface DIC', path_pics, fig_name, FigInf)
+
     # ---
     fig_name = 'srf_hion'
     if fig_name in fig_names:
@@ -2599,6 +2600,7 @@ for tave_int in tave_ints:
                                clim=[0.0,0.015], cincr=0.001, cmap='cmo.thermal',
                                IcD=IcD_ham_inv, **Ddict_global)
       save_fig('Surface h+ ion conc.', path_pics, fig_name, FigInf)
+
     # ---
     fig_name = 'srf_pH'
     if fig_name in fig_names:
@@ -2613,6 +2615,7 @@ for tave_int in tave_ints:
                       title='surface pH'
                       )
       save_fig('Surface pH', path_pics, fig_name)
+
     # ---
     fig_name = 'srf_nitrate'
     if fig_name in fig_names:
@@ -2622,6 +2625,7 @@ for tave_int in tave_ints:
                                clim=[0,40], cincr=2.5, cmap='cmo.matter',
                                IcD=IcD_ham_inv, **Ddict_global)
       save_fig('Surface nitrate', path_pics, fig_name, FigInf)
+
     # ---
     fig_name = 'srf_phosphate'
     if fig_name in fig_names:
@@ -2631,6 +2635,7 @@ for tave_int in tave_ints:
                                clim=[0,4.0], cincr=0.25, cmap='cmo.matter',
                                IcD=IcD_ham_inv, **Ddict_global)
       save_fig('Surface phosphate', path_pics, fig_name, FigInf)
+
     # ---
     fig_name = 'srf_silicate'
     if fig_name in fig_names:
@@ -2640,6 +2645,7 @@ for tave_int in tave_ints:
                                clim=[0,90], cincr=6, cmap='cmo.matter',
                                IcD=IcD_ham_inv, **Ddict_global)
       save_fig('Surface silicate', path_pics, fig_name, FigInf)
+
     # ---
     fig_name = 'srf_co2flux'
     if fig_name in fig_names:
@@ -2664,6 +2670,7 @@ for tave_int in tave_ints:
                       clim=[2000,2450], cincr=25.0, cmap='cmo.haline',
                       asp=0.5, do_write_data_range=True)
       save_fig('DIC global zon. ave.', path_pics, fig_name)
+
     # ---
     fig_name = 'dic_azave'
     if fig_name in fig_names:
@@ -2675,6 +2682,7 @@ for tave_int in tave_ints:
                       clim=[2000,2450], cincr=25.0, cmap='cmo.haline',
                       asp=0.5, xlim=[-30,90], do_write_data_range=True)
       save_fig('DIC Atlantic zon. ave.', path_pics, fig_name)
+
     # ---
     fig_name = 'dic_ipzave'
     if fig_name in fig_names:
@@ -2698,6 +2706,7 @@ for tave_int in tave_ints:
                       clim=[0,450], cincr=15, cmap='RdYlBu',
                       asp=0.5, do_write_data_range=True)
       save_fig('O2 global zon. ave.', path_pics, fig_name)
+
     # ---
     fig_name = 'o2_azave'
     if fig_name in fig_names:
@@ -2709,6 +2718,7 @@ for tave_int in tave_ints:
                       clim=[0,450], cincr=15, cmap='RdYlBu',
                       asp=0.5, xlim=[-30,90], do_write_data_range=True)
       save_fig('O2 Atlantic zon. ave.', path_pics, fig_name)  
+
     # ---
     fig_name = 'o2_ipzave'
     if fig_name in fig_names:
