@@ -60,6 +60,8 @@ red_list = []
 #red_list += ['bstr', 'arctic_budgets', 'passage_transports']
 # uncomment this to omit plots which require loading 3D u, v
 #red_list += ['arctic_budgets']
+# uncomment this to omit plots which require loading 3D density
+#red_list += ['dens30w']
 %eof%
 
 # --- start qp_driver
