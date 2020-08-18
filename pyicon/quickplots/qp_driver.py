@@ -21,6 +21,9 @@ path_quickplots = '../../all_qps/'
 omit_last_file = False
 tstep     = '????????????????'  # use this line for all data
 
+xr_chunks = None
+load_xarray_dset = False
+
 #rgrid_name = 'global_1.0'
 sec_name_30w = '30W_300pts'
 #sec_name_30w = '30W_200pts'
@@ -328,6 +331,13 @@ def load_era3d_var(fpath, var, isort):
   data = data[:,:,isort]
   return data
 
+if load_xarray_dset and not xr_chunks is None:
+  print('Setting up LocalCluster:')
+  from dask.distributed import Client, LocalCluster
+  cluster = LocalCluster(interface='ib0')
+  client = Client(cluster)
+  print(client)
+
 # -------------------------------------------------------------------------------- 
 # Load all necessary data sets (can take a while)
 # -------------------------------------------------------------------------------- 
@@ -348,7 +358,10 @@ if do_ocean_plots and not iopts.no_plots:
                  load_triangular_grid   = True, # needed for bstr
                  load_rectangular_grid  = True,
                  calc_coeff             = False,
+                 load_xarray_dset       = load_xarray_dset,
+                 xr_chunks              = xr_chunks,
                  verbose                = verbose,
+
                 )
   fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
   [k100, k500, k800, k1000, k2000, k3000] = indfind(IcD.depthc, [100., 500., 800., 1000., 2000., 3000.])
@@ -957,8 +970,8 @@ for tave_int in tave_ints:
                  ]
       if np.any(np.in1d(fig_names, tmp_list)) or calc_bias:
         print('Load 3D temp and salt...')
-        temp, it_ave = pyic.time_average(IcD, 'to', t1, t2, iz='all')
-        salt, it_ave = pyic.time_average(IcD, 'so', t1, t2, iz='all')
+        temp, it_ave = pyic.time_average(IcD, 'to', t1, t2, iz='all', use_xr=load_xarray_dset, load_xr_data=True)
+        salt, it_ave = pyic.time_average(IcD, 'so', t1, t2, iz='all', use_xr=load_xarray_dset, load_xr_data=True)
         temp[temp==0.]=np.ma.masked
         salt[salt==0.]=np.ma.masked
 
@@ -1375,8 +1388,8 @@ for tave_int in tave_ints:
       tmp_plist = ['arctic_budgets']
       if np.any(np.in1d(fig_names, tmp_plist)):
         print('Load 3D uo and vo...')
-        uo, it_ave = pyic.time_average(IcD, 'u', t1, t2, iz='all')
-        vo, it_ave = pyic.time_average(IcD, 'v', t1, t2, iz='all')
+        uo, it_ave = pyic.time_average(IcD, 'u', t1, t2, iz='all', use_xr=load_xarray_dset, load_xr_data=True)
+        vo, it_ave = pyic.time_average(IcD, 'v', t1, t2, iz='all', use_xr=load_xarray_dset, load_xr_data=True)
         uo[uo==0.]=np.ma.masked
         vo[vo==0.]=np.ma.masked
 
@@ -1752,6 +1765,7 @@ for tave_int in tave_ints:
     ## ---
     if do_atmosphere_plots:
       print('Calculate atmosphere pressure interpolation weights...')
+      # --- load 3D pressure
       pfull, it_ave = pyic.time_average(IcD_atm3d, 'pfull', t1, t2, iz='all')
       # linear vert ax
       IcD_atm3d.plevc = np.array([100000,92500,85000,77500,70000,60000,50000,40000,30000,25000,20000,15000,10000,7000,5000,3000,1000])

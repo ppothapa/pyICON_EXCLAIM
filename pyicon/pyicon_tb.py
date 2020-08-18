@@ -237,7 +237,8 @@ def zonal_average(fpath_data, var, basin='global', it=0, fpath_fx='', fpath_ckdt
     # --- mask not-this-basin points
     data[mask_basin==False] = np.ma.masked
     # --- go to normal np.array (not np.ma object)
-    data = data.filled(0.)
+    if isinstance(data, np.ma.core.MaskedArray):
+      data = data.filled(0.)
     # --- interpolate to rectangular grid
     datai = apply_ckdtree(data, fpath_ckdtree, coordinates=coordinates)
     datai = datai.reshape(shape)
@@ -293,7 +294,8 @@ def zonal_average_3d_data(data3d, basin='global', it=0, coordinates='clat clon',
     # --- mask not-this-basin points
     data[mask_basin==False] = np.ma.masked
     # --- go to normal np.array (not np.ma object)
-    data = data.filled(0.)
+    if isinstance(data, np.ma.core.MaskedArray):
+      data = data.filled(0.)
     # --- interpolate to rectangular grid
     datai = apply_ckdtree(data, fpath_ckdtree, coordinates=coordinates)
     datai = datai.reshape(shape)
