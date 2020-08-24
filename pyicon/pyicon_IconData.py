@@ -762,6 +762,7 @@ class IconVariable(object):
   def __init__(self, name, units='', long_name='', 
                      coordinates='clat clon', fpath_ckdtree='',
                      is3d=None, isinterpolated=False,
+                     dtype='float32',
                ):
     self.name = name
     self.units = units
@@ -770,6 +771,7 @@ class IconVariable(object):
     self.coordinates = coordinates
     self.isinterpolated = isinterpolated
     self.fpath_ckdtree = fpath_ckdtree
+    self.dtype = dtype
     return
 
   def load_hsnap(self, fpath, it=0, iz=0, iw=None, step_snap=0, fpath_ckdtree='', mask_reg=None, indx='all', indy='all', verbose=True):
