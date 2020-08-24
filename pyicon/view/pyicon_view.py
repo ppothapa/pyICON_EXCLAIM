@@ -79,7 +79,28 @@ def my_slide(name='slider:', bnds=[0,10]):
 class hplot(object):
   output = widgets.Output()
 
-  def __init__(self, IcD, grid_type='igrid', use_tgrid=False, path_ckdtree='', logplot=False, verbose=False, lon_reg=[], lat_reg=[], rgrid_name=""):
+  def __init__(self, IcD, grid_type='igrid', path_ckdtree='', logplot=False, verbose=False, lon_reg=[], lat_reg=[], rgrid_name=""):
+    """
+    Parameters
+    ----------
+    IcD : pyicon.IconData object
+        asdf
+    grid_type : str
+        Type of grid which should be use: Either:
+          * igrid: interpolate to regular grid which in specified by ckdtree
+          * tgrid: original triangular grid
+          * fgrid: take the grid from the file; e.g. if data was interpolated by cdo
+    path_ckdtree: str
+        Path to ckdtree interpolation file.
+    logplot : bool
+        Decide whether to apply log_10 to data before plotting.
+    verbose : bool
+        Switch on verbose output for debugging.
+    lon_reg, lat_reg : list of len 2
+        Lon and lat of region when not the full data set should be plotted
+    rgrid_name : str
+        Specify name of interplation grid. If "" default one is taken. Can be specified by dropdown manue as well.
+    """
     # ------------------------------------------------------------ 
     # set parameters 
     # ------------------------------------------------------------ 
@@ -372,7 +393,8 @@ class hplot(object):
       self.IcD.load_rgrid()
       #self.initialize_plot(ax=self.ax, cax=self.cax, do_infostr=False)
       if self.IcD.crop_data:
-        self.IcD.crop_grid(self.IcD.lon_reg, self.IcD.lat_reg)
+        self.IcD.crop_tgrid(self.IcD.lon_reg, self.IcD.lat_reg)
+        self.IcD.crop_rgrid(self.IcD.lon_reg, self.IcD.lat_reg)
 
       # synchronize with initialize_plot
       # --- load data 
