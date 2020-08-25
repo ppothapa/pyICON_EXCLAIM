@@ -6,9 +6,9 @@ from cartopy import crs as ccrs
 
 # --- dummy object to collect variables
 class Section(object):
-  def __init__(self, name, p1, p2):
+  def __init__(self, name, p1, p2, along_const_lat=False):
     self.name = name
-    self.along_const_lat = False
+    self.along_const_lat = along_const_lat
     self.lon1 = p1[0]
     self.lat1 = p1[1]
     self.lon2 = p2[0]
@@ -206,76 +206,96 @@ fpath_fx = f'/mnt/lustre01/work/mh0033/m300602/icon/grids/{gname}/{gname}_L64_fx
 # --- path to output netcdf file
 fpath_ncfile_out = f'{path_grid}section_mask_{gname}.nc'
 
-# --- 
+# --- sec: barents_opening
 Ms.append(Section('barents_opening',
             p1=[16.6, 77.],
             p2=[19.5, 69.8],
          ))
+# --- sec: bering_strait
 Ms.append(Section('bering_strait',
             p1=[-171, 66.2],
             p2=[-166, 65],
          ))
+# --- sec: carribean_windward_passage
 Ms.append(Section('caribbean_windward_passage',
-            p1=[-75, 20.2],
-            p2=[-72.6, 19.7],
+            p1=[-74.37, 20.27],
+            p2=[-72.93, 19.8],
          ))
+# --- sec: davis_strait
 Ms.append(Section('davis_strait',
-            p1=[-50, 65],
-            p2=[-62.6, 66],
+            p1=[-62.6, 66],
+            p2=[-50, 65],
          ))
+# --- sec: denmark_strait
 Ms.append(Section('denmark_strait',
             p1=[-37, 66.1],
             p2=[-22.5, 66.],
          ))
+# --- sec: drake_passage
 Ms.append(Section('drake_passage',
-#            p1=[-68, -54],
-#            p2=[-60, -64.7],
             p1=[-67, -55],
             p2=[-60.5, -64.3],
          ))
+# --- sec: english_channel
 Ms.append(Section('english_channel',
-#            p1=[1.5, 51.1],
-#            p2=[1.7, 51.0],
             p1=[0.9, 51.4],
             p2=[1.9, 50.4],
          ))
+# --- sec: faroe_scotland_channel
 Ms.append(Section('faroe_scotland_channel',
             p1=[-6.9, 62,],
             p2=[-5, 58.7],
          ))
+# --- sec: florida_bahamas_strait
 Ms.append(Section('florida_bahamas_strait',
-            p1=[-78.5, 26],
-            p2=[-80.5, 27],
+            #p1=[-80.15, 26.62],
+            p1=[-80.15, 26.7],
+            #p2=[-78.3, 26.7],
+            p2=[-78.4, 26.4],
          ))
+# --- sec: fram_strait
 Ms.append(Section('fram_strait',
             p1=[-20, 79,],
             p2=[ 11, 79],
          ))
+# --- sec: gilbraltar_strait
 Ms.append(Section('gilbraltar_strait',
-#            p1=[-5.6, 35.8],
-#            p2=[-5.6, 36],
-            p1=[-5.6, 35.0],
-            p2=[-5.6, 36.6],
+            p1=[-5.6, 36.6],
+            p2=[-5.6, 35.0],
          ))
+# --- sec: iceland_faroe_channel
 Ms.append(Section('iceland_faroe_channel',
             p1=[-13.6, 64.9],
             p2=[-7.4, 62.2],
          ))
+# --- sec: indonesian_throughflow
 Ms.append(Section('indonesian_throughflow',
-            p1=[100, -6],
+            p1=[105.7, -5,77],
             p2=[140, -6],
          ))
+# --- sec: mozambique_channel
 Ms.append(Section('mozambique_channel',
             p1=[39, -16],
             p2=[45, -18,],
          ))
+# --- sec: pacific_equatorial_undercurrent
 Ms.append(Section('pacific_equatorial_undercurrent',
-            p1=[-155, -2],
-            p2=[-155, 2],
+            p1=[-155, 2],
+            p2=[-155, -2],
          ))
+# --- sec: taiwan_and_luzon_straits
 Ms.append(Section('taiwan_and_luzon_straits',
-            p1=[121.8, 18.3],
-            p2=[121.8, 22.3],
+            p1=[120.7, 22.37],
+            p2=[121.2, 18.44],
+         ))
+
+# --- sec: 26N
+Ms.append(Section('atl26N',
+            #p1=[-80.15, 26.62],
+            #p2=[-13.8, 26.],
+            p1=[-80.15, 26.7],
+            p2=[-13.8, 26.7],
+            along_const_lat=True,
          ))
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
