@@ -472,6 +472,7 @@ def qp_timeseries(IcD, fname, vars_plot,
       lend=data.size
     times_plot = times_plot[lstart:lend]
     data  = data[lstart:lend]
+    dtsum = dtsum[lstart:lend]
 
     # --- define labels
     if labels is None:
