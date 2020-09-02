@@ -255,7 +255,7 @@ if iopts.debug:
   fig_names = []
   #fig_names += ['temp30w', 'salt30w', 'dens30w']
   #fig_names += ['atm_psi']
-  #fig_names += ['ts_tas_gmean']
+  fig_names += ['ts_tas_gmean']
   #fig_names += ['sst']
   #fig_names += ['ts_amoc']
   #fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
@@ -420,7 +420,7 @@ if do_ocean_plots and not iopts.no_plots:
   IcD_monthly.wet_c = IcD.wet_c
 
   fname_ice = '%s%s_%s.nc' % (run, oce_ice, tstep)
-  print('Dataset %s' % (fname_monthly))
+  print('Dataset %s' % (fname_ice))
   IcD_ice = pyic.IconData(
                  fname        = fname_ice,
                  path_data    = path_data,
@@ -1693,35 +1693,35 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['tas_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file,
-        var_add=-273.15, units=' [$^o$C]')
+        var_add=-273.15, units=' [$^o$C]', lstart=1)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_radtop_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['radtop_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['radtop_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rsdt_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsdt_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsdt_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rsut_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsut_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsut_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rlut_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rlut_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rlut_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_prec_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['prec_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['prec_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_evap_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['evap_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['evap_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1)
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_fwfoce_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['fwfoce_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file)
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['fwfoce_gmean'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1)
       save_fig(fig_name, path_pics, fig_name)
 
     # -------------------------------------------------------------------------------- 
