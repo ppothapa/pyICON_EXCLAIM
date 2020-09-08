@@ -519,8 +519,11 @@ def qp_timeseries(IcD, fname, vars_plot,
     data_mean = (data[ind]*dtsum[ind]).sum()/dtsum[ind].sum()
     #print(f'old: {data[ind].mean()}') 
     #print(f'new: {(data[ind]*dtsum[ind]).sum()/dtsum[ind].sum()}') 
-    info_str = 'in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data[ind].min(), data_mean, data[ind].std(), data[ind].max())
-    ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
+    try:
+      info_str = 'in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data[ind].min(), data_mean, data[ind].std(), data[ind].max())
+      ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
+    except:
+      pass
 
   FigInf = dict()
   Dhandles = dict()

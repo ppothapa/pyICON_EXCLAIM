@@ -255,9 +255,9 @@ if iopts.debug:
   fig_names = []
   #fig_names += ['temp30w', 'salt30w', 'dens30w']
   #fig_names += ['atm_psi']
-  fig_names += ['ts_tas_gmean']
+  #fig_names += ['ts_tas_gmean']
   #fig_names += ['sst']
-  #fig_names += ['ts_amoc']
+  fig_names += ['ts_amoc']
   #fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
   #fig_names += ['mld_mar', 'mld_sep']
   #fig_names = ['temp_bias_gzave']
@@ -297,7 +297,7 @@ if iopts.debug:
   #fig_names += ['ts_amoc', 'tab_overview']
   #fig_names += ['ts_radtop_gmean', 'tab_overview']
   #fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_fwfoce_gmean']
-  fig_names += ['tab_overview']
+  #fig_names += ['tab_overview']
 
 fig_names = np.array(fig_names)
 
@@ -733,6 +733,10 @@ for tave_int in tave_ints:
     #       Thus, the 4th month corresponds to March and the 10th to September
     it_ave_mar = np.where( mask_int & (months==4)  )[0]
     it_ave_sep = np.where( mask_int & (months==10) )[0]
+    if it_ave_mar.size==0:
+      it_ave_mar = it_ave_months
+    if it_ave_sep.size==0:
+      it_ave_sep = it_ave_months
     #it_ave_mar = it_ave[2::12] # this only workes if tave_int start with Feb. E.g.: 1610-02-01,1620-01-01
     #it_ave_sep = it_ave[8::12] # this only workes if tave_int start with Feb. E.g.: 1610-02-01,1620-01-01
     it_ave_years = (IcD.times>=t1) & (IcD.times<=t2)
