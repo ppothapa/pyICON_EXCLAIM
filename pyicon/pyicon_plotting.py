@@ -1435,6 +1435,15 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', xl
   elif template=='na':
     xlim = [-80,0]
     ylim = [30,70]
+  elif template=='sonett':
+    xlim=[-20,30]
+    ylim=[-45,-20]
+    xticks = np.arange(-10,30,10)
+    yticks = np.arange(-40,-20,5,)
+    #xlocs = np.arange(-180,181,60.)
+    #ylocs = np.arange(-90,91,30.)
+    x_minor_tick_diff = 1.
+    y_minor_tick_diff = 1.
   elif template=='labsea':
     pass
   elif template=='zlat':
