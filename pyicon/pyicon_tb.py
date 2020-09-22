@@ -1,17 +1,21 @@
+#print('sys')
 import sys, glob, os
 import json
 # --- calculations
 import numpy as np
+#print('scipy')
 from scipy import interpolate
 from scipy.spatial import cKDTree
 # --- reading data 
 from netCDF4 import Dataset, num2date, date2num
 import datetime
 # --- plotting
+#print('matplotlib')
 import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib import ticker
 #import my_toolbox as my
+#print('cartopy')
 import cartopy
 import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
@@ -19,7 +23,9 @@ import cmocean
 # --- debugging
 from ipdb import set_trace as mybreak  
 #from importlib import reload
+#print('xarray')
 import xarray as xr
+#print('done loading')
 
 """
 pyicon
@@ -160,8 +166,8 @@ def apply_ckdtree(data, fpath_ckdtree, mask=None, coordinates='clat clon', radiu
       distances = distances[mask]
     elif inds.ndim==2:
       #raise ValueError('::: Warning: This was never checked! Please check carefully and remove this warning.:::')
-      inds = inds[mask,:]
-      distances = distances[mask,:]
+      inds = inds[:,mask]
+      distances = distances[:,mask]
 
   data_interpolated = apply_ckdtree_base(data, inds, distances, radius_of_influence)
   return data_interpolated
