@@ -587,6 +587,7 @@ class IconData(object):
     # --- orientation
     self.orientation_of_normal = f.variables['orientation_of_normal'][:].transpose()
     self.edge_orientation = f.variables['edge_orientation'][:].transpose()
+    self.tangent_orientation = f.variables['edge_system_orientation'][:].transpose()
 
     # --- masks
     self.cell_sea_land_mask = f.variables['cell_sea_land_mask'][:]
@@ -605,10 +606,10 @@ class IconData(object):
     self.edge_cart_vec[:,0] = f.variables['edge_middle_cartesian_x'][:]
     self.edge_cart_vec[:,1] = f.variables['edge_middle_cartesian_y'][:]
     self.edge_cart_vec[:,2] = f.variables['edge_middle_cartesian_z'][:]
-    #self.edge_cart_vec = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
-    #self.edge_cart_vec[:,0] = f.variables['edge_dual_middle_cartesian_x'][:]
-    #self.edge_cart_vec[:,1] = f.variables['edge_dual_middle_cartesian_y'][:]
-    #self.edge_cart_vec[:,2] = f.variables['edge_dual_middle_cartesian_z'][:]
+    self.dual_edge_cart_vec = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
+    self.dual_edge_cart_vec[:,0] = f.variables['edge_dual_middle_cartesian_x'][:]
+    self.dual_edge_cart_vec[:,1] = f.variables['edge_dual_middle_cartesian_y'][:]
+    self.dual_edge_cart_vec[:,2] = f.variables['edge_dual_middle_cartesian_z'][:]
     self.edge_prim_norm = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
     self.edge_prim_norm[:,0] = f.variables['edge_primal_normal_cartesian_x'][:]
     self.edge_prim_norm[:,1] = f.variables['edge_primal_normal_cartesian_y'][:]
@@ -639,7 +640,8 @@ class IconData(object):
 
     if self.model_type=='oce':
       #iv = 3738
-      self.zarea_fraction = 0.
+      #self.zarea_fraction = 0.
+      self.zarea_fraction = np.ma.zeros((self.nz, self.vlon.size), dtype=self.dtype)
       self.rot_coeff = np.ma.zeros((self.nz, self.vlon.size, 6), dtype=self.dtype)
       for k in range(self.nz):
         #print(k)
@@ -666,11 +668,11 @@ class IconData(object):
           #print('vert  = ', self.vert_cart_vec[iv,:])
           #print('cell2 = ', c2)
           #print('partial_area = ', partial_area[iv])
-          self.zarea_fraction += partial_area
+          self.zarea_fraction[k,:] += partial_area
         ind_vertex_without_valid_edge = self.lsm_e[k,self.edges_of_vertex].sum(axis=1)==0
-        self.zarea_fraction[ind_vertex_without_valid_edge] = 0.
+        self.zarea_fraction[k,ind_vertex_without_valid_edge] = 0.
         #self.rot_coeff *= 1./(self.dual_area[:,np.newaxis]*grid_sphere_radius**2)
-        self.rot_coeff[k,:,:] = rot_coeff/(self.zarea_fraction[:,np.newaxis]*self.grid_sphere_radius**2)
+        self.rot_coeff[k,:,:] = rot_coeff/(self.zarea_fraction[k,:,np.newaxis]*self.grid_sphere_radius**2)
     else:
       self.rot_coeff = rot_coeff/(self.dual_area[:,np.newaxis])
     print('Done with calc_coeff!')
