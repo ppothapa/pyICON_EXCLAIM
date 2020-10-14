@@ -69,9 +69,9 @@ tave_ints = [
 # --- start qp_driver
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-run="slo1307"
-path_data="/work/mh0469/m211032/Icon/Git_Icon/icon.oes.20200506/experiments/${run}/"
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='2040-02-01,2050-01-01'
+run="slo1325"
+path_data="/work/mh0287/m211032/Icon/Git_Icon/icon.oes.20200506/experiments/${run}/"
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='4840-02-01,4850-01-01'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 
