@@ -699,6 +699,9 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
 
     # --- determine averaging interval
     it_ave = np.where( (IcD.times>=t1) & (IcD.times<=t2) )[0]
+  else:
+    t1 = IcD.times[it_ave[0]]
+    t2 = IcD.times[it_ave[-1]]
 
   if it_ave.size==0:
     raise ValueError(f'::: Could not find any time steps in interval t1={t1} and t2={t2}! :::')
