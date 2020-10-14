@@ -8,47 +8,76 @@ from ipdb import set_trace as mybreak
 #    self.output_freq = output_freq
 #  return
 
-# --- default values for config file
+# --- initialization / default values for config file
+run = ''
 runname = ''
+path_data = ''
+
+# --- path to quickplots
+path_quickplots = '../../all_qps/'
+
+# --- set this to True if the simulation is still running
+omit_last_file = False
+
+# --- decide which set of plots to do
+do_ocean_plots = True
+do_atmosphere_plots = False
+do_hamocc_plots = False
+
+# --- grid information
+gname = ''
+lev   = ''
+gname_atm = ''
+lev_atm = ''
+
+# --- path to interpolation files
+path_grid        = ''
+path_grid_atm    = ''
+path_ckdtree     = ''
+path_ckdtree_atm = 'auto'
+
+# --- grid files and reference data
+fpath_tgrid         = '' 
+fpath_tgrid_atm     = '' 
+fpath_ref_data_oce  = '' 
+fpath_ref_data_atm  = '' 
+fpath_ref_data_atm = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_era.nc'
+fpath_fx            = '' 
+
+# --- nc file prefixes
 oce_def = ''
 oce_moc = '_MOC'
 oce_mon = '_oceanMonitor'
 oce_ice = oce_def
 oce_monthly = oce_def
-do_atmosphere_plots = False
-do_ocean_plots = True
-do_hamocc_plots = False
-path_quickplots = '../../all_qps/'
-omit_last_file = False
-tstep     = '????????????????'  # use this line for all data
 
+atm_2d      = '' 
+atm_3d      = '' 
+atm_mon     = '' 
+
+# --- time average information (can be overwritten by qp_driver call)
+tave_ints = [['1950-02-01', '1952-01-01']]
+# --- decide which data files to take for time series plots
+tstep     = '????????????????'
+# --- set this to 12 for yearly averages in timeseries plots, set to 0 for no averaging
+ave_freq = 12
+
+# --- xarray usage
 xr_chunks = None
 load_xarray_dset = False
 
-#rgrid_name = 'global_1.0'
-sec_name_30w = '30W_300pts'
-#sec_name_30w = '30W_200pts'
-rgrid_name = 'global_0.3'
+# --- information for re-gridding
+sec_name_30w   = '30W_300pts'
+rgrid_name     = 'global_0.3'
 rgrid_name_atm = 'global_1.0_era'
 
-path_ckdtree_atm = 'auto'
-
-# set this to 12 for yearly averages in timeseries plots, set to 0 for no averaging
-ave_freq = 12
-
-t1 = 'auto'
-t2 = 'auto'
-
-fpath_ref_data_atm = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_era.nc'
-#fpath_ERAin_zonmean_L47 = '/pool/data/ICON/post/QuickPlots_1x1/ERAin/ERAinL47_1x1_zonmean_1979-2016.nc'
-#fpath_ERAin_zonmean_L17 = '/pool/data/ICON/post/QuickPlots_1x1/ERAin/ERAinL17_1x1_zonmean_1979-2016.nc'
-
 verbose = False
+do_write_final_config = False
 
 # --- list containing figures which should not be plotted
 red_list = []
-
-# --- list containing figures which should be plotted (if empty all figures will be plotted)
+# --- list containing figures which should be plotted 
+# (if empty all figures will be plotted)
 green_list = []
 
 help_text = """
@@ -79,6 +108,10 @@ Argument list:
 # --- read input arguments
 parser = argparse.ArgumentParser(description=help_text, formatter_class=argparse.RawTextHelpFormatter)
 
+# --- necessary arguments
+parser.add_argument('fpath_config', metavar='fpath_config', type=str,
+                    help='path to quickplot configure file')
+# --- optional arguments
 parser.add_argument('--batch', type=bool, default=False, 
                     help='suppress displaying figures, required for batch mode (same as --slurm)')
 parser.add_argument('--slurm', default=False, 
@@ -90,8 +123,6 @@ parser.add_argument('--no_plots', default=False,
 parser.add_argument('--debug', default=False, 
                     action='store_true', #const=False,
                     help='only limitted number of plots are made (specified in qp_driver debugging section)')
-parser.add_argument('fpath_config', metavar='fpath_config', type=str,
-                    help='path to quickplot configure file')
 parser.add_argument('--path_quickplots', metavar='path_quickplots', type=str, default='none',
                     help='path where the quickplots website and figures are storred')
 parser.add_argument('--tave_int', metavar='tave_int', type=str, default='none',
@@ -104,6 +135,7 @@ iopts = parser.parse_args()
 
 print('--------------------------------------------------------------------------------')
 print('Input arguments:')
+print('--------------------------------------------------------------------------------')
 for var in iopts.__dict__.keys():
   print(var, ' = ', getattr(iopts, var))
 print('--------------------------------------------------------------------------------')
@@ -166,9 +198,96 @@ if iopts.run!='none':
   run = iopts.run
 if iopts.path_quickplots!='none':
   path_quickplots = iopts.path_quickplots
+if not iopts.tave_int=='none':
+  tave_int = iopts.tave_int.split(',')
+  tave_ints = [tave_int]
 
-print(f'path_data = {path_data}')
-print(f'run = {run}')
+path_quickplots = os.path.abspath(path_quickplots)
+
+config_file = f"""
+run = \'{run}\'
+runname = \'{runname}\'
+path_data = \'{path_data}\'
+
+# --- path to quickplots
+path_quickplots = \'{path_quickplots}\'
+
+# --- set this to True if the simulation is still running
+omit_last_file = {omit_last_file}
+
+# --- decide which set of plots to do
+do_ocean_plots      = {do_ocean_plots}
+do_atmosphere_plots = {do_atmosphere_plots}
+do_hamocc_plots     = {do_hamocc_plots}
+
+# --- grid information
+gname     = \'{gname}\'
+lev       = \'{lev}\'
+gname_atm = \'{gname_atm}\'
+lev_atm   = \'{lev_atm}\'
+
+# --- path to interpolation files
+path_grid        = \'{path_grid}\'
+path_grid_atm    = \'{path_grid_atm}\'
+path_ckdtree     = \'{path_ckdtree}\'
+path_ckdtree_atm = \'{path_ckdtree_atm}\'
+
+# --- grid files and reference data
+fpath_tgrid         = \'{fpath_tgrid}\'
+fpath_tgrid_atm     = \'{fpath_tgrid_atm}\'
+fpath_ref_data_oce  = \'{fpath_ref_data_oce}\'
+fpath_ref_data_atm  = \'{fpath_ref_data_atm}\'
+fpath_fx            = \'{fpath_fx}\'
+
+# --- nc file prefixes
+oce_def     = \'{oce_def}\'
+oce_moc     = \'{oce_moc}\'
+oce_mon     = \'{oce_mon}\'
+oce_ice     = \'{oce_ice}\'
+oce_monthly = \'{oce_monthly}\'
+
+atm_2d      = \'{atm_2d}\'
+atm_3d      = \'{atm_3d}\'
+atm_mon     = \'{atm_mon}\'
+
+# --- time average information (can be overwritten by qp_driver call)
+tave_ints = {tave_ints}
+# --- decide which data files to take for time series plots
+tstep     = \'{tstep}\'
+# --- set this to 12 for yearly averages in timeseries plots, set to 0 for no averaging
+ave_freq = {ave_freq}
+
+# --- xarray usage
+xr_chunks = {xr_chunks}
+load_xarray_dset = {load_xarray_dset}
+
+# --- information for re-gridding
+sec_name_30w   = \'{sec_name_30w}\'
+rgrid_name     = \'{rgrid_name}\'
+rgrid_name_atm = \'{rgrid_name_atm}\'
+
+verbose = {verbose}
+do_write_final_config = {do_write_final_config}
+
+# --- list containing figures which should not be plotted
+red_list = {red_list}
+# --- list containing figures which should be plotted 
+# (if empty all figures will be plotted)
+green_list = {green_list}
+"""
+
+fpath_config_full = os.path.abspath(fpath_config[:-3]+'_full.py')
+print('--------------------------------------------------------------------------------')
+print(f'Configurations for pyicon quickplots:')
+if do_write_final_config: 
+  print(f'Written to:\n{fpath_config_full}')
+print('--------------------------------------------------------------------------------')
+print(config_file)
+print('--------------------------------------------------------------------------------')
+if do_write_final_config: 
+  f = open(fpath_config_full, 'w')
+  f.write(config_file)
+  f.close()
 
 # -------------------------------------------------------------------------------- 
 # Settings
@@ -257,7 +376,7 @@ if iopts.debug:
   #fig_names += ['atm_psi']
   #fig_names += ['ts_tas_gmean']
   #fig_names += ['sst']
-  fig_names += ['ts_amoc']
+  #fig_names += ['ts_amoc']
   #fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
   #fig_names += ['mld_mar', 'mld_sep']
   #fig_names = ['temp_bias_gzave']
@@ -267,6 +386,7 @@ if iopts.debug:
   #fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
   #fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
   #fig_names += ['ice_concentration_nh', 'ice_thickness_nh', 'snow_thickness_nh',] 
+  fig_names += ['ice_concentration_nh']
   #fig_names += ['ice_concentration_sh', 'ice_thickness_sh', 'snow_thickness_sh',]
   #fig_names += ['bstr']
   #fig_names += ['ke_100m', 'ke_2000m']
@@ -656,10 +776,6 @@ print(f'------------------------------------------------------------------------
 # -------------------------------------------------------------------------------- 
 # timing
 # -------------------------------------------------------------------------------- 
-# --- if --tave_int argument is given use this otherwise it needs to be specified in config file
-if not iopts.tave_int=='none':
-  tave_int = iopts.tave_int.split(',')
-  tave_ints = [tave_int]
 
 for tave_int in tave_ints:
   t1 = tave_int[0].replace(' ', '')
