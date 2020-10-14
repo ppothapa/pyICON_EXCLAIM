@@ -715,16 +715,20 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
   dt64type = IcD.times[0].dtype
   time_bnds = IcD.times[it_ave]
   yy, mm, dd = datetime64_to_float(time_bnds[0])
-  if IcD.output_freq=='yearly':
-    time_bnds = np.concatenate(([np.datetime64(f'{yy-1:04d}-{mm:02d}-{dd:02d}').astype(dt64type)],time_bnds))
-  elif IcD.output_freq=='monthly':
-    if mm==1:
-      yy += -1
-      mm = 13
-    time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
-  elif IcD.output_freq=='unknown':
-    time_bnds = np.concatenate(([time_bnds[0]-(time_bnds[1]-time_bnds[0])], time_bnds))
-  dt = np.diff(time_bnds).astype(IcD.dtype)
+  if t1!=t2:
+    if IcD.output_freq=='yearly':
+      time_bnds = np.concatenate(([np.datetime64(f'{yy-1:04d}-{mm:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+    elif IcD.output_freq=='monthly':
+      if mm==1:
+        yy += -1
+        mm = 13
+      time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+    elif IcD.output_freq=='unknown':
+      time_bnds = np.concatenate(([time_bnds[0]-(time_bnds[1]-time_bnds[0])], time_bnds))
+    dt = np.diff(time_bnds).astype(IcD.dtype)
+  else:
+    # load single time instance
+    dt = np.array([1])
   #dt = np.ones((it_ave.size), dtype=IcD.dtype)
   #print('Warning dt set to ones!!!')
 
