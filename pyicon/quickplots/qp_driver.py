@@ -202,7 +202,7 @@ if not iopts.tave_int=='none':
   tave_int = iopts.tave_int.split(',')
   tave_ints = [tave_int]
 
-path_quickplots = os.path.abspath(path_quickplots)
+path_quickplots = os.path.abspath(path_quickplots) + '/'
 
 config_file = f"""
 run = \'{run}\'
