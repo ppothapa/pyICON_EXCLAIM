@@ -923,13 +923,17 @@ def add_info(run, path_data, path_qp_sim, verbose=True):
   #text += '\n'
   flist = [] 
   flist += [f'{path_data}/README']
-  flist += [f'{path_data}/../../run/exp.{run}.run']
-  flist += [f'{path_data}/NAMELIST_ICON_output_atm']
-  flist += [f'{path_data}/NAMELIST_{run}_atm']
-  flist += [f'{path_data}/NAMELIST_{run}_lnd']
-  flist += [f'{path_data}/NAMELIST_{run}_oce']
-  flist += [f'{path_data}/NAMELIST_{run}_oce.log']
-  flist += [f'{path_data}/NAMELIST_{run}_oce_output']
+  #flist += [f'{path_data}/../../run/exp.{run}.run']
+  flist += glob.glob(f'{path_data}/../../run/*{run}*.run')
+  namelist = glob.glob(f'{path_data}/NAMELIST*')
+  namelist.sort()
+  flist += namelist
+  #flist += [f'{path_data}/NAMELIST_ICON_output_atm']
+  #flist += [f'{path_data}/NAMELIST_{run}_atm']
+  #flist += [f'{path_data}/NAMELIST_{run}_lnd']
+  #flist += [f'{path_data}/NAMELIST_{run}_oce']
+  #flist += [f'{path_data}/NAMELIST_{run}_oce.log']
+  #flist += [f'{path_data}/NAMELIST_{run}_oce_output']
   for fpath in flist:
     try:
       shutil.copy(fpath, f'{path_add_info}')
