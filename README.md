@@ -8,7 +8,7 @@ Pyicon is a python post-processing and visualization toolbox for ICON with a foc
 
 Pyicon is developed within the DFG-project TRR181 - Energy Transfers in Atmosphere and Ocean.
 
-The pyicon documentation can be found here: [documentation](https://modvis.dkrz.de/mh0033/m300602/pyicon_doc/html/index.html)
+The pyicon documentation can be found here: [documentation](https://m300602.gitlab-pages.dkrz.de/pyicon/)
 
 Pyicon is hosted at: (https://gitlab.dkrz.de/m300602/pyicon/)
 
