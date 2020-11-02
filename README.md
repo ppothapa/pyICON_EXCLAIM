@@ -12,3 +12,17 @@ The pyicon documentation can be found here: [documentation](https://m300602.gitl
 
 Pyicon is hosted at: (https://gitlab.dkrz.de/m300602/pyicon/)
 
+## Quick start for pyicon on Mistral
+
+Once you have to download pyicon by git:
+
+```bash
+git clone git@gitlab.dkrz.de:m300602/pyicon.git
+```
+
+After that you have to load the correct python environment and make sure that pyicon is in your search path each time you want to use it. 
+The easiest way is to use the following script:
+
+```bash
+source /path/to/pyicon/tools/conda_act_mistral_pyicon_env.sh
+```
