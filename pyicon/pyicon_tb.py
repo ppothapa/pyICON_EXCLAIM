@@ -371,6 +371,7 @@ def ckdtree_hgrid(lon_reg, lat_reg, res,
                  load_egrid=True,
                  load_vgrid=True,
                  n_nearest_neighbours=1,
+                 n_jobs=1,
                  ):
   """
   """
@@ -396,7 +397,8 @@ def ckdtree_hgrid(lon_reg, lat_reg, res,
   lat_o = Lat.flatten()
   
   # --- calculate ckdtree
-  Dind_dist = ckdtree_points(fpath_tgrid, lon_o, lat_o, load_cgrid=load_cgrid, load_egrid=load_egrid, load_vgrid=load_vgrid, n_nearest_neighbours=n_nearest_neighbours)
+  Dind_dist = ckdtree_points(fpath_tgrid, lon_o, lat_o, load_cgrid=load_cgrid, load_egrid=load_egrid, load_vgrid=load_vgrid,
+                             n_nearest_neighbours=n_nearest_neighbours, n_jobs=n_jobs)
 
   # --- save grid
   print('Saving grid file: %s' % (fpath_ckdtree))
@@ -418,6 +420,7 @@ def ckdtree_section(p1, p2, npoints=101,
                  gname='',
                  tgname='',
                  n_nearest_neighbours=1,
+                 n_jobs=1,
                  load_cgrid=True,
                  load_egrid=True,
                  load_vgrid=True,
@@ -443,7 +446,8 @@ def ckdtree_section(p1, p2, npoints=101,
   lat_o = lat_sec
 
   # --- calculate ckdtree
-  Dind_dist = ckdtree_points(fpath_tgrid, lon_o, lat_o, load_cgrid=load_cgrid, load_egrid=load_egrid, load_vgrid=load_vgrid, n_nearest_neighbours=n_nearest_neighbours)
+  Dind_dist = ckdtree_points(fpath_tgrid, lon_o, lat_o, load_cgrid=load_cgrid, load_egrid=load_egrid, load_vgrid=load_vgrid, n_nearest_neighbours=n_nearest_neighbours,
+                             n_jobs=n_jobs)
 
   # --- save grid
   print('Saving grid file: %s' % (fpath_ckdtree))
@@ -457,7 +461,7 @@ def ckdtree_section(p1, p2, npoints=101,
            )
   return Dind_dist['dckdtree_c'], Dind_dist['ickdtree_c'], lon_sec, lat_sec, dist_sec
 
-def ckdtree_points(fpath_tgrid, lon_o, lat_o, load_cgrid=True, load_egrid=True, load_vgrid=True, n_nearest_neighbours=1):
+def ckdtree_points(fpath_tgrid, lon_o, lat_o, load_cgrid=True, load_egrid=True, load_vgrid=True, n_nearest_neighbours=1, n_jobs=1):
   """
   """
   # --- load triangular grid
@@ -478,16 +482,19 @@ def ckdtree_points(fpath_tgrid, lon_o, lat_o, load_cgrid=True, load_egrid=True, 
     dckdtree_c, ickdtree_c = calc_ckdtree(lon_i=clon, lat_i=clat,
                                           lon_o=lon_o, lat_o=lat_o,
                                           n_nearest_neighbours=n_nearest_neighbours,
+                                          n_jobs=n_jobs,
                                           )
   if load_egrid:
     dckdtree_e, ickdtree_e = calc_ckdtree(lon_i=elon, lat_i=elat,
                                           lon_o=lon_o, lat_o=lat_o,
                                           n_nearest_neighbours=n_nearest_neighbours,
+                                          n_jobs=n_jobs,
                                           )
   if load_vgrid:
     dckdtree_v, ickdtree_v = calc_ckdtree(lon_i=vlon, lat_i=vlat,
                                           lon_o=lon_o, lat_o=lat_o,
                                           n_nearest_neighbours=n_nearest_neighbours,
+                                          n_jobs=n_jobs,
                                           )
 
   # --- save dict
@@ -503,7 +510,7 @@ def ckdtree_points(fpath_tgrid, lon_o, lat_o, load_cgrid=True, load_egrid=True, 
     Dind_dist['ickdtree_v'] = ickdtree_v
   return Dind_dist
 
-def calc_ckdtree(lon_i, lat_i, lon_o, lat_o, n_nearest_neighbours=1):
+def calc_ckdtree(lon_i, lat_i, lon_o, lat_o, n_nearest_neighbours=1, n_jobs=1):
   """
   """
   # --- do ckdtree
@@ -520,7 +527,7 @@ def calc_ckdtree(lon_i, lat_i, lon_o, lat_o, n_nearest_neighbours=1):
     lzip_i = list(zip(xi, yi, zi))
     tree = cKDTree(lzip_i)
     lzip_o = list(zip(xo, yo, zo))
-    dckdtree, ickdtree = tree.query(lzip_o , k=n_nearest_neighbours, n_jobs=1)
+    dckdtree, ickdtree = tree.query(lzip_o , k=n_nearest_neighbours, n_jobs=n_jobs)
   return dckdtree, ickdtree
 
 def calc_vertical_interp_weights(zdata, levs):
