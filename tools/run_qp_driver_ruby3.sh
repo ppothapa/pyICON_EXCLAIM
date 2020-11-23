@@ -8,7 +8,7 @@
 #SBATCH --account=mh0033
 
 module list
-source /home/mpim/m300602/pyicon/tools/conda_act_mistral_pyicon_env.sh
+source ./conda_act_mistral_pyicon_env.sh
 which python
 
 rand=$(cat /dev/urandom | tr -dc 'A-Z' | fold -w 3 | head -n 1)

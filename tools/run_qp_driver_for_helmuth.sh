@@ -9,7 +9,7 @@
 
 module list
 
-source /home/mpim/m300602/pyicon/tools/conda_act_mistral_pyicon_env.sh
+source ./conda_act_mistral_pyicon_env.sh
 which python
 
 path_pyicon=`(cd .. && pwd)`"/"

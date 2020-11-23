@@ -8,7 +8,7 @@
 #SBATCH --account=mh0033
 
 module list
-source /home/mpim/m300602/pyicon/tools/conda_act_mistral_pyicon_env.sh
+source ./conda_act_mistral_pyicon_env.sh
 which python
 
 rand=$(cat /dev/urandom | tr -dc 'A-Z' | fold -w 3 | head -n 1)
@@ -59,6 +59,10 @@ oce_monthly = '_oce_dbg'
 atm_2d      = '_atm_2d_ml'
 atm_3d      = '_atm_3d_ml'
 atm_mon     = '_atm_mon'
+
+# --- nc output
+save_data = True
+path_nc = '/scratch/m/m300602/tmp/test_pyicon_output/'
 
 # --- time average information (can be overwritten by qp_driver call)
 tave_ints = [
