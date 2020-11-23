@@ -172,13 +172,27 @@ def apply_ckdtree(data, fpath_ckdtree, mask=None, coordinates='clat clon', radiu
   data_interpolated = apply_ckdtree_base(data, inds, distances, radius_of_influence)
   return data_interpolated
 
-def interp_to_rectgrid(data, fpath_ckdtree, indx='all', indy='all', mask_reg=None, coordinates='clat clon'):
+def interp_to_rectgrid(data, fpath_ckdtree, 
+                       lon_reg=None, lat_reg=None,             # for new way of cropping
+                       indx='all', indy='all', mask_reg=None,  # for old way of cropping
+                       coordinates='clat clon'):
   ddnpz = np.load(fpath_ckdtree)
   lon = ddnpz['lon'] 
   lat = ddnpz['lat'] 
+  # --- old way of cropping
   if not isinstance(indx, str):
     lon = lon[indx]
     lat = lat[indy]
+  # --- prepare cropping the data to a region
+  if lon_reg is not None:
+    indx = np.where((lon>=lon_reg[0]) & (lon<lon_reg[1]))[0]
+    indy = np.where((lat>=lat_reg[0]) & (lat<lat_reg[1]))[0]
+    Lon, Lat = np.meshgrid(lon, lat) # full grid
+    lon = lon[indx]
+    lat = lat[indy]
+    ind_reg = ((Lon>=lon_reg[0]) & (Lon<lon_reg[1]) & (Lat>=lat_reg[0]) & (Lat<lat_reg[1])).flatten()
+    mask_reg = ind_reg
+    Lon, Lat = np.meshgrid(lon, lat) # cropped grid
   datai = apply_ckdtree(data, fpath_ckdtree, mask=mask_reg, coordinates=coordinates)
   if datai.ndim==1:
     datai = datai.reshape(lat.size, lon.size)
@@ -1089,6 +1103,39 @@ def indfind(elements, vector):
   for i in range(elements.size):                                                    
     inds[i] = np.argmin( np.abs(vector - elements[i]) )                             
   return inds
+
+def write_dataarray_to_nc(
+    fpath,
+    data, coords,
+    name='data', long_name='', units='',
+    long_name_coords=None, units_coords=None,
+    time_bnds=[],
+    verbose=True,
+  ):
+
+  # --- initialize Dataset
+  ds = xr.Dataset()
+
+  # --- add data array to dataset
+  ds[name] = xr.DataArray(data, dims=coords.keys(), coords=coords, attrs={'units': units, 'long_name': long_name})
+
+  # --- add attributes to coordinates
+  for nn, dims in enumerate(coords):
+    if not dims.startswith('time') and units_coords is not None:
+      ds[dims].attrs['units'] = units_coords[nn]
+    if long_name_coords is not None:
+      ds[dims].attrs['long_name'] = long_name_coords[nn]
+
+  # --- add time bounds
+  if len(time_bnds)!=0:
+    ds['time_bnds'] = xr.DataArray(time_bnds)
+
+  # --- write netcdf file
+  if verbose:
+    print(f'Writing data file {fpath}.')
+  ds.to_netcdf(fpath)
+
+  return ds
 
 #def nc_info(fpath):
 #  if not os.path.isfile(fpath):
