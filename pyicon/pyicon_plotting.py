@@ -19,6 +19,7 @@ import cmocean
 # --- debugging
 from ipdb import set_trace as mybreak  
 from importlib import reload
+from .pyicon_tb import write_dataarray_to_nc
 
 def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                clevs=None,
@@ -39,6 +40,8 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                do_plot_settings=True,
                land_facecolor='0.7',
                do_write_data_range=False,
+               save_data=False,
+               path_nc='',
               ):
   """
   IaV variable needs the following attributes
@@ -163,6 +166,19 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     info_str = 'min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (IaV.data.min(), IaV.data.mean(), IaV.data.std(), IaV.data.max())
     ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
 
+  # --- saving data to netcdf 
+  if save_data:
+    if use_tgrid:
+      print('::: Warning: saving variable on tripolar grid is not supported yet in hplot_base! :::')
+    ds = write_dataarray_to_nc(
+      fpath=path_nc+IaV.name+'.nc',
+      data=IaV.data,
+      coords={'lat': IcD.lat, 'lon': IcD.lon},
+      name=IaV.name, long_name=IaV.long_name, units=IaV.units,
+      long_name_coords=['latitude', 'longitude'],
+      #time_bnds=IaV.bnds,
+    )
+
   #if (projection!='none') and (crs_features):
   ##if projection=='PlateCarree':
   ##if False:
@@ -198,6 +214,8 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                fig_size_fac=2.0,
                do_plot_settings=True,
                do_write_data_range=False,
+               save_data=False,
+               path_nc='',
               ):
   """
   IaV variable needs the following attributes
@@ -327,6 +345,17 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   if do_write_data_range:
     info_str = 'min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (IaV.data.min(), IaV.data.mean(), IaV.data.std(), IaV.data.max())
     ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
+
+  # --- saving data to netcdf 
+  if save_data:
+    ds = write_dataarray_to_nc(
+      fpath=path_nc+IaV.name+'.nc',
+      data=IaV.data,
+      coords={'vert_coord': z, 'hor_coord': x},
+      name=IaV.name, long_name=IaV.long_name, units=IaV.units,
+      long_name_coords=[ylabel, xstr],
+      #time_bnds=IaV.bnds,
+    )
 
   return ax, cax, mappable, Dstr
 
