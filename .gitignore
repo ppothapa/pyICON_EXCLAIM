@@ -14,9 +14,14 @@ doc/_build/
 
 # add directory of untracked stuff
 tests_untracked
+notebooks/test*
+notebooks/Untitled*
 
 # slurm log file
 tools/log.o*
+config_ckdtree/log.o*
+
+tools/config_qp_???.py
 
 # trash
 trash
