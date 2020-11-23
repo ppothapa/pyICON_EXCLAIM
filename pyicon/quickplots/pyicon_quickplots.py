@@ -19,6 +19,7 @@ import cmocean
 # --- debugging
 from ipdb import set_trace as mybreak  
 import pyicon as pyic
+import xarray as xr
 
 # ================================================================================ 
 # Quick Plots
@@ -52,6 +53,8 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               land_facecolor='0.7',
               do_mask=False,
               do_write_data_range=True,
+              save_data=False,
+              fpath_nc='./tmp.nc',
               ):
 
   #for fp in [fpath]:
@@ -148,6 +151,8 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
               do_plot_settings=do_plot_settings,
               land_facecolor=land_facecolor,
               do_write_data_range=do_write_data_range,
+              save_data=save_data,
+              fpath_nc=fpath_nc,
              )
 
   # --- contour labels
@@ -185,6 +190,8 @@ def qp_vplot(fpath, var, IcD='none', it=0,
               mode_load='normal',
               do_plot_settings=True,
               do_write_data_range=True,
+              save_data=False,
+              fpath_nc='./tmp.nc',
               ):
 
   #for fp in [fpath]:
@@ -286,6 +293,8 @@ def qp_vplot(fpath, var, IcD='none', it=0,
                  logplot=logplot,
                  do_plot_settings=do_plot_settings,
                  do_write_data_range=do_write_data_range,
+                 save_data=save_data,
+                 fpath_nc=fpath_nc,
                 )
 
   # --- contour labels
@@ -369,13 +378,15 @@ def qp_timeseries(IcD, fname, vars_plot,
                   var_fac=1., var_add=0.,
                   title='', units='',
                   t1='none', t2='none',
-                  lstart='none', lend='none',
+                  lstart=None, lend=None,
                   ave_freq=0,
                   omit_last_file=True,
                   mode_ave=['mean'],
                   labels=None,
                   do_write_data_range=True,
                   ax='none',
+                  save_data=False,
+                  fpath_nc='./tmp.nc',
                  ): 
 
   if len(mode_ave)==1:
@@ -431,6 +442,12 @@ def qp_timeseries(IcD, fname, vars_plot,
     adjust_xylim = False
   else:
     adjust_xylim = False
+  
+  # --- initialize nc Dataset
+  if save_data:
+    coords = {'times': times_plot[slice(lstart,lend)]}
+    ds = xr.Dataset()
+    #ds['time_bnds'] = xr.DataArray(times[sice(lstart,lend)])
 
   # --- loop over all variables which should be plotted
   for mm, var in enumerate(vars_plot):
@@ -441,6 +458,12 @@ def qp_timeseries(IcD, fname, vars_plot,
       f = Dataset(fpath, 'r')
       data_file = f.variables[var][:,0,0]
       data = np.concatenate((data, data_file))
+      if nn==0:
+        long_name_ncout = f.variables[var].long_name
+        if units!='':
+          units_ncout = f.variables[var].units 
+        else:
+          units_ncout = units
       f.close()
     # end: not needed if IcD.load_timeseries is used
 
@@ -466,13 +489,9 @@ def qp_timeseries(IcD, fname, vars_plot,
     data += var_add
 
     # --- skip data at start and end if lstart and lend are defined
-    if lstart=='none':
-      lstart=0
-    if lend=='none':
-      lend=data.size
-    times_plot = times_plot[lstart:lend]
-    data  = data[lstart:lend]
-    dtsum = dtsum[lstart:lend]
+    times_plot = times_plot[slice(lstart,lend)]
+    data  = data[slice(lstart,lend)]
+    dtsum = dtsum[slice(lstart,lend)]
 
     # --- define labels
     if labels is None:
@@ -487,6 +506,10 @@ def qp_timeseries(IcD, fname, vars_plot,
       ax.set_xlim([times_plot.min(), times_plot.max()])
       ax.set_ylim([data.min(), data.max()])
 
+    if save_data:
+      # --- add data array to dataset
+      ds[var] = xr.DataArray(data, dims=coords.keys(), coords=coords, attrs={'units': units_ncout, 'long_name': long_name_ncout})
+
   # --- grid
   ax.grid(True)
 
@@ -495,7 +518,7 @@ def qp_timeseries(IcD, fname, vars_plot,
     f = Dataset(fpath, 'r')
     if units=='':
       units = f.variables[var].units
-      units = f' [{units}]'
+    units = f' [{units}]'
     if title=='':
       long_name = f.variables[var].long_name
       title = long_name+units
@@ -524,6 +547,11 @@ def qp_timeseries(IcD, fname, vars_plot,
       ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
     except:
       pass
+
+  if save_data:
+    # --- write netcdf file
+    print(f'Writing data file {fpath_nc}.')
+    ds.to_netcdf(fpath_nc)
 
   FigInf = dict()
   Dhandles = dict()
