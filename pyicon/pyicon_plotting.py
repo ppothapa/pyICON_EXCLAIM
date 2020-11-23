@@ -41,7 +41,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                land_facecolor='0.7',
                do_write_data_range=False,
                save_data=False,
-               path_nc='',
+               fpath_nc='',
               ):
   """
   IaV variable needs the following attributes
@@ -171,7 +171,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     if use_tgrid:
       print('::: Warning: saving variable on tripolar grid is not supported yet in hplot_base! :::')
     ds = write_dataarray_to_nc(
-      fpath=path_nc+IaV.name+'.nc',
+      fpath=fpath_nc,
       data=IaV.data,
       coords={'lat': IcD.lat, 'lon': IcD.lon},
       name=IaV.name, long_name=IaV.long_name, units=IaV.units,
@@ -215,7 +215,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                do_plot_settings=True,
                do_write_data_range=False,
                save_data=False,
-               path_nc='',
+               fpath_nc='',
               ):
   """
   IaV variable needs the following attributes
@@ -349,7 +349,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   # --- saving data to netcdf 
   if save_data:
     ds = write_dataarray_to_nc(
-      fpath=path_nc+IaV.name+'.nc',
+      fpath=fpath_nc,
       data=IaV.data,
       coords={'vert_coord': z, 'hor_coord': x},
       name=IaV.name, long_name=IaV.long_name, units=IaV.units,
