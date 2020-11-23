@@ -47,6 +47,7 @@ class IconData(object):
                xr_chunks             = None,
                calc_coeff            = True,
                calc_coeff_mappings   = False,
+               do_only_timesteps     = False,
                time_mode             = 'num2date',
                model_type            = 'oce',
                output_freq           = 'auto',
@@ -67,7 +68,21 @@ class IconData(object):
     self.lev           = lev
 
     self.dtype         = dtype
-    
+
+    if do_only_timesteps:
+      do_triangulation = False
+      calc_coeff = False
+      calc_coeff_mappings = False
+      load_vartical_grid = False
+      load_vgrid_depth = False
+      load_vgrid_dz = False
+      load_vgrid_mask = False
+      load_triangular_grid = False
+      load_rectangular_grid = False
+      load_variable_info = True
+      load_grid_from_data_file = False
+      load_xarray_dset = False
+
     # --- automatically identify grid from data
     # (does not work anymore, maybe not necessary)
     if gname=='auto':
@@ -267,6 +282,7 @@ class IconData(object):
       self.output_freq = output_freq
 
     if load_variable_info:
+      self.diag_out('load_variable_info')
       self.get_varnames(self.flist[0])
       self.associate_variables(fpath_data=self.flist[0], skip_vars=[])
       #self.get_timesteps(time_mode='float2date')
