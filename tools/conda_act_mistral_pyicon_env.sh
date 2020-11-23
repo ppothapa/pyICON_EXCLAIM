@@ -13,8 +13,8 @@ conda_env="pyicon_py38"
 #conda_env="myenv_py3"
 
 # --- add pyicon to PYTHONPATH
-#PYICON_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"  # doesn't work as intended: always uses source script as basis
-PYICON_PATH="$( cd "$(pwd)/.." >/dev/null 2>&1 && pwd )"
+PYICON_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"  #problem: takes directory of source script as base
+#PYICON_PATH="$( cd "$(pwd)/.." >/dev/null 2>&1 && pwd )"  # problem: takes directory as base from where this script is called
 export PYTHONPATH="${PYICON_PATH}"
 # use this if you have a harmless PYTHONPATH which you want to keep
 #export PYTHONPATH="${PYICON_PATH}:${PYTHONPATH}"
