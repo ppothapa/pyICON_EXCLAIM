@@ -1,5 +1,5 @@
 Mistral specific
-----------------
+================
 
 .. pyicon compatible python environment
 .. ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -11,7 +11,7 @@ Mistral specific
 .. Switch to such a pyicon compatible python environment in every shell session where you want to execute python scripts that use pyicon.
 
 Start Jupyter session on Mistral
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------
 
 To use Jupyter on the DKRZ cluster, you can find valuable information `here <https://www.dkrz.de/up/systems/mistral/programming/jupyter-notebook>`_.
 
@@ -26,7 +26,7 @@ JupyterLab session can be started with ``-c lab`` option (note that pyicon_view 
   ./start-jupyter -u username -c lab -i /path/to/pyicon/tools/conda_act_mistral_pyicon_env.sh
 
 Grid files on Mistral
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 At the moment, a collection of grid files and ckdtrees for different ICON grids can be found here::
 
@@ -49,7 +49,7 @@ E.g. ICON SMT grids can be found in::
   /pool/data/ICON/oes/grids/OceanOnly
 
 Parallel computing with python on Mistral
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------------------
 
 By using the ``mpi4py`` module, it is possible to run tasks of a script in parallel.
 To make use of simple parallelization e.g. for creating animations, a python script needs to be modified in the following way (!todo! improve example)::

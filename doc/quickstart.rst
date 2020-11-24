@@ -1,5 +1,5 @@
 Quickstart
-----------
+==========
 
 The easiest way to start is probably by using some of the example scripts from the directory ``example_scripts``. 
 Best is to start with ``examp_pyicon_start.py`` either by typing::

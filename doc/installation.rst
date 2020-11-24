@@ -1,8 +1,8 @@
 Installation of pyicon
-----------------------
+======================
 
 Mistral environment
-^^^^^^^^^^^^^^^^^^^
+-------------------
 
 Log into Mistral and go to a directory where you want to install pyicon (this can be in your home directory or on work).
 Download pyicon by::
@@ -21,15 +21,16 @@ Finally, a suitable python3 environment is activated by conda.
 If everything was successful, you should now be ready to use pyicon and you can skipt further installation instructions.
 
 Requirements
-^^^^^^^^^^^^
+------------
 
 pyicon is developed for python 3.7. Other versions might work as well but are not supported so far.
 Furthermore, the following modules are required:
 
   * numpy, scipy (calculations)
   * matplotlib, cartopy (plotting)
-  * netcdf4 (reading netcdf data)
-  * ipython, jupyter (for pyicon_view)
+  * netcdf4, xarray (reading / writing netcdf data)
+  * ipython, jupyter (for running python)
+  * mpi4py, dask (for parallel computing and distributed memory)
 
 A suitable python environment is probably easiest set up by using conda::
 
@@ -37,28 +38,35 @@ A suitable python environment is probably easiest set up by using conda::
 
 with the following yml-file (assumed to be named pyicon_env.yml)::
 
-  name: pyicon_env
+  name: pyicon_py38
   channels:
     - conda-forge
     - defaults
   dependencies:
-    - python=3.7
+    - python=3.8
     - numpy
     - scipy
     - netcdf4
     - matplotlib
     - cartopy
-    - ipython     # for pyicon_view
-    - jupyter     # for pyicon_view
+    - ipdb
+    - conda-build
+    - ipympl      # interactive plots in jupyterlab
+    - nodejs      # interactive plots in jupyterlab
+    - ipython     
+    - jupyter     
     - jupyterlab  # optional
     - cmocean     # optional
-    - mpi4py      # not used by pyicon so far
-    - seawater    # not used by pyicon so far
-    - xarray      # not used by pyicon so far
-    - dask        # not used by pyicon so far
+    - sphinx      # optional for documentation
+    - mpi4py      
+    - seawater    # optional
+    - xarray      
+    - dask        
+    - dask-jobqueue
+    - python-graphviz
 
 General installation instructions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------
 
 Download pyicon by::
   
