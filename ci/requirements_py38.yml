@@ -13,14 +13,14 @@ dependencies:
   - conda-build
   - ipympl      # interactive plots in jupyterlab
   - nodejs      # interactive plots in jupyterlab
-  - ipython     # for pyicon_view
-  - jupyter     # for pyicon_view
+  - ipython     
+  - jupyter     
   - jupyterlab  # optional
   - cmocean     # optional
   - sphinx      # optional for documentation
-  - mpi4py      # not used by pyicon so far
-  - seawater    # not used by pyicon so far
-  - xarray      # not used by pyicon so far
-  - dask        # not used by pyicon so far
+  - mpi4py      
+  - seawater    # optional
+  - xarray      
+  - dask        
   - dask-jobqueue
   - python-graphviz
