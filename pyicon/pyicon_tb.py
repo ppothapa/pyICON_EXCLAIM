@@ -1137,6 +1137,45 @@ def write_dataarray_to_nc(
 
   return ds
 
+#def write_dataset_to_nc(
+#    fpath,
+#    data_list, dims_list, coords, 
+#    name_list=[], long_name_list=[], units_list=[],
+#    long_name_coords=None, units_coords=None,
+#    time_bnds=[],
+#    verbose=True,
+#  ):
+#
+#  # --- initialize Dataset and add coords
+#  ds = xr.Dataset(coords=coords)
+#
+#  # --- add attributes to coordinates
+#  for nn, dims in enumerate(coords):
+#    if not dims.startswith('time') and units_coords is not None:
+#      ds[dims].attrs['units'] = units_coords[nn]
+#    if long_name_coords is not None:
+#      ds[dims].attrs['long_name'] = long_name_coords[nn]
+#
+#  # --- if no names for variables are given, make some up
+#  if isempty(name_list):
+#    for nn in range(len(data_list)):
+#      name_list.append(f'data_{nn}')
+#
+#  # --- add data arrays to dataset
+#  for nn, (data, coords, name) in enumerate(zip(data_list, coords_list, name_list)):
+#    ds[name] = xr.DataArray(data, dims=coords.keys(), coords=coords, attrs={'units': units, 'long_name': long_name})
+#
+#  # --- add time bounds
+#  if len(time_bnds)!=0:
+#    ds['time_bnds'] = xr.DataArray(time_bnds)
+#
+#  # --- write netcdf file
+#  if verbose:
+#    print(f'Writing data file {fpath}.')
+#  ds.to_netcdf(fpath)
+#
+#  return ds
+
 #def nc_info(fpath):
 #  if not os.path.isfile(fpath):
 #    print("::: Error: file %s does not exist! :::" %(fpath))
