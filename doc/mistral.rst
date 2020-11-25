@@ -13,6 +13,33 @@ Mistral specific
 Start Jupyter session on Mistral
 --------------------------------
 
+Jupyter without DKRZ software
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+One easy way to start a Jupyter session on mistral is like follows:
+
+1. Connect by ssh to mistralpp using port forwording use a <port> which is 8000<port<8887:
+
+  ::
+
+    ssh -L 8888:localhost:<port> <username>@mistralpp.dkrz.de
+
+2. Activate an appropriate python environment and start Jupyter using the above <port>:
+
+  ::
+    
+    source pyicon/tools/conda_act_mistral_pyicon_env.sh
+    jupyter notebook --no-browser --port=<port>
+
+3. Finally open you web browser on you local computer and enter the address:
+  
+  ::
+
+    localhost:8888
+
+Jupyter with DKRZ software
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 To use Jupyter on the DKRZ cluster, you can find valuable information `here <https://www.dkrz.de/up/systems/mistral/programming/jupyter-notebook>`_.
 
 DKRZ also provides a `script <https://gitlab.dkrz.de/k202009/ssh_scripts/raw/master/start-jupyter?inline=false>`_ to easily setup a Jupyter session.
