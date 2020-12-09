@@ -212,7 +212,7 @@ and from math/mo_operator_ocean_coeff_3d.f90 init_operator_coeffs_cell:
 def calc_edge2cell_coeff_cc_t(IcD):
   # dim(dist_vector) = (nEdges, nCellsOfEdges, nCartDims)
   dist_vector = (  IcD.edge_cart_vec[:,np.newaxis,:] 
-                 - IcD.cell_cart_vec[IcD.adjacent_cell_of_edge] )
+                 - IcD.cell_cart_vec[IcD.adjacent_cell_of_edge,:] )
   orientation = scalar_product(dist_vector, IcD.edge_prim_norm[:,np.newaxis,:], dim=2) 
   dist_vector *= np.sign(orientation)[:,:,np.newaxis]
   # dim(edge2cell_coeff_cc_t) = (nEdges, nCellsOfEdges, nCartDims)
@@ -269,11 +269,20 @@ def cell2edges(IcD, p_vn_c):
   """
   math/mo_scalar_product.f90: map_cell2edges_3d_mlevels
   """
-  ptp_vn = (   scalar_product(p_vn_c[:,IcD.adjacent_cell_of_edge[:,0],:], 
-                              IcD.edge2cell_coeff_cc_t[np.newaxis,:,0,:], dim=2)
-             + scalar_product(p_vn_c[:,IcD.adjacent_cell_of_edge[:,1],:], 
-                              IcD.edge2cell_coeff_cc_t[np.newaxis,:,1,:], dim=2)
-           )
+  if p_vn_c.ndim==3:
+    ptp_vn = (   scalar_product(p_vn_c[:,IcD.adjacent_cell_of_edge[:,0],:], 
+                                IcD.edge2cell_coeff_cc_t[np.newaxis,:,0,:], dim=2)
+               + scalar_product(p_vn_c[:,IcD.adjacent_cell_of_edge[:,1],:], 
+                                IcD.edge2cell_coeff_cc_t[np.newaxis,:,1,:], dim=2)
+             )
+  elif p_vn_c.ndim==2:
+    ptp_vn = (   scalar_product(p_vn_c[IcD.adjacent_cell_of_edge[:,0],:], 
+                                IcD.edge2cell_coeff_cc_t[:,0,:], dim=1)
+               + scalar_product(p_vn_c[IcD.adjacent_cell_of_edge[:,1],:], 
+                                IcD.edge2cell_coeff_cc_t[:,1,:], dim=1)
+             )
+  else:
+    raise ValueError(f"::: Error: Unsupport p_vn_c.ndim={p_vn_c.ndim}! :::")
   return ptp_vn
 
 def calc_2dlocal_from_3d(IcD, p_vn_c):
@@ -332,13 +341,14 @@ def calc_3d_from_2dlocal(IcD, uo, vo):
   u2 =  uo*cosLon - vo*sinLat*sinLon
   u3 =  vo*cosLat
 
-  p_vn_c = np.ma.concatenate((u1[:,:,np.newaxis],u2[:,:,np.newaxis],u3[:,:,np.newaxis]), axis=2)
+  conc_dim = u1.ndim
+  p_vn_c = np.ma.concatenate((u1[...,np.newaxis],u2[...,np.newaxis],u3[...,np.newaxis]), axis=conc_dim)
   return p_vn_c
 
 # //////////////////////////////////////////////////////////////////////////////// 
 # \\\\\ Calculation for ICON
 
-def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90.):
+def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90., verbose=False):
   """ Calculates barotropic streamfunction in Sv from mass_flux_vint on vertex-grid.
 
   This function determines neighbouring vertices starting from lon_start, lat_start 
@@ -362,7 +372,8 @@ def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90.):
   vertexIsAccounted_list[list_vertex_index] = 1.
   next_vertex_list.append(list_vertex_index)
   
-  print('start finding indices')
+  if verbose:
+    print('start finding indices')
   aa = 0
   totalListedEdges = 0 # index for all listed edges
   while next_vertex_list:
@@ -394,7 +405,8 @@ def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90.):
           vertexIsAccounted_list[check_vertex] = 1
   
   # --- calculate streamfunction
-  print('start calculating stream')
+  if verbose:
+    print('start finding indices')
   stream_variable = np.zeros((IcD.vlon.size), dtype=IcD.dtype)
   for target_list_index in range(target_vertex_list.size):
     #if target_list_index%100==0:
