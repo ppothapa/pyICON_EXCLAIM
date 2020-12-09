@@ -73,7 +73,7 @@ class IconData(object):
       do_triangulation = False
       calc_coeff = False
       calc_coeff_mappings = False
-      load_vartical_grid = False
+      load_vertical_grid = False
       load_vgrid_depth = False
       load_vgrid_dz = False
       load_vgrid_mask = False
