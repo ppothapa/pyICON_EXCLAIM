@@ -1636,7 +1636,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'passage_transports'
     if fig_name in fig_names and os.path.exists(path_grid+'section_mask_'+gname+'.nc'):
-      ax, cax, mappable, Dstr = pyic.hplot_base(IcD, IaV, cmap='RdBu_r',
+      ax, cax, hm, Dstr = pyic.hplot_base(IcD, IaV, cmap='RdBu_r',
                       clim=200, clevs=[-200,-160,-120,-80,-40,-30,-25,-20,-15,-10,-5,5,10,15,20,25,30,40,80,120,160,200], 
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       do_write_data_range=True,
@@ -2770,7 +2770,7 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('tauu', 'mN/m$^2$', 'zonal wind stress')
       IaV.data = tauu*1e3
       IaV.interp_to_rectgrid(fpath_ckdtree_atm)
-      ax, cax, mappable, Dstr = pyic.hplot_base(IcD_atm2d, IaV, clim=200, cincr=25, cmap='RdYlBu_r',
+      ax, cax, hm, Dstr = pyic.hplot_base(IcD_atm2d, IaV, clim=200, cincr=25, cmap='RdYlBu_r',
                       projection='NorthPolarStereo', xlim=[-180.,180.], ylim=[60.,90.],
                       crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
