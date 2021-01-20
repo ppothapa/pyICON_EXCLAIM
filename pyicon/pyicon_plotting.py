@@ -58,7 +58,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   returns:
     * ax
     * cax
-    * mappable
+    * hm
   """
   Dstr = dict()
 
@@ -146,8 +146,6 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     if isinstance(ylim, str) and (ylim=='auto'):
       ylim = [IcD.lat.min(), IcD.lat.max()]
 
-  mappable = hm[0]
-
   # --- plot refinement
   ax.set_title(title)
   ax.set_xlabel(xlabel)
@@ -193,7 +191,7 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   #  #ax.stock_img()
   #ax.xaxis.set_ticks_position('both')
   #ax.yaxis.set_ticks_position('both')
-  return ax, cax, mappable, Dstr
+  return ax, cax, hm, Dstr
 
 def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                clevs=None,
@@ -228,7 +226,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   returns:
     * ax
     * cax
-    * mappable
+    * hm 
   """
   Dstr = dict()
 
@@ -317,8 +315,6 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
   if isinstance(ylim, str) and (ylim=='auto'):
     ylim = [z.max(), z.min()]
 
-  mappable = hm[0]
-
   # --- plot refinement
   ax.set_title(title)
   ax.set_xlabel(xstr)
@@ -357,7 +353,7 @@ def vplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
       #time_bnds=IaV.bnds,
     )
 
-  return ax, cax, mappable, Dstr
+  return ax, cax, hm, Dstr
 
 def calc_conts(conts, clim, cincr, nclev):
   # ------ decide how to determine contour levels
@@ -638,7 +634,7 @@ def shade(
         else:
           cborientation = 'horizontal'
       # ------ make actual colorbar
-      cb = plt.colorbar(mappable=hm, cax=cax, extend=extend, orientation=cborientation)
+      cb = plt.colorbar(mappable=hm[0], cax=cax, extend=extend, orientation=cborientation)
       # ------ prevent white lines if fig is saved as pdf
       cb.solids.set_edgecolor("face")
       # ------ use exponential notation for large colorbar ticks
@@ -849,7 +845,7 @@ last change:
       div = make_axes_locatable(ax)
       cax = div.append_axes("right", size="10%", pad=0.1)
     # ------ make actual colorbar
-    cb = plt.colorbar(mappable=hm, cax=cax, extend=extend)
+    cb = plt.colorbar(mappable=hm[0], cax=cax, extend=extend)
     # ------ prevent white lines if fig is saved as pdf
     cb.solids.set_edgecolor("face")
     # ------ use exponential notation for large colorbar ticks
