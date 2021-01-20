@@ -341,7 +341,7 @@ class hplot(object):
 
     # --- do plotting
     (self.ax, self.cax, 
-     self.mappable,
+     self.hm,
      self.Dstr
     ) = pyic.hplot_base(
                          self.IcD, self.IaV, 
@@ -415,14 +415,14 @@ class hplot(object):
         self.IaV.data = self.IaV.data[self.IcD.indy, self.IcD.indx]
 
       # --- remove old plot
-      self.mappable.remove()
+      self.hm[0].remove()
 
       # --- do plotting
       #print(self.use_tgrid)
       #print(self.IcD.lon.shape)
       #print(self.IaV.data.shape)
       (self.ax, self.cax, 
-       self.mappable,
+       self.hm,
        self.Dstr
       ) = pyic.hplot_base(
                            self.IcD, self.IaV, 
@@ -466,9 +466,9 @@ class hplot(object):
         # cutting out masked values of Tri is necessary 
         # otherwise there are big messy triangles in plot
         data_nomasked_vals = data[self.IcD.mask_bt==False]
-        self.mappable.set_array(data_nomasked_vals)
+        self.hm[0].set_array(data_nomasked_vals)
       else:
-        self.mappable.set_array(data[1:,1:].flatten())
+        self.hm[0].set_array(data[1:,1:].flatten())
 
     # --- set info strings
     self.hrstr.set_text('rgrid: %s'%(self.IcD.rgrid_name))
@@ -494,7 +494,7 @@ class hplot(object):
         clim = np.array([-clim[0], clim[0]])
     try:
       #print clim
-      self.mappable.set_clim(clim)
+      self.hm[0].set_clim(clim)
       self.clim = clim
     except:
       print('Could not convert %s into clim.' % (climstr))
@@ -516,7 +516,7 @@ class hplot(object):
     if cmap.startswith('cmo'):
       cmap = cmap.split('.')[-1]
       cmap = getattr(cmocean.cm, cmap)
-    self.mappable.set_cmap(cmap) 
+    self.hm[0].set_cmap(cmap) 
     return
 
   #def update_reg(self, w):
@@ -687,7 +687,7 @@ class vplot(hplot):
 
     # --- do plotting
     (self.ax, self.cax, 
-     self.mappable,
+     self.hm,
      self.Dstr
     ) = pyic.vplot_base(
                          self.IcD, self.IaV, 
@@ -737,7 +737,7 @@ class vplot(hplot):
         data[data<=0.0] = np.ma.masked
         data = np.ma.log10(data) 
       # --- update figure
-      self.mappable.set_array(data[1:,1:].flatten())
+      self.hm[0].set_array(data[1:,1:].flatten())
 
     # --- set info strings
     self.hsstr.set_text('section: %s'%(self.sec_name))
