@@ -156,7 +156,7 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
              )
 
   # --- contour labels
-  if conts not None:
+  if conts is not None:
     Cl = ax.clabel(hm[1], colors='k', fontsize=6, fmt='%.1f', inline=False)
     for txt in Cl:
       txt.set_bbox(dict(facecolor='white', edgecolor='none', pad=0))
@@ -297,7 +297,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
                 )
 
   # --- contour labels
-  if conts not None:
+  if conts is not None:
     Cl = ax.clabel(hm[1], colors='k', fontsize=6, fmt='%.1f', inline=False)
     for txt in Cl:
       txt.set_bbox(dict(facecolor='white', edgecolor='none', pad=0))

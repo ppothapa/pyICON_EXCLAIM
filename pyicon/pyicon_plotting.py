@@ -634,7 +634,7 @@ def shade(
         else:
           cborientation = 'horizontal'
       # ------ make actual colorbar
-      cb = plt.colorbar(mappable=hm[0], cax=cax, extend=extend, orientation=cborientation)
+      cb = plt.colorbar(mappable=hm, cax=cax, extend=extend, orientation=cborientation)
       # ------ prevent white lines if fig is saved as pdf
       cb.solids.set_edgecolor("face")
       # ------ use exponential notation for large colorbar ticks
