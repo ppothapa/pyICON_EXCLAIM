@@ -131,7 +131,7 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
 
   # --- do plotting
   (ax, cax, 
-   mappable,
+   hm,
    Dstr
   ) = pyic.hplot_base(
               IcD, IaV, 
@@ -156,11 +156,10 @@ def qp_hplot(fpath, var, IcD='none', depth=-1e33, iz=0, it=0,
              )
 
   # --- contour labels
-  if contfs=='auto':
-    Cl = ax.clabel(mappable, colors='k', fontsize=6, fmt='%.1f', inline=False)
+  if conts not None:
+    Cl = ax.clabel(hm[1], colors='k', fontsize=6, fmt='%.1f', inline=False)
     for txt in Cl:
       txt.set_bbox(dict(facecolor='white', edgecolor='none', pad=0))
-
 
   # --- output
   FigInf = dict()
@@ -279,7 +278,7 @@ def qp_vplot(fpath, var, IcD='none', it=0,
 
   # --- do plotting
   (ax, cax, 
-   mappable,
+   hm,
    Dstr
   ) = pyic.vplot_base(
                  IcD, IaV, 
@@ -298,8 +297,8 @@ def qp_vplot(fpath, var, IcD='none', it=0,
                 )
 
   # --- contour labels
-  if contfs=='auto':
-    Cl = ax.clabel(mappable, colors='k', fontsize=6, fmt='%.1f', inline=False)
+  if conts not None:
+    Cl = ax.clabel(hm[1], colors='k', fontsize=6, fmt='%.1f', inline=False)
     for txt in Cl:
       txt.set_bbox(dict(facecolor='white', edgecolor='none', pad=0))
 
@@ -648,7 +647,7 @@ def write_table_html(data, leftcol=[], toprow=[], prec='.1f', width='80%'):
 ##  IC.units = fi.variables[var].units
 ##  IC.name = var
 ##
-##  ax, cax, mappable = hplot_base(IC, var, clim=clim, title=title, 
+##  ax, cax, hm = hplot_base(IC, var, clim=clim, title=title, 
 ##    projection=projection, use_tgrid=use_tgrid)
 ##
 ##  fi.close()
