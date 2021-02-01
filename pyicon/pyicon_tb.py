@@ -23,9 +23,9 @@ import cmocean
 # --- debugging
 from ipdb import set_trace as mybreak  
 #from importlib import reload
-#print('xarray')
+print('xarray')
 import xarray as xr
-#print('done loading')
+print('done xarray')
 
 """
 pyicon
@@ -704,7 +704,7 @@ def datetime64_to_float(dates):
   days   = (dates - dates.astype('datetime64[M]') + 1).astype(int)
   return years, months, days
 
-def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use_loop=False, verbose=False, use_xr=False, load_xr_data=False):
+def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use_loop=False, verbose=False, use_xr=False, load_xr_data=False, dimension_from_file='first'):
   it_ave = np.array(it_ave)
   # --- if no it_ave is given use t1 and t2 to determine averaging indices it_ave
   if it_ave.size==0:
@@ -757,7 +757,11 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
   #print('Warning dt set to ones!!!')
 
   # --- get dimensions to allocate data
-  f = Dataset(IcD.flist_ts[0], 'r')
+  if dimension_from_file=='first':
+    dimension_from_file = IcD.flist_ts[0]
+  elif dimension_from_file=='last':
+    dimension_from_file = IcD.flist_ts[-1]
+  f = Dataset(dimension_from_file, 'r')
   # FIXME: If == ('time', 'lat', 'lon') works well use it everywhere
   load_hfl_type = False
   load_moc_type = False
