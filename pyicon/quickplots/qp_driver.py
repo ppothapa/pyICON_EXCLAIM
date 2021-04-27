@@ -37,8 +37,8 @@ path_ckdtree     = ''
 path_ckdtree_atm = 'auto'
 
 # --- grid files and reference data
-fpath_tgrid         = '' 
-fpath_tgrid_atm     = '' 
+fpath_tgrid         = 'auto'
+fpath_tgrid_atm     = 'auto' 
 fpath_ref_data_oce  = '' 
 fpath_ref_data_atm  = '' 
 fpath_ref_data_atm = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_era.nc'
@@ -486,6 +486,7 @@ if do_ocean_plots and not iopts.no_plots:
                  path_grid    = path_grid,
                  path_ckdtree = path_ckdtree,
                  fpath_fx     = fpath_fx,
+                 fpath_tgrid  = fpath_tgrid,
                  gname        = gname,
                  lev          = lev,
                  rgrid_name   = rgrid_name,
@@ -510,6 +511,7 @@ if do_ocean_plots and not iopts.no_plots:
                  path_data    = path_data,
                  path_grid    = path_grid,
                  path_ckdtree = path_ckdtree,
+                 fpath_tgrid  = fpath_tgrid,
                  gname        = gname,
                  lev          = lev,
                  rgrid_name   = rgrid_name,
@@ -531,6 +533,7 @@ if do_ocean_plots and not iopts.no_plots:
                  path_data    = path_data,
                  path_grid    = path_grid,
                  path_ckdtree = path_ckdtree,
+                 fpath_tgrid  = fpath_tgrid,
                  gname        = gname,
                  lev          = lev,
                  rgrid_name   = rgrid_name,
@@ -551,6 +554,7 @@ if do_ocean_plots and not iopts.no_plots:
                  path_data    = path_data,
                  path_grid    = path_grid,
                  path_ckdtree = path_ckdtree,
+                 fpath_tgrid  = fpath_tgrid,
                  gname        = gname,
                  lev          = lev,
                  do_triangulation       = False,
@@ -569,6 +573,7 @@ if do_ocean_plots and not iopts.no_plots:
                  path_data    = path_data,
                  path_grid    = path_grid,
                  path_ckdtree = path_ckdtree,
+                 fpath_tgrid  = fpath_tgrid,
                  gname        = gname,
                  lev          = lev,
                  do_triangulation       = False,
@@ -588,6 +593,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  path_data    = path_data,
                  path_grid    = path_grid_atm,
                  path_ckdtree = path_ckdtree_atm,
+                 fpath_tgrid  = fpath_tgrid_atm,
                  gname        = gname_atm,
                  lev          = lev_atm,
                  rgrid_name   = rgrid_name_atm,
@@ -609,6 +615,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  path_data    = path_data,
                  path_grid    = path_grid_atm,
                  path_ckdtree = path_ckdtree_atm,
+                 fpath_tgrid  = fpath_tgrid_atm,
                  gname        = gname_atm,
                  lev          = lev_atm,
                  rgrid_name   = rgrid_name_atm,
@@ -631,6 +638,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  path_data    = path_data,
                  path_grid    = path_grid_atm,
                  path_ckdtree = path_ckdtree_atm,
+                 fpath_tgrid  = fpath_tgrid_atm,
                  gname        = gname_atm,
                  lev          = lev_atm,
                  rgrid_name   = rgrid_name_atm,
@@ -658,6 +666,7 @@ if do_hamocc_plots and not iopts.no_plots:
                    path_grid    = path_grid,
                    path_ckdtree = path_ckdtree,
                    fpath_fx     = fpath_fx,
+                   fpath_tgrid  = fpath_tgrid,
                    gname        = gname,
                    lev          = lev,
                    rgrid_name   = rgrid_name,
@@ -679,6 +688,7 @@ if do_hamocc_plots and not iopts.no_plots:
                    path_data    = path_data,
                    path_grid    = path_grid,
                    path_ckdtree = path_ckdtree,
+                   fpath_tgrid  = fpath_tgrid,
                    gname        = gname,
                    lev          = lev,
                    rgrid_name   = rgrid_name,
@@ -700,6 +710,7 @@ if do_hamocc_plots and not iopts.no_plots:
                  path_grid    = path_grid,
                  path_ckdtree = path_ckdtree,
                  fpath_fx     = fpath_fx,
+                 fpath_tgrid  = fpath_tgrid,
                  gname        = gname,
                  lev          = lev,
                  rgrid_name   = rgrid_name,
@@ -720,6 +731,7 @@ if do_hamocc_plots and not iopts.no_plots:
                  path_data    = path_data,
                  path_grid    = path_grid,
                  path_ckdtree = path_ckdtree,
+                 fpath_tgrid  = fpath_tgrid,
                  gname        = gname,
                  lev          = lev,
                  rgrid_name   = rgrid_name,
@@ -740,6 +752,7 @@ if do_hamocc_plots and not iopts.no_plots:
                  path_data    = path_data,
                  path_grid    = path_grid,
                  path_ckdtree = path_ckdtree,
+                 fpath_tgrid  = fpath_tgrid,
                  gname        = gname,
                  lev          = lev,
                  do_triangulation       = False,
