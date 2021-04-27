@@ -348,7 +348,7 @@ def calc_3d_from_2dlocal(IcD, uo, vo):
 # //////////////////////////////////////////////////////////////////////////////// 
 # \\\\\ Calculation for ICON
 
-def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90., verbose=False):
+def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90., verbose=False, old_version=True):
   """ Calculates barotropic streamfunction in Sv from mass_flux_vint on vertex-grid.
 
   This function determines neighbouring vertices starting from lon_start, lat_start 
@@ -407,20 +407,34 @@ def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90., verbose=Fa
   # --- calculate streamfunction
   if verbose:
     print('start finding indices')
-  stream_variable = np.zeros((IcD.vlon.size), dtype=IcD.dtype)
-  for target_list_index in range(target_vertex_list.size):
-    #if target_list_index%100==0:
-    #  print(f'target_list_index = {target_list_index}')
-    source_vertex = source_vertex_list[target_list_index]
-    target_vertex = target_vertex_list[target_list_index]
-    edge_index = edge_integration_list[target_list_index]
-    orientation = orientation_path[target_list_index]
-  
-    # --- add transport between source and target vertex to stream function of
-    #     source vertex
-    stream_variable[target_vertex] = stream_variable[source_vertex] \
-      + orientation * IcD.edge_length[edge_index] * mass_flux_vint[edge_index]
-  bstr = stream_variable * 1e-6
+  if old_version:
+    stream_variable = np.zeros((IcD.vlon.size), dtype=IcD.dtype)
+    for target_list_index in range(target_vertex_list.size):
+      #if target_list_index%100==0:
+      #  print(f'target_list_index = {target_list_index}')
+      source_vertex = source_vertex_list[target_list_index]
+      target_vertex = target_vertex_list[target_list_index]
+      edge_index = edge_integration_list[target_list_index]
+      orientation = orientation_path[target_list_index]
+    
+      # --- add transport between source and target vertex to stream function of
+      #     source vertex
+      stream_variable[target_vertex] = stream_variable[source_vertex] \
+        + orientation * IcD.edge_length[edge_index] * mass_flux_vint[edge_index]
+    bstr = stream_variable * 1e-6
+  else:
+    # This version is much quicker but needs to be better tested
+    source_vertex = source_vertex_list[target_vertex_list]
+    target_vertex = target_vertex_list[target_vertex_list]
+    edge_index = edge_integration_list[target_vertex_list]
+    orientation = orientation_path[target_vertex_list]
+
+    mflux_oriented = orientation * IcD.edge_length[edge_index] * mass_flux_vint[edge_index]
+    mflux_sorted = mflux_oriented[source_vertex]
+    a = mflux_sorted.cumsum() * 1e-6
+    bstr = np.zeros((IcD.vlon.size), dtype=IcD.dtype)
+    bstr[source_vertex] = a
+    #bstr = mflux_sorted.cumsum() * 1e-6
 
   #bstr = IconVariable('bstr', units='Sv', long_name='barotropic streamfunction',
   #                   coordinates='vlat vlon', is3d=False)
