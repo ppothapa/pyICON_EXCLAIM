@@ -195,8 +195,9 @@ class IconData(object):
     self.rgrid_names = rgrid_names
 
     if self.rgrid_names.size==0:
-      print('::: Warning: Could not find any rgrid-npz-file in %s. :::' 
-                        % (self.path_rectgrids))
+      #print('::: Warning: Could not find any rgrid-npz-file in %s. :::' 
+      #                  % (self.path_rectgrids))
+      print('::: Warning: Could not find any rgrid-npz-file. :::')
 
     # --- choose rgrid and section
     # (do we need this? - yes, we load the rgrid later on)
@@ -255,6 +256,8 @@ class IconData(object):
       if omit_last_file:
         self.flist = self.flist[:-1]
       self.get_timesteps(time_mode=time_mode)
+    else:
+      self.times = np.array([])
     
     # --- load xarray data set
     if load_xarray_dset:
