@@ -34,21 +34,15 @@ Furthermore, the following modules are required as a minimum:
 
 A suitable python environment is probably easiest set up by using conda (for an installation of conda see below)::
 
-```
 conda env create -f pyicon/ci/requirements_py38.yml
-```
 
-You can eaily activate your conda environment by using the script:
+You can eaily activate your conda environment by using the script::
 
-```
 pyicon/tools/conda_act_mistral_pyicon_env.sh
-```
 
-In this script modify the path of your conda installation in the line starting with ```path_conda_bin=```. After doing this, you can activate your conda environment by executing:
+In this script modify the path of your conda installation in the line starting with ```path_conda_bin=```. After doing this, you can activate your conda environment by executing::
 
-```
 source pyicon/tools/conda_act_mistral_pyicon_env.sh
-```
 
 Install conda
 -------------
@@ -87,9 +81,7 @@ or by adding the following lines at the beginning of each of your python scripts
   sys.path.insert(0,'/path/to/pyicon')
 
 Pyicon depends on a number of python libraries typically used for geoscience data evaluation and plotting. 
-The easiest installation is probably by using conda. A suitable python environment for pyicon can be installed using conda from this file:
+The easiest installation is probably by using conda. A suitable python environment for pyicon can be installed using conda from this file::
 
-```
 pyicon/ci/requirements_py38.yml
-```
 
