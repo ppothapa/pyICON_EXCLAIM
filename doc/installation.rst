@@ -23,8 +23,8 @@ If everything was successful, you should now be ready to use pyicon and you can 
 Requirements
 ------------
 
-pyicon is developed for python 3.7. Other versions might work as well but are not supported so far.
-Furthermore, the following modules are required:
+pyicon is developed for python 3.8. Other versions might work as well but are not supported so far.
+Furthermore, the following modules are required as a minimum:
 
   * numpy, scipy (calculations)
   * matplotlib, cartopy (plotting)
@@ -32,38 +32,38 @@ Furthermore, the following modules are required:
   * ipython, jupyter (for running python)
   * mpi4py, dask (for parallel computing and distributed memory)
 
-A suitable python environment is probably easiest set up by using conda::
+A suitable python environment is probably easiest set up by using conda (for an installation of conda see below)::
 
-  conda env create -f pyicon_env.yml 
+```
+conda env create -f pyicon/ci/requirements_py38.yml
+```
 
-with the following yml-file (assumed to be named pyicon_env.yml)::
+You can eaily activate your conda environment by using the script:
 
-  name: pyicon_py38
-  channels:
-    - conda-forge
-    - defaults
-  dependencies:
-    - python=3.8
-    - numpy
-    - scipy
-    - netcdf4
-    - matplotlib
-    - cartopy
-    - ipdb
-    - conda-build
-    - ipympl      # interactive plots in jupyterlab
-    - nodejs      # interactive plots in jupyterlab
-    - ipython     
-    - jupyter     
-    - jupyterlab  # optional
-    - cmocean     # optional
-    - sphinx      # optional for documentation
-    - mpi4py      
-    - seawater    # optional
-    - xarray      
-    - dask        
-    - dask-jobqueue
-    - python-graphviz
+```
+pyicon/tools/conda_act_mistral_pyicon_env.sh
+```
+
+In this script modify the path of your conda installation in the line starting with ```path_conda_bin=```. After doing this, you can activate your conda environment by executing:
+
+```
+source pyicon/tools/conda_act_mistral_pyicon_env.sh
+```
+
+Install conda
+-------------
+
+A suitable python environment can be easily created by using conda. Therefore, we roughly outline here how to install conad but we refer to more detailed documentations wwhich can be found in the web. We are explaining the installation of conda using miniconda but other conda versions should work as well. 
+
+Go to:
+
+https://docs.conda.io/en/latest/miniconda.html
+
+Pick an installer for Python 3.8 and download the file (e.g. right click on the link, "copy link", go to shell type wget and paste the link).
+
+After downloading the script change the rights (chmod 755 <script>) and execute it (./<script>).
+
+If conda is installed successfully, you should see something like '(base)' infront of your shell line.
 
 General installation instructions
 ---------------------------------
@@ -87,6 +87,9 @@ or by adding the following lines at the beginning of each of your python scripts
   sys.path.insert(0,'/path/to/pyicon')
 
 Pyicon depends on a number of python libraries typically used for geoscience data evaluation and plotting. 
-The easiest installation is probably by using conda (see below). 
-On the DKRZ Mistral computer cluster, it is possible to make use of pre-installed python libraries.
+The easiest installation is probably by using conda. A suitable python environment for pyicon can be installed using conda from this file:
+
+```
+pyicon/ci/requirements_py38.yml
+```
 
