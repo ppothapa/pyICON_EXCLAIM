@@ -1410,7 +1410,9 @@ last change:
 
   # make list that looks like [ '(a)', '(b)', '(c)', ... ]
   if len(figstr)==0:
-    lett = "abcdefghijklmnopqrstuvwxyz"
+    #lett = "abcdefghijklmnopqrstuvwxyz"
+    lett  = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
+    lett += ["a2","b2","c2","d2","e2","f2","g2","h2","i2","j2","k2","l2","m2","n2","o2","p2","q2","r2","s2","t2","u2","v2","w2","x2","y2","z2"]
     lett = lett[0:len(hca)]
     figstr = ["z"]*len(hca)
     for nn, ax in enumerate(hca):
