@@ -553,6 +553,7 @@ def shade(
                            norm=norm,
                            rasterized=rasterized,
                            edgecolor=edgecolor,
+                           shading='nearest',
                            **ccrsdict
                           )
       else:
@@ -1324,10 +1325,12 @@ def arrange_axes(nx,ny,
   
       # --- axes
       hca[nn] = fig.add_subplot(position=pos_ax[nn,:], projection=projection[nn])
+      hca[nn].set_position(pos_ax[nn,:])
   
       # --- colorbar
       if plot_cb[ii,jj] == 1:
         hcb[nn] = fig.add_subplot(position=pos_cb[nn,:])
+        hcb[nn].set_position(pos_cb[nn,:])
       ax  = hca[nn]
       cax = hcb[nn] 
   
