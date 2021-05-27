@@ -492,6 +492,11 @@ def shade(
       norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)
       cmap.set_under(cmap_e(norm_e(0)))
       cmap.set_over(cmap_e(norm_e(nlev)))
+      vmin = None
+      vmax = None
+    else:
+      vmin = clim[0]
+      vmax = clim[1]
   
     # --- decide whether to use extra contour lines
     if conts is None:
@@ -553,7 +558,7 @@ def shade(
                            norm=norm,
                            rasterized=rasterized,
                            edgecolor=edgecolor,
-                           shading='nearest',
+                           shading='auto',
                            **ccrsdict
                           )
       else:
@@ -635,7 +640,7 @@ def shade(
         else:
           cborientation = 'horizontal'
       # ------ make actual colorbar
-      cb = plt.colorbar(mappable=hm, cax=cax, extend=extend, orientation=cborientation)
+      cb = plt.colorbar(mappable=hm, cax=cax, orientation=cborientation)
       # ------ prevent white lines if fig is saved as pdf
       cb.solids.set_edgecolor("face")
       # ------ use exponential notation for large colorbar ticks
