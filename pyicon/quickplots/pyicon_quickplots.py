@@ -706,6 +706,10 @@ qp.write_to_file()
 """
     elif 'simulations' in title:
       links = ""
+    elif path_data.startswith('Compare'):
+      links = """
+&emsp; <a href="../index.html">list comparisons</a>
+"""
     else:
       links = """
 &emsp; <a href="../qp_index.html">list time averages</a>
