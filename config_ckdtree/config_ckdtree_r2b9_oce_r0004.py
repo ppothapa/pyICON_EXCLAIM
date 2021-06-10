@@ -18,9 +18,10 @@ path_rgrid    = path_ckdtree + 'rectgrids/'
 path_sections = path_ckdtree + 'sections/' 
 
 all_grids = [
-  'global_1.0',
-  'global_0.3',
-  'global_0.1',
+#  'global_1.0',
+#  'global_0.3',
+#  'global_0.1',
+  'global_0.02',
             ]
 
 all_secs = [
@@ -31,7 +32,7 @@ all_secs = [
             ]
 
 #all_grids = []
-#all_secs = []
+all_secs = []
 
 gnames = [gname]
 
