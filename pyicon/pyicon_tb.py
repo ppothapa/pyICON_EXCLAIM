@@ -524,7 +524,7 @@ def ckdtree_points(fpath_tgrid, lon_o, lat_o, load_cgrid=True, load_egrid=True, 
     Dind_dist['ickdtree_v'] = ickdtree_v
   return Dind_dist
 
-def calc_ckdtree(lon_i, lat_i, lon_o, lat_o, n_nearest_neighbours=1, n_jobs=1):
+def calc_ckdtree(lon_i, lat_i, lon_o, lat_o, n_nearest_neighbours=1, n_jobs=1, use_npconcatenate=True):
   """
   """
   # --- do ckdtree
@@ -538,9 +538,14 @@ def calc_ckdtree(lon_i, lat_i, lon_o, lat_o, n_nearest_neighbours=1, n_jobs=1):
     xi, yi, zi = spherical_to_cartesian(lon_i, lat_i)
     xo, yo, zo = spherical_to_cartesian(lon_o, lat_o)
 
-    lzip_i = list(zip(xi, yi, zi))
+    if not use_npconcatenate:
+      lzip_i = list(zip(xi, yi, zi))
+      lzip_o = list(zip(xo, yo, zo))
+    else:
+      # This option seems to be much faster but needs to be tested also for big grids
+      lzip_i = np.concatenate((xi[:,np.newaxis],yi[:,np.newaxis],zi[:,np.newaxis]), axis=1)
+      lzip_o = np.concatenate((xo[:,np.newaxis],yo[:,np.newaxis],zo[:,np.newaxis]), axis=1) 
     tree = cKDTree(lzip_i)
-    lzip_o = list(zip(xo, yo, zo))
     dckdtree, ickdtree = tree.query(lzip_o , k=n_nearest_neighbours, n_jobs=n_jobs)
   return dckdtree, ickdtree
 
