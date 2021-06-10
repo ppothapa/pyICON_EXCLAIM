@@ -66,16 +66,18 @@ path_nc = '/scratch/m/m300602/tmp/test_pyicon_output/'
 
 # --- time average information (can be overwritten by qp_driver call)
 tave_ints = [
-['1630-02-01', '1640-01-01'],
+#['1630-02-01', '1640-01-01'],
+['4450-02-01', '4500-01-01'],
 ]
 %eof%
 
 # --- start qp_driver
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-run="slo1325"
+run="slo1327"
 path_data="/work/mh0287/m211032/Icon/Git_Icon/icon.oes.20200506/experiments/${run}/"
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='4840-02-01,4850-01-01'
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run #--tave_int='4840-02-01,4850-01-01'
+#python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='4850-02-01,4880-01-01'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 
