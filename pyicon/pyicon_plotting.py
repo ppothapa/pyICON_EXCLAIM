@@ -1570,3 +1570,98 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', xl
     #  ax.set_global()
   return
 
+class split_axes_vertically(object):
+    def __init__(self, ax, frac=0.4, space_between_axs=0.05):
+        """ Make two axes out of one by splitting that axes in the vertical.
+        Input:
+        frac: fraction of lower axes
+        space_between_axs: space between both axes as fraction of total axes height
+
+        return ax: New modified axes object.
+        ax.ax1: Lower axes (new axes)
+        ax.ax2: Upper axes (original axes)
+        """
+        ax2 = ax
+
+        pos_ax = ax2.get_position()
+        # get old values
+        xo = pos_ax.x0
+        yo = pos_ax.y0
+        wo = pos_ax.width
+        ho = pos_ax.height
+
+        h1 = ho*frac-ho*space_between_axs/2.
+        h2 = ho*(1-frac)-ho*space_between_axs/2.
+        x1 = x2 = xo
+        w1 = w2 = wo
+        y1 = yo+h2+space_between_axs*ho
+        y2 = yo
+
+        ax2.set_position([x1, y1, w1, h1])
+
+        ax1 = plt.axes(position=[x2, y2, w2, h2])
+
+        if len(ax2.get_yticklabels())==0:
+            ax1.tick_params(labelleft=False)
+
+        if len(ax2.get_xticklabels())==0:
+            ax1.tick_params(labelbottom=False)
+
+        ax2.tick_params(labelbottom=False)
+        
+        self.ax1 = ax1
+        self.ax2 = ax2
+        
+        self.axs = [self.ax1, self.ax2]
+        
+        self.frac = frac
+        self.space_between_axs = space_between_axs
+        return
+    
+    def set_xlabel(self, *args, **kwargs):
+        h = self.ax1.set_xlabel(*args, **kwargs)
+        return h
+    
+    def set_xlim(self, *args, **kwargs):
+        ht = self.ax1.set_xlim(*args, **kwargs)
+        ht = self.ax2.set_xlim(*args, **kwargs)
+        return ht
+    
+    def set_xticks(self, *args, **kwargs):
+        ht = self.ax1.set_xticks(*args, **kwargs)
+        ht = self.ax2.set_xticks(*args, **kwargs)
+        return ht
+
+    def set_ylabel(self, *args, x=None, y=None, transform=None, **kwargs):
+        h1 = self.ax1.set_ylabel(*args, **kwargs)
+#         h2 = self.ax2.set_ylabel(*args, **kwargs)
+        if x is None:
+            x = -0.15
+        if y is None:
+            y = 1. + 0.5*self.space_between_axs
+        self.ax1.yaxis.set_label_coords(x, y, transform)
+        return
+    
+    def set_ylim(self, ylim1, ylim2, *args, **kwargs):
+        h1 = self.ax1.set_ylim(ylim1, *args, **kwargs)
+        h2 = self.ax2.set_ylim(ylim2, *args, **kwargs)
+        return h1, h2
+    
+    def set_yticks(self, yticks1, yticks2, *args, **kwargs):
+        h1 = self.ax1.set_yticks(yticks1, *args, **kwargs)
+        h2 = self.ax2.set_yticks(yticks2, *args, **kwargs)
+        return h1, h2
+    
+    def grid(self, *args, **kwargs):
+        h1 = self.ax1.grid(*args, **kwargs)
+        h2 = self.ax2.grid(*args, **kwargs)
+        return h1, h2
+    
+    def set_title(self, *args, **kwargs):
+        ht = self.ax2.set_title(*args, **kwargs)
+        return ht
+    
+    def set_facecolor(self, *args, **kwargs):
+        self.ax1.set_facecolor(*args, **kwargs)
+        self.ax2.set_facecolor(*args, **kwargs)
+        return
