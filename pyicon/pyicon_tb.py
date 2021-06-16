@@ -1361,3 +1361,24 @@ class IP_hor_sec_rect(object):
 ##      self.hdstr.set_text('depth = %4.1fm'%(IcD.depth[IcD.iz]))
 ##    return
 
+def asses_memory(mode=0):
+    vdict = globals()
+    Dmem = dict()
+    tot_mem = 0.
+    for el in vdict:
+        if el.startswith('_'):
+            continue
+        try:
+            mem = vdict[el].nbytes/1e9
+            Dmem[el] = [mem]
+            tot_mem += mem
+    #         print(f'Memory of {el}: {vdict[el].nbytes/1e9}')
+        except:
+            pass
+    Dmem['tot_mem'] = [tot_mem]
+    df = pd.DataFrame(Dmem, index=['memory [GB]']).transpose()
+    if mode==1:
+        print(df)
+    if mode==2:
+        print(f'total memory [GB]: {tot_mem}')
+    return df
