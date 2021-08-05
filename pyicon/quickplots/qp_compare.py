@@ -958,8 +958,8 @@ for do_twice in range(Set.ndo_twice):
     ii=-1
 
     for kk in range(len(lonps)):
-      il = np.argmin((lon-lonps[kk])**2)
-      jl = np.argmin((lat-latps[kk])**2)
+      il = ((lon-lonps[kk])**2).argmin()
+      jl = ((lat-latps[kk])**2).argmin()
       ii+=1; ax=hca[ii]; cax=hcb[ii]
       for nn, S in enumerate(Sims):
         ax.plot(S.toi[:,jl,il], S.depth, label=S.run)
@@ -967,8 +967,8 @@ for do_twice in range(Set.ndo_twice):
       ax.set_title(f'(lon, lat) = ({lonps[kk]},{latps[kk]})', loc='right')
 
     for kk in range(len(lonps)):
-      il = np.argmin((lon-lonps[kk])**2)
-      jl = np.argmin((lat-latps[kk])**2)
+      il = ((lon-lonps[kk])**2).argmin()
+      jl = ((lat-latps[kk])**2).argmin()
       ii+=1; ax=hca[ii]; cax=hcb[ii]
       for nn, S in enumerate(Sims):
         ax.plot(S.soi[:,jl,il], S.depth, label=S.run)
@@ -1518,7 +1518,7 @@ for do_twice in range(Set.ndo_twice):
                                 )
     for nn, S in enumerate(Sims):
       ax=hca[nn]; cax=hcb[nn]
-      iz = np.argmin((S.depth-100)**2)
+      iz = ((S.depth-100)**2).argmin()
       u = S.ds_3d.u.isel(depth=iz).sel(time=slice(S.t1, S.t2)).mean(dim='time') 
       v = S.ds_3d.v.isel(depth=iz).sel(time=slice(S.t1, S.t2)).mean(dim='time') 
       data = 0.5*(u**2+v**2)
@@ -1552,7 +1552,7 @@ for do_twice in range(Set.ndo_twice):
                                 )
     for nn, S in enumerate(Sims):
       ax=hca[nn]; cax=hcb[nn]
-      iz = np.argmin((S.depth-2000)**2)
+      iz = ((S.depth-2000)**2).argmin()
       u = S.ds_3d.u.isel(depth=iz).sel(time=slice(S.t1, S.t2)).mean(dim='time') 
       v = S.ds_3d.v.isel(depth=iz).sel(time=slice(S.t1, S.t2)).mean(dim='time') 
       data = 0.5*(u**2+v**2)
