@@ -20,6 +20,7 @@ all_grids = [
   'global_1.0',
   'global_0.3',
   'global_0.1',
+  'global_0.02',
             ]
 
 all_secs = [
@@ -38,6 +39,9 @@ if not os.path.exists(path_rgrid):
   os.makedirs(path_rgrid)
 if not os.path.exists(path_sections): 
   os.makedirs(path_sections)
+fpath = f'{path_ckdtree}/../{tgname}_tgrid.nc'
+if not os.path.exists(fpath):
+  os.symlink(path_tgrid+fname_tgrid, fpath)
 
 for gname in gnames:
   ts = pyic.timing(ts, gname)
