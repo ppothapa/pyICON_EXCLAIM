@@ -21,6 +21,7 @@ all_grids = [
   'global_1.0',
   'global_0.3',
   'global_0.1',
+  'global_0.02',
             ]
 
 all_secs = [
