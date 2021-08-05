@@ -1381,6 +1381,7 @@ def arrange_axes(nx,ny,
                       ])
     hcb[nn] = fig.add_subplot(position=pos_cb)
     hcb[nn].tick_params(labelsize=fs_ticks)
+    hcb[nn].set_position(pos_cb)
     hcb[nn].set_xticks([])
     hcb[nn].yaxis.tick_right()
     hcb[nn].yaxis.set_label_position("right")
@@ -1393,6 +1394,7 @@ def arrange_axes(nx,ny,
                         (hcb_s)*cm2fig_y
                       ])
     hcb[nn] = fig.add_subplot(position=pos_cb)
+    hcb[nn].set_position(pos_cb)
     hcb[nn].tick_params(labelsize=fs_ticks)
     hcb[nn].set_yticks([])
 
@@ -1551,7 +1553,8 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', xl
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
   elif do_xylim and use_cartopy:
-    ax.set_extent([xlim[0],xlim[1],ylim[0],ylim[1]], crs=ccrs.PlateCarree())
+    #ax.set_extent([xlim[0],xlim[1],ylim[0],ylim[1]], crs=ccrs.PlateCarree())
+    ax.set_extent([xlim[0],xlim[1],ylim[0],ylim[1]], crs=projection)
 
   # --- cartopy specific stuff
   if use_cartopy: 
@@ -1608,6 +1611,9 @@ class split_axes_vertically(object):
             ax1.tick_params(labelbottom=False)
 
         ax2.tick_params(labelbottom=False)
+
+        ax1.set_xlabel(ax2.get_xlabel())
+        ax2.set_xlabel('')
         
         self.ax1 = ax1
         self.ax2 = ax2
