@@ -7,7 +7,7 @@ import cartopy
 
 run = 'nib0004'
 runname = 'icon_08'
-gname = 'r2b6'
+gname = 'r2b6_oce_r0004'
 lev = 'L64'
 
 path_data     = f'/mnt/lustre01/work/mh0033/m300602/proj_vmix/icon/{runname}/icon-oes/experiments/{run}/'
