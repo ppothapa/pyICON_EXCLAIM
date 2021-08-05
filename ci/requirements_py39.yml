@@ -1,0 +1,31 @@
+name: pyicon_py39
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - numpy
+  - scipy
+  - netcdf4
+  - matplotlib
+  - cartopy
+  - ipdb
+  - conda-build
+  - ipympl      # interactive plots in jupyterlab
+  - nodejs      # interactive plots in jupyterlab
+  - ipython     
+  - jupyter     
+  - jupyterlab  # optional
+  - jupyter-resource-usage # for showing memory resources in upper right corner of notebook
+  - cmocean     # optional
+  - sphinx      # optional for documentation
+  - mpi4py      
+  - seawater    # optional
+  - pandas
+  - xarray      
+  - dask        
+  - dask-jobqueue
+  - python-graphviz
+  - f90nml
+  - dash
+  - papermill
+
