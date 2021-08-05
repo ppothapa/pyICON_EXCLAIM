@@ -1,12 +1,17 @@
+print('sys glob os')
 import sys
 import glob, os
 #import datetime
+print('numpy')
 import numpy as np
+print('netcdf')
 from netCDF4 import Dataset, num2date
 #from scipy import interpolate
 #from scipy.spatial import cKDTree
+print('ipdb')
 from ipdb import set_trace as mybreak  
 #from .pyicon_tb import *
+print('Done modules calc.')
 
 #def distance(p1, p2):
 #  """
@@ -368,7 +373,7 @@ def calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90., verbose=Fa
   next_vertex_list = []
   
   # --- start vertex
-  list_vertex_index = np.argmin((IcD.vlon-lon_start)**2+(IcD.vlat-lat_start)**2)
+  list_vertex_index = ((IcD.vlon-lon_start)**2+(IcD.vlat-lat_start)**2).argmin()
   vertexIsAccounted_list[list_vertex_index] = 1.
   next_vertex_list.append(list_vertex_index)
   
