@@ -20,6 +20,7 @@ notebooks/Untitled*
 # slurm log file
 tools/log.o*
 config_ckdtree/log.o*
+pyicon/quickplots/log.o*
 
 tools/config_qp_???.py
 
