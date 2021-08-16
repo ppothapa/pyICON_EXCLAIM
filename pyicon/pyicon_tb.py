@@ -1,28 +1,25 @@
-#print('sys')
+print('sys')
 import sys, glob, os
+print('json')
 import json
 # --- calculations
+print('numpy')
 import numpy as np
-#print('scipy')
+print('scipy')
 from scipy import interpolate
 from scipy.spatial import cKDTree
 # --- reading data 
+print('netcdf datetime')
 from netCDF4 import Dataset, num2date, date2num
 import datetime
 # --- plotting
-#print('matplotlib')
+print('matplotlib')
 import matplotlib.pyplot as plt
-import matplotlib
-from matplotlib import ticker
-#import my_toolbox as my
-#print('cartopy')
-import cartopy
-import cartopy.crs as ccrs
-from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
-import cmocean
 # --- debugging
+print('mybreak')
 from ipdb import set_trace as mybreak  
-#from importlib import reload
+#print('pnadas')
+#import pandas as pd
 print('xarray')
 import xarray as xr
 print('done xarray')
@@ -1361,24 +1358,45 @@ class IP_hor_sec_rect(object):
 ##      self.hdstr.set_text('depth = %4.1fm'%(IcD.depth[IcD.iz]))
 ##    return
 
-def asses_memory(mode=0):
-    vdict = globals()
-    Dmem = dict()
-    tot_mem = 0.
-    for el in vdict:
-        if el.startswith('_'):
-            continue
-        try:
-            mem = vdict[el].nbytes/1e9
-            Dmem[el] = [mem]
-            tot_mem += mem
-    #         print(f'Memory of {el}: {vdict[el].nbytes/1e9}')
-        except:
-            pass
-    Dmem['tot_mem'] = [tot_mem]
-    df = pd.DataFrame(Dmem, index=['memory [GB]']).transpose()
-    if mode==1:
-        print(df)
-    if mode==2:
-        print(f'total memory [GB]: {tot_mem}')
-    return df
+#def asses_memory(mode=0):
+#    vdict = globals()
+#    Dmem = dict()
+#    tot_mem = 0.
+#    for el in vdict:
+#        if el.startswith('_'):
+#            continue
+#        try:
+#            mem = vdict[el].nbytes/1e9
+#            Dmem[el] = [mem]
+#            tot_mem += mem
+#    #         print(f'Memory of {el}: {vdict[el].nbytes/1e9}')
+#        except:
+#            pass
+#    Dmem['tot_mem'] = [tot_mem]
+#    df = pd.DataFrame(Dmem, index=['memory [GB]']).transpose()
+#    if mode==1:
+#        print(df)
+#    if mode==2:
+#        print(f'total memory [GB]: {tot_mem}')
+#    return df
+
+def info(array):
+  """ Prints some information about an xarray. (not well tested yet).
+
+  To do:
+    * decide whether numpy, or array
+    * decide whether xarray contains dask or numpy array
+  """
+  print(f'| dims = {array.dims} | shape = {array.shape} | memory = {array.nbytes/1024**3:.3f}GB | chunks = {array.chunks} |')
+  return
+
+def stats(array):
+  """ Prints some basic information about an array. (not well tested yet).
+
+  To do:
+    * decide whether numpy, or xarray
+    * decide whether xarray contains dask or numpy array
+  """
+  print(f'| min = {array.min().compute().data} | max = {array.max().compute().data} | mean = {array.mean().compute().data} |')
+  print(f'| #NaNs = {xr.ufuncs.isnan(array).sum().compute().data} | #Zeros = {(array==0).sum().compute().data} |')
+  return
