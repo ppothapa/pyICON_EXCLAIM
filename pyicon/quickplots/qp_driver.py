@@ -2203,7 +2203,7 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       var = 'tas'
       # --- interpolate data
-      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz='all')
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
       datai = data2di
       # --- reference
@@ -2229,7 +2229,7 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       var = 'prw'
       # --- interpolate data
-      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz='all')
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
       datai = data2di
       # --- reference
@@ -2462,7 +2462,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_10m_wind'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='sfcwind', it=0,
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='sfcwind', it=0, iz=0,
                                t1=t1, t2=t2,
                                clim=[0.5, 10.], clevs=[0.5,1.,2.,3.,5.,7.,10.], cmap='RdYlBu_r',
                                land_facecolor='none',
