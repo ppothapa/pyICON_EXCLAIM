@@ -1603,6 +1603,7 @@ class split_axes_vertically(object):
         ax2.set_position([x1, y1, w1, h1])
 
         ax1 = plt.axes(position=[x2, y2, w2, h2])
+        ax1.set_position([x2, y2, w2, h2])
 
         if len(ax2.get_yticklabels())==0:
             ax1.tick_params(labelleft=False)
