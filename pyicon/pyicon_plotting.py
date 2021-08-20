@@ -17,7 +17,7 @@ import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import cmocean
 # --- debugging
-from ipdb import set_trace as mybreak  
+#from ipdb import set_trace as mybreak  
 from importlib import reload
 from .pyicon_tb import write_dataarray_to_nc
 
@@ -1142,6 +1142,7 @@ def arrange_axes(nx,ny,
                  fs_ticks = 10.,
                  # font size increasing factor
                  f_fs = 1,
+                 reverse_order = False,
                 ):
 
   # factor to convert cm into inch
@@ -1397,6 +1398,11 @@ def arrange_axes(nx,ny,
     hcb[nn].set_position(pos_cb)
     hcb[nn].tick_params(labelsize=fs_ticks)
     hcb[nn].set_yticks([])
+
+  if reverse_order:
+    isort = np.arange(nx*ny, dtype=int).reshape((ny,nx)).transpose().flatten()
+    hca = list(np.array(hca)[isort]) 
+    hcb = list(np.array(hcb)[isort])
 
   # add letters for subplots
   if (do_axes_labels) and (axlab_kw is not None):
