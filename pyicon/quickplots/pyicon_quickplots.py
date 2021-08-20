@@ -17,7 +17,7 @@ import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import cmocean
 # --- debugging
-from ipdb import set_trace as mybreak  
+#from ipdb import set_trace as mybreak  
 import pyicon as pyic
 import xarray as xr
 

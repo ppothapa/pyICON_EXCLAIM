@@ -8,8 +8,8 @@ print('netcdf')
 from netCDF4 import Dataset, num2date
 #from scipy import interpolate
 #from scipy.spatial import cKDTree
-print('ipdb')
-from ipdb import set_trace as mybreak  
+#print('ipdb')
+#from ipdb import set_trace as mybreak  
 #from .pyicon_tb import *
 print('Done modules calc.')
 

@@ -17,7 +17,7 @@ from IPython.display import display
 import pyicon as pyic
 reload(pyic)
 
-from ipdb import set_trace as mybreak  
+#from ipdb import set_trace as mybreak  
 
 # 'global ax' is needed to avoid flickering of the plots if they are actualized
 # with global ax display(ax.figure) can be used instead of display(self.ax.figure)

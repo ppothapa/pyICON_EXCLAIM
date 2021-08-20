@@ -5,7 +5,7 @@ from netCDF4 import Dataset, num2date
 from scipy import interpolate
 from scipy.spatial import cKDTree
 import matplotlib
-from ipdb import set_trace as mybreak  
+#from ipdb import set_trace as mybreak  
 from .pyicon_tb import *
 from .pyicon_calc import *
 

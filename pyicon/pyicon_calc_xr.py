@@ -6,8 +6,8 @@ print('numpy')
 import numpy as np
 print('netcdf')
 from netCDF4 import Dataset, num2date
-print('ipdb')
-from ipdb import set_trace as mybreak  
+#print('ipdb')
+#from ipdb import set_trace as mybreak  
 print('xarray')
 import xarray as xr
 print('Done modules calc.')
