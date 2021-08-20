@@ -1,0 +1,9 @@
+numpy
+scipy
+xarray
+cmocean
+ipdb
+netcdf4
+matplotlib
+cartopy
+ipywidgets
