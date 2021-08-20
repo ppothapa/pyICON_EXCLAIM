@@ -9,7 +9,7 @@ with open("requirements.txt") as f:
 setup(
      name='pyicon',
      version='0.1.0',
-     description='python library for bias_correction',
+     description='Diagnostic python software package for ICON',
      long_description=long_description,
      long_description_content_type='text/markdown',
      url='https://gitlab.dkrz.de/m300602/pyicon',
