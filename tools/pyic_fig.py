@@ -259,10 +259,11 @@ hca, hcb = arrange_axes(1,1, plot_cb=iopts.cbar_pos, asp=asp, fig_size_fac=2,
 ii=-1
 
 ii+=1; ax=hca[ii]; cax=hcb[ii]
+shade_kwargs = dict(ax=ax, cax=cax, clim=clim, projection=ccrs.PlateCarree(), cmap=cmap)
 if not use_tgrid:
-  hm = shade(lon, lat, datai, ax=ax, cax=cax, clim=clim, projection=ccrs.PlateCarree())
+  hm = shade(lon, lat, datai, **shade_kwargs)
 else:
-  hm = shade(Tri, data_reg, ax=ax, cax=cax, clim=clim, projection=ccrs.PlateCarree())
+  hm = shade(Tri, data_reg, **shade_kwargs)
 
 if iopts.cbar_pos=='bottom':
   cax.set_xlabel(iopts.cbar_str)
