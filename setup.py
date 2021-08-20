@@ -15,6 +15,6 @@ setup(
      url='https://gitlab.dkrz.de/m300602/pyicon',
      author='Nils Brueggemann',
      author_email='nils.brueggemann@uni-hamburg.de',
-     install_requires=install_requires
+     install_requires=install_requires,
      setup_requires=['setuptools'],
 )
