@@ -17,7 +17,7 @@ print('matplotlib')
 import matplotlib.pyplot as plt
 # --- debugging
 print('mybreak')
-from ipdb import set_trace as mybreak  
+#from ipdb import set_trace as mybreak  
 #print('pnadas')
 #import pandas as pd
 print('xarray')
@@ -901,57 +901,100 @@ def identify_grid(path_grid, fpath_data):
   
   Dgrid_list = dict()
   
-  grid_name = 'r2b4'; Dgrid_list[grid_name] = dict()
+  grid_name = 'r2b4_oce_r0004'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
   Dgrid_list[grid_name]['res'] = '160km'
   Dgrid_list[grid_name]['long_name'] = 'OceanOnly_Icos_0158km_etopo40'
-  Dgrid_list[grid_name]['size'] = 15117
-  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['size'] = 15105
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
  
-  grid_name = 'r2b4a'; Dgrid_list[grid_name] = dict()
+  grid_name = 'r2b4_atm_r0013'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
   Dgrid_list[grid_name]['res'] = '160km'
   Dgrid_list[grid_name]['long_name'] = 'icon_grid_0013_R02B04_G'
   Dgrid_list[grid_name]['size'] = 20480
-  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
 
   grid_name = 'r2b6old'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
   Dgrid_list[grid_name]['res'] = '40km'
   Dgrid_list[grid_name]['long_name'] = 'OCEANINP_pre04_LndnoLak_039km_editSLOHH2017_G'
   Dgrid_list[grid_name]['size'] = 327680
-  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
   
-  grid_name = 'r2b6'; Dgrid_list[grid_name] = dict()
+  grid_name = 'r2b6_oce_r0004'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
   Dgrid_list[grid_name]['res'] = '40km'
   Dgrid_list[grid_name]['long_name'] = 'OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min'
   Dgrid_list[grid_name]['size'] = 235403 
-  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
 
-  grid_name = 'r2b8'; Dgrid_list[grid_name] = dict()
+  grid_name = 'r2b8_oce_r0004'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
   Dgrid_list[grid_name]['res'] = '10km'
   Dgrid_list[grid_name]['long_name'] = 'OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min'
   Dgrid_list[grid_name]['size'] = 3729001
-  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
   
-  grid_name = 'r2b9'; Dgrid_list[grid_name] = dict()
+  grid_name = 'r2b9_oce_r0004'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
   Dgrid_list[grid_name]['res'] = '5km'
   Dgrid_list[grid_name]['long_name'] = 'OceanOnly_IcosSymmetric_4932m_rotatedZ37d_modified_srtm30_1min'
   Dgrid_list[grid_name]['size'] = 14886338
-  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
 
-  grid_name = 'r2b9a'; Dgrid_list[grid_name] = dict()
+  grid_name = 'r2b10_oce'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '2.5km'
+  Dgrid_list[grid_name]['long_name'] = 'OceanOnly_IcosSymmetric_4932m_rotatedZ37d_modified_srtm30_1min'
+  Dgrid_list[grid_name]['size'] = 59359799
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
+
+  grid_name = 'r2b11_oce'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '1.25km'
+  Dgrid_list[grid_name]['long_name'] = 'OceanOnly_IcosSymmetric_4932m_rotatedZ37d_modified_srtm30_1min'
+  Dgrid_list[grid_name]['size'] = 237316813 
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
+
+  grid_name = 'r2b9_atm_r0015'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
   Dgrid_list[grid_name]['res'] = '5km'
   Dgrid_list[grid_name]['long_name'] = 'icon_grid_0015_R02B09_G'
   Dgrid_list[grid_name]['size'] = 20971520
-  Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '.nc'
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
+
+  grid_name = 'smt'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '500m-11km'
+  Dgrid_list[grid_name]['long_name'] = 'SMT NATL grid'
+  Dgrid_list[grid_name]['size'] = 59799625
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
+
+  grid_name = 'smtwv_oce_2018'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '500m-11km'
+  Dgrid_list[grid_name]['long_name'] = 'SMT WAVE grid'
+  Dgrid_list[grid_name]['size'] = 66859144
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
   
   f = Dataset(fpath_data, 'r')
-  gsize = f.variables['clon'].size
+  try:
+    gsize = f.variables['clon'].size
+  except:
+    ds = xr.open_dataset(fpath_data)
+    gsize = ds.ncells.size
   f.close()
   for grid_name in Dgrid_list.keys():
     if gsize == Dgrid_list[grid_name]['size']:
