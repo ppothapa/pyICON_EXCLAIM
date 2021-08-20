@@ -1,54 +1,30 @@
 #!/usr/bin/env python
 
-print('start modules')
-import matplotlib
-import numpy as np
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
-import xarray as xr
-import glob
-import os
-import sys
-sys.path.append('/home/mpim/m300602/pyicon/')
-import pyicon as pyic  
-#from pyicon import arrange_axes, shade, plot_settings
-#from pyicon import interp_to_rectgrid
-#import pandas as pd
-#import matplotlib.transforms as transforms
-#import matplotlib
 import argparse
-from pathlib import Path
-from netCDF4 import Dataset
-print('Done modules.')
-
-arrange_axes = pyic.arrange_axes
-shade = pyic.shade
-plot_settings = pyic.plot_settings
-interp_to_rectgrid = pyic.interp_to_rectgrid
 
 help_text = """
 Makes a figure from ICON data
 
 Usage notes:
 ------------
+Basic usage:
+pyic_fig netcdf_file.nc var_name [options]
 
+Change color limits:
+pyic_fig netcdf_file.nc var_name --clim=-10,32
+
+Change region:
+pyic_fig netcdf_file.nc var_name --lon_reg=-20,30 --lat_reg=-45,-20
+
+Plot on original triangle grid (it is recommended to cut the domain otherwise, it takes a long time):
+pyic_fig netcdf_file.nc var_name --use_tgrid --lon_reg=-72,-68 --lat_reg=33,35
+
+Save the figure:
+pyic_fig netcdf_file.nc var_name --fpath_fig=/path/to/figure.png
 
 Argument list:
 --------------
 """
-
-# --- default arguments
-#fpath = '/mnt/lustre02/work/bm1102/m300761/Projects/smt2/icon-oes/experiments/r7_smt_wave/r7_smt_wave_P1D_2d_20190701T093000Z.nc'
-#it = 0
-#iz = 0
-#projection = 'pc'
-#lon_reg = None
-#lat_reg = None
-#cmap = 'auto' 
-#clim = [None, None]
-#var = 'auto'
-#res = 0.3
-#gname = 'smtwv_oce_2018'
 
 # --- read input arguments
 parser = argparse.ArgumentParser(description=help_text, formatter_class=argparse.RawTextHelpFormatter)
@@ -61,9 +37,8 @@ parser.add_argument('var', metavar='var', type=str,
 # --- optional arguments
 parser.add_argument('--fpath_fig', type=str, default='none',
                     help='Path to save the figure.')
-parser.add_argument('--show', default=False,
-                    action='store_true',
-                    help='If specified, the plot is directly shown')
+parser.add_argument('--dontshow', action='store_false', default=False,
+                    help='If dontshow is specified, the plot is not shown')
 parser.add_argument('--use_tgrid', default=False,
                     action='store_true',
                     help='If specified, the plot is made on the original triangular grid.')
@@ -91,12 +66,25 @@ parser.add_argument('--cmap', type=str, default='auto',
                     help='Colormap used for plot.')
 parser.add_argument('--clim', type=str, default='auto',
                     help='Color limits of the plot. Either specify one or two values.If one value is specified color limits are taken symetrically around zero. If \'auto\' is specified color limits are derived automatically.')
+parser.add_argument('--title_center', type=str, default='auto',
+                    help='Title string center.')
+parser.add_argument('--title_left', type=str, default='auto',
+                    help='Title string left.')
+parser.add_argument('--title_right', type=str, default='auto',
+                    help='Title string right.')
+parser.add_argument('--cbar_str', type=str, default='auto',
+                    help='String for colorbar.')
+parser.add_argument('--xlabel', type=str, default='',
+                    help='String for xlabel.')
+parser.add_argument('--ylabel', type=str, default='',
+                    help='String for ylabel.')
+parser.add_argument('--cbar_pos', type=str, default='bottom',
+                    help='Position of colorbar.')
 
 iopts = parser.parse_args()
 
 fpath_data = iopts.fpath_data
 var = iopts.var
-#output = iopts.output
 gname = iopts.gname
 it = iopts.it
 time = iopts.time
@@ -112,10 +100,34 @@ fpath_fig = iopts.fpath_fig
 use_tgrid = iopts.use_tgrid
 fpath_tgrid = iopts.fpath_tgrid
 
+print('start modules')
+import matplotlib
+if iopts.dontshow:
+  matplotlib.use('Agg')
+import numpy as np
+import matplotlib.pyplot as plt
+import cartopy
+import cartopy.crs as ccrs
+import xarray as xr
+import glob
+import os
+import sys
+sys.path.append('/home/mpim/m300602/pyicon/')
+import pyicon as pyic  
+from pathlib import Path
+from netCDF4 import Dataset
+print('Done modules.')
+
+arrange_axes = pyic.arrange_axes
+shade = pyic.shade
+plot_settings = pyic.plot_settings
+interp_to_rectgrid = pyic.interp_to_rectgrid
+
 # --- variable replacements
 if var=='auto':
   var = list(ds.keys())[-1]
 
+# --- limits
 if clim!='auto':
   clim = clim.replace(' ', '')
   clim = np.array(clim.split(','), dtype=float)
@@ -125,8 +137,31 @@ if lon_reg:
 if lat_reg:
   lat_reg = lat_reg.replace(' ', '')
   lat_reg = np.array(lat_reg.split(','), dtype=float)
+
+# --- projections
+do_xyticks = True
 if isinstance(projection, str) and projection=='pc':
-  projection = ccrs.PlateCarree()
+  ccrs_proj = ccrs.PlateCarree()
+elif isinstance(projection, str) and projection=='np':
+  ccrs_proj = ccrs.NorthPolarStereo()
+  do_xyticks = False
+  if lon_reg==None:
+    lon_reg = [-180, 180]
+  if lat_reg==None:
+    lat_reg = [60, 90]
+  extent = [lon_reg[0], lon_reg[1], lat_reg[0], lat_reg[1]]
+  lat_reg[0] += -15 # increase data range to avoid white corners
+elif isinstance(projection, str) and projection=='sp':
+  ccrs_proj = ccrs.SouthPolarStereo()
+  do_xyticks = False
+  if lon_reg==None:
+    lon_reg = [-180, 180]
+  if lat_reg==None:
+    lat_reg = [-90, -50]
+  extent = [lon_reg[0], lon_reg[1], lat_reg[0], lat_reg[1]]
+  lat_reg[1] += 15 # increase data range to avoid white corners
+
+# --- grid files and interpolation
 path_grid = '/mnt/lustre01/work/mh0033/m300602/icon/grids/'
 if isinstance(fpath_data, list):
   fpath = fpath_data[0]
@@ -139,7 +174,6 @@ if fpath_tgrid=='auto':
   Dgrid = pyic.identify_grid(path_grid, fpath)
   fpath_tgrid = Dgrid['fpath_grid']
 fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.npz'
-print(fpath_ckdtree)
 
 # --- open dataset
 mfdset_kwargs = dict(combine='nested', concat_dim='time', 
@@ -167,6 +201,18 @@ if 'time' in data.dims:
   else:
     data = data.sel(time=time, method='nearest')
 
+if var in ['mld', 'mlotst']:
+  data = data.where(data!=data.min())
+
+# --- aspect ratio of the plot
+if (lon_reg is None) or (lat_reg is None):
+  asp = 0.5
+else:
+  asp = (lat_reg[1]-lat_reg[0])/(lon_reg[1]-lon_reg[0])
+
+if projection in ['np', 'sp']:
+  asp = 1.
+
 # --- interpolate and cut to region
 if not use_tgrid:
   lon, lat, datai = interp_to_rectgrid(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
@@ -189,33 +235,45 @@ else:
   data_reg = data.compute().data[ind_reg]
   print('Done deriving triangulation object.')
 
+# --- title, colorbar, and x/y label  strings
+if iopts.cbar_str=='auto':
+  iopts.cbar_str = f'{data.long_name} [{data.units}]'
+if (iopts.title_right=='auto') and ('time' in ds[var].dims):
+  tstr = str(data.time.data)
+  #tstr = tstr.split('T')[0].replace('-', '')+'T'+tstr.split('T')[1].split('.')[0].replace(':','')+'Z'
+  tstr = tstr.split('.')[0]
+  iopts.title_right = tstr
+if (iopts.title_center=='auto'):
+  iopts.title_center = ''
+if (iopts.title_left=='auto') and (depth_name!='none'):
+  iopts.title_left = f'depth = {data[depth_name].data:.1f}m'
+elif iopts.title_left=='auto':
+  iopts.title_left = ''
+
 # -- start plotting
 plt.close('all')
-asp = (lat_reg[1]-lat_reg[0])/(lon_reg[1]-lon_reg[0])
-hca, hcb = arrange_axes(1,1, plot_cb=True, asp=asp, fig_size_fac=2,
+hca, hcb = arrange_axes(1,1, plot_cb=iopts.cbar_pos, asp=asp, fig_size_fac=2,
                              sharex=True, sharey=True, xlabel="", ylabel="",
-                             projection=projection, axlab_kw=None, dfigr=0.5,
+                             projection=ccrs_proj, axlab_kw=None, dfigr=0.5,
                             )
 ii=-1
 
 ii+=1; ax=hca[ii]; cax=hcb[ii]
 if not use_tgrid:
-  hm = shade(lon, lat, datai, ax=ax, cax=cax, clim=clim, projection=projection)
+  hm = shade(lon, lat, datai, ax=ax, cax=cax, clim=clim, projection=ccrs.PlateCarree())
 else:
-  hm = shade(Tri, data_reg, ax=ax, cax=cax, clim=clim, projection=projection)
-#ax.set_title(f'{data.long_name} [{data.units}]', loc='left')
-cax.set_ylabel(f'{data.long_name} [{data.units}]')
-tstr = str(data.time.data)
-#tstr = tstr.split('T')[0].replace('-', '')+'T'+tstr.split('T')[1].split('.')[0].replace(':','')+'Z'
-tstr = tstr.split('.')[0]
-if 'time' in ds[var].dims:
-  ht = ax.set_title(tstr, loc='right')
-if depth_name!='none':
-  ht = ax.set_title(f'depth = {data[depth_name].data:.1f}m', loc='left')
+  hm = shade(Tri, data_reg, ax=ax, cax=cax, clim=clim, projection=ccrs.PlateCarree())
 
-if projection is None:
-  ax.set_xlabel('longitude')
-  ax.set_ylabel('latitude')
+if iopts.cbar_pos=='bottom':
+  cax.set_xlabel(iopts.cbar_str)
+else:
+  cax.set_ylabel(iopts.cbar_str)
+ht = ax.set_title(iopts.title_right, loc='right')
+ht = ax.set_title(iopts.title_center, loc='center')
+ht = ax.set_title(iopts.title_left, loc='left')
+
+ax.set_xlabel(iopts.xlabel)
+ax.set_ylabel(iopts.ylabel)
 
 if not projection:
   ax.set_facecolor('0.7')
@@ -229,10 +287,16 @@ if lat_reg is None:
 else:
   ylim = lat_reg
 
-if (lon_reg is None) and (lat_reg is None):
-  plot_settings(ax, template='global')
+if projection in ['np', 'sp']: 
+   ax.set_extent(extent, ccrs.PlateCarree())
+   ax.gridlines()
+   ax.add_feature(cartopy.feature.LAND)
+   ax.coastlines()
 else:
-  plot_settings(ax, xlim=xlim, ylim=ylim)
+  if (lon_reg is None) and (lat_reg is None):
+    plot_settings(ax, template='global', do_xyticks=do_xyticks)
+  else:
+    plot_settings(ax, xlim=xlim, ylim=ylim, do_xyticks=do_xyticks)
 
 if fpath_fig!='none':
   if fpath_fig.startswith('~'):
@@ -241,5 +305,5 @@ if fpath_fig!='none':
   print(f'Saving figure {fpath_fig}...')
   plt.savefig(fpath_fig)
 
-if iopts.show:
+if not iopts.dontshow:
   plt.show()
