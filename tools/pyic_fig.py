@@ -10,14 +10,23 @@ Usage notes:
 Basic usage:
 pyic_fig netcdf_file.nc var_name [options]
 
-Change color limits:
-pyic_fig netcdf_file.nc var_name --clim=-10,32
+Change color limits, colorbar:
+pyic_fig netcdf_file.nc var_name --clim=-10,32 --cmap=viridis
+
+Select time step and depth level by indices:
+pyic_fig netcdf_file.nc var_name --it=3 --iz=0
+
+Select date and depth:
+pyic_fig netcdf_files_*.nc var_name --time=2010-03-02 --depth=1000
 
 Change region:
 pyic_fig netcdf_file.nc var_name --lon_reg=-20,30 --lat_reg=-45,-20
 
 Plot on original triangle grid (it is recommended to cut the domain otherwise, it takes a long time):
 pyic_fig netcdf_file.nc var_name --use_tgrid --lon_reg=-72,-68 --lat_reg=33,35
+
+Change projection to North Polar Stereographic projection:
+pyic_fig netcdf_file.nc var_name --projection=np
 
 Save the figure:
 pyic_fig netcdf_file.nc var_name --fpath_fig=/path/to/figure.png
@@ -47,13 +56,13 @@ parser.add_argument('--gname', type=str, default='auto',
 parser.add_argument('--it', type=int, default=0,
                     help='Time index which should be plotted.')
 parser.add_argument('--time', type=str, default='none',
-                    help='Time string \'yyyy-mm-dd\' wich should be plotted (if specified overwrites it).')
+                    help='Time string \'yyyy-mm-dd\' wich should be plotted (if specified overwrites \'it\').')
 parser.add_argument('--iz', type=int, default=0,
                     help='Depth index which should be plotted.')
 parser.add_argument('--depth', type=float, default=-1.,
-                    help='Depth value in m which should be plotted (if specified overwrites iz).')
+                    help='Depth value in m which should be plotted (if specified overwrites \'iz\').')
 parser.add_argument('--projection', type=str, default='pc',
-                    help='Map projection, choose \'pc\' or None.')
+                    help='Map projection, choose \'None\' to deactivate cartopy, \'pc\' for normal lon/lat projection and \'np\' or \'sp\' for Norh- South-pole stereographic projections.')
 parser.add_argument('--res', type=float, default=0.3,
                     help='Resolution of the interpolated data which will be plotted. So far, 1.0, 0.3, 0.1 are supported.')
 parser.add_argument('--fpath_tgrid', type=str, default='auto',
