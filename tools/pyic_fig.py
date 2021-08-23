@@ -81,14 +81,14 @@ parser.add_argument('--title_left', type=str, default='auto',
                     help='Title string left.')
 parser.add_argument('--title_right', type=str, default='auto',
                     help='Title string right.')
-parser.add_argument('--cbar_str', type=str, default='auto',
-                    help='String for colorbar.')
 parser.add_argument('--xlabel', type=str, default='',
                     help='String for xlabel.')
 parser.add_argument('--ylabel', type=str, default='',
                     help='String for ylabel.')
+parser.add_argument('--cbar_str', type=str, default='auto',
+                    help='String for colorbar. Default is name of variable and its units.')
 parser.add_argument('--cbar_pos', type=str, default='bottom',
-                    help='Position of colorbar.')
+                    help='Position of colorbar. It is possible to choose between \'right\' and \'bottom\'.')
 
 iopts = parser.parse_args()
 
