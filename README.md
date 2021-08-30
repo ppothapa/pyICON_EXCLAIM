@@ -26,3 +26,18 @@ The easiest way is to use the following script:
 ```bash
 source /path/to/pyicon/tools/conda_act_mistral_pyicon_env.sh
 ```
+
+
+## Installing locally
+
+You can also install `pyicon` locally via `pip`. However, due to dependencies of `cartopy` it is advised to install `cartopy` first via `conda`.
+
+```bash
+conda install xarray cartopy dask -c conda-forge
+```
+
+Once, `cartopy` is installed in your environment:
+
+```bash
+pip install git+https://gitlab.dkrz.de/m300524/pyicon.git
+```
