@@ -39,5 +39,5 @@ conda install xarray cartopy dask -c conda-forge
 Once, `cartopy` is installed in your environment:
 
 ```bash
-pip install git+https://gitlab.dkrz.de/m300524/pyicon.git
+pip install git+https://gitlab.dkrz.de/m300602/pyicon.git
 ```
