@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("README.md", "r", encoding="utf-8") as f:
     long_description = f.read()
@@ -16,5 +16,6 @@ setup(
      author='Nils Brueggemann',
      author_email='nils.brueggemann@uni-hamburg.de',
      install_requires=install_requires,
+     packages=find_packages(),
      setup_requires=['setuptools'],
 )
