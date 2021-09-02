@@ -30,9 +30,15 @@
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
+extensions = [
+    'sphinx.ext.autodoc',
     'sphinx.ext.todo',
-    'sphinx.ext.imgmath']
+    'sphinx.ext.imgmath',
+    'nbsphinx',
+    "sphinx_copybutton",
+    "IPython.sphinxext.ipython_directive",
+    "IPython.sphinxext.ipython_console_highlighting",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -51,8 +57,8 @@ html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 
 
 # General information about the project.
 project = u'pyicon'
-copyright = u'2020, ICON team'
-author = u'ICON team'
+copyright = u'2020, pyicon team'
+author = u'pyicon team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
