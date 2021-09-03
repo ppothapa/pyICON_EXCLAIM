@@ -15,10 +15,11 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-# import os
-# import sys
+
+import os
+import sys
 # sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../..'))  # Source code dir relative to this file
 
 
 # -- General configuration ------------------------------------------------
@@ -34,10 +35,11 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.todo',
     'sphinx.ext.imgmath',
-    'nbsphinx',
-    "sphinx_copybutton",
-    "IPython.sphinxext.ipython_directive",
-    "IPython.sphinxext.ipython_console_highlighting",
+#    'sphinx.ext.autosummary',
+#    'nbsphinx',
+#    "sphinx_copybutton",
+#    "IPython.sphinxext.ipython_directive",
+#    "IPython.sphinxext.ipython_console_highlighting",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
