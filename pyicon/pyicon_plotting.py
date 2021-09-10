@@ -11,6 +11,9 @@ import datetime
 import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib import ticker
+from matplotlib.patches import Polygon
+from matplotlib.collections import PatchCollection
+from matplotlib.collections import PolyCollection
 #import my_toolbox as my
 import cartopy
 import cartopy.crs as ccrs
@@ -640,7 +643,7 @@ def shade(
         else:
           cborientation = 'horizontal'
       # ------ make actual colorbar
-      cb = plt.colorbar(mappable=hm, cax=cax, orientation=cborientation)
+      cb = plt.colorbar(mappable=hm, cax=cax, orientation=cborientation, extend='both')
       # ------ prevent white lines if fig is saved as pdf
       cb.solids.set_edgecolor("face")
       # ------ use exponential notation for large colorbar ticks
@@ -1678,3 +1681,67 @@ class split_axes_vertically(object):
         self.ax1.set_facecolor(*args, **kwargs)
         self.ax2.set_facecolor(*args, **kwargs)
         return
+
+def patch_plot_patches_from_bnds(clon_bnds, clat_bnds, vlon_bnds, vlat_bnds, cells_of_vertex):
+  xy = np.concatenate((clon_bnds.data[:,:, np.newaxis],clat_bnds.data[:,:, np.newaxis]), axis=2)
+  patches_c = []
+  nc = clon_bnds.shape[0]
+  for nn in range(nc):
+    if nn%1000==0:
+      print(f'nn = {nn}/{nc})', end='\r')
+    polygon = Polygon(xy[nn,:,:], True, edgecolor='k', facecolor='b')
+    patches_c.append(polygon)
+  patches_c = np.array(patches_c)
+
+  patches_v = []
+  nv = vlon_bnds.shape[0]
+  for nn in range(nv):
+    if nn%1000==0:
+      print(f'nn = {nn}/{nv})', end='\r')
+    ivalid = cells_of_vertex[nn,:]!=-1
+    xy = np.concatenate((vlon_bnds.data[nn,ivalid, np.newaxis],vlat_bnds.data[nn,ivalid, np.newaxis]), axis=1)
+    polygon = Polygon(xy, True, edgecolor='k', facecolor='b')
+    patches_v.append(polygon)
+  patches_v = np.array(patches_v)
+
+  return patches_c, patches_v
+
+def patch_plot_shade(patches, datai, clim='auto', cmap='auto', ax='auto', cax='auto', edgecolor='none', logplot=False, cborientation='vertical'):
+      
+  # --- mask 0 and negative values in case of log plot
+  data = 1.*datai
+  if logplot and isinstance(data, np.ma.MaskedArray):
+    data[data<=0.0] = np.ma.masked
+    data = np.ma.log10(data)
+  elif logplot and not isinstance(data, np.ma.MaskedArray):
+    data[data<=0.0] = np.nan
+    data = np.log10(data)
+  
+  # --- clim
+  if isinstance(clim, str) and clim=='auto':
+    clim = [None, None]
+  elif isinstance(clim, str) and clim=='sym':
+    clim = np.abs(data).max()
+  clim=np.array(clim)
+  if clim.size==1:
+    clim = np.array([-1, 1])*clim
+  if clim[0] is None:
+    clim[0] = data.min()
+  if clim[1] is None:
+    clim[1] = data.max()
+
+  # --- cmap
+  if (clim[0]==-clim[1]) and cmap=='auto':
+    cmap = 'RdBu_r'
+  elif cmap=='auto':
+    #cmap = 'viridis'
+    cmap = 'RdYlBu_r'
+  if isinstance(cmap, str):
+    cmap = getattr(plt.cm, cmap)
+  
+  p = PatchCollection(patches, cmap='RdBu_r', edgecolor=edgecolor)
+  p.set_array(data)
+  p.set_clim(clim)
+  ax.add_collection(p)
+  plt.colorbar(p, cax=cax, orientation=cborientation, extend='both')
+  return p

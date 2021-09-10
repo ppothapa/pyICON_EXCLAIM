@@ -900,6 +900,14 @@ def identify_grid(path_grid, fpath_data):
   """
   
   Dgrid_list = dict()
+
+  grid_name = 'r2b4_oce_r0003'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '160km'
+  Dgrid_list[grid_name]['long_name'] = 'OceanOnly_Icos_0158km_etopo40'
+  Dgrid_list[grid_name]['size'] = 15117
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
   
   grid_name = 'r2b4_oce_r0004'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
@@ -1443,3 +1451,56 @@ def stats(array):
   print(f'| min = {array.min().compute().data} | max = {array.max().compute().data} | mean = {array.mean().compute().data} |')
   print(f'| #NaNs = {xr.ufuncs.isnan(array).sum().compute().data} | #Zeros = {(array==0).sum().compute().data} |')
   return
+
+def patch_plot_derive_bnds(ds_tgrid, lon_reg=[-180, 180], lat_reg=[-90, 90]):
+  # --- load tgrid
+  vertex_of_cell = ds_tgrid['vertex_of_cell'][:].transpose()-1
+  clon_bnds = ds_tgrid.vlon[vertex_of_cell] * 180./np.pi
+  clat_bnds = ds_tgrid.vlat[vertex_of_cell] * 180./np.pi
+
+  cells_of_vertex = ds_tgrid['cells_of_vertex'][:].transpose()-1
+  vlon_bnds = ds_tgrid.clon[cells_of_vertex] * 180./np.pi
+  vlat_bnds = ds_tgrid.clat[cells_of_vertex] * 180./np.pi
+
+  vlon_bnds = vlon_bnds.to_masked_array()
+  vlat_bnds = vlat_bnds.to_masked_array()
+  cells_of_vertex = cells_of_vertex.to_masked_array()
+  vlon_bnds[cells_of_vertex==-1] = np.ma.masked
+  vlat_bnds[cells_of_vertex==-1] = np.ma.masked
+
+  clon = ds_tgrid.clon.data * 180./np.pi
+  clat = ds_tgrid.clat.data * 180./np.pi
+  vlon = ds_tgrid.vlon.data * 180./np.pi
+  vlat = ds_tgrid.vlat.data * 180./np.pi
+
+  # --- sort edges of dual grid
+  x = (vlon_bnds-vlon[:,np.newaxis])
+  y = (vlat_bnds-vlat[:,np.newaxis])
+
+  ex, ey = 1., 0.
+
+  ab_scalar = (x*ex+y*ey)/np.sqrt(x**2+y**2)
+  ab_cross  = (x*ey-y*ex)/np.sqrt(x**2+y**2)
+
+  sort_crit = np.ma.arccos(ab_scalar) * np.sign(ab_cross) * 180./np.pi
+  isort = np.ma.argsort(sort_crit, axis=1)
+
+  sorted_sort_crit = np.take_along_axis(sort_crit, isort, axis=1)
+  cells_of_vertex_sorted = np.take_along_axis(cells_of_vertex, isort, axis=1)
+  vlon_bnds_sorted = np.take_along_axis(vlon_bnds, isort, axis=1)
+  vlat_bnds_sorted = np.take_along_axis(vlat_bnds, isort, axis=1)
+  
+  vlon_bnds_sorted = xr.DataArray(vlon_bnds_sorted, dims=['vertex', 'nc'])
+  vlat_bnds_sorted = xr.DataArray(vlat_bnds_sorted, dims=['vertex', 'nc'])
+  
+  # --- cut region
+  ireg_v = (vlon>lon_reg[0]) & (vlon<=lon_reg[1]) & (vlat>lat_reg[0]) & (vlat<=lat_reg[1])
+  ireg_c = (clon>lon_reg[0]) & (clon<=lon_reg[1]) & (clat>lat_reg[0]) & (clat<=lat_reg[1])
+
+  vlon_bnds_sorted = vlon_bnds_sorted[ireg_v]
+  vlat_bnds_sorted = vlat_bnds_sorted[ireg_v]
+  cells_of_vertex_sorted = cells_of_vertex_sorted[ireg_v]
+  clon_bnds = clon_bnds[ireg_c]
+  clat_bnds = clat_bnds[ireg_c]
+
+  return clon_bnds, clat_bnds, vlon_bnds_sorted, vlat_bnds_sorted, cells_of_vertex_sorted
