@@ -24,6 +24,7 @@ Pyicon is hosted here: `<https://gitlab.dkrz.de/m300602/pyicon/>`_
    documentation
    quickplots
    view
+   api
 
   
 Indices and tables
