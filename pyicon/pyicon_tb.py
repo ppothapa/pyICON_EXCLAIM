@@ -15,6 +15,7 @@ import datetime
 # --- plotting
 print('matplotlib')
 import matplotlib.pyplot as plt
+import matplotlib
 # --- debugging
 print('mybreak')
 #from ipdb import set_trace as mybreak  
@@ -1071,7 +1072,7 @@ def mask_big_triangles(vlon, vertex_of_cell, Tri):
   Tri.set_mask(mask_bt)
   return Tri, mask_bt
 
-def triangulation(ds_tgrid, lon_reg=None, lat_reg=None):
+def triangulation(ds_tgrid, lon_reg=None, lat_reg=None, do_mask_big_triangles=True):
   vlon = ds_tgrid.vlon * 180./np.pi
   vlat = ds_tgrid.vlat * 180./np.pi
   vertex_of_cell = ds_tgrid.vertex_of_cell.transpose()-1
@@ -1085,8 +1086,9 @@ def triangulation(ds_tgrid, lon_reg=None, lat_reg=None):
   else:
     ind_reg = None
 
-  Tri = matplotlib.tri.Triangulation(vlon, vlat, triangles=vertex_of_cell[ind_reg,:])
-  Tri, mask_bt = pyic.mask_big_triangles(vlon, vertex_of_cell, Tri)
+  Tri = matplotlib.tri.Triangulation(vlon, vlat, triangles=vertex_of_cell)
+  if do_mask_big_triangles:
+    Tri, mask_bt = mask_big_triangles(vlon, vertex_of_cell, Tri)
   
   return ind_reg, Tri
 
