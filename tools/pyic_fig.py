@@ -131,6 +131,7 @@ arrange_axes = pyic.arrange_axes
 shade = pyic.shade
 plot_settings = pyic.plot_settings
 interp_to_rectgrid = pyic.interp_to_rectgrid
+triangulation = pyic.triangulation
 
 # --- variable replacements
 if var=='auto':
@@ -227,20 +228,25 @@ if not use_tgrid:
   lon, lat, datai = interp_to_rectgrid(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
 else:
   print('Deriving triangulation object, this can take a while...')
-  f = Dataset(fpath_tgrid, 'r')
-  clon = f.variables['clon'][:] * 180./np.pi
-  clat = f.variables['clat'][:] * 180./np.pi
-  vlon = f.variables['vlon'][:] * 180./np.pi
-  vlat = f.variables['vlat'][:] * 180./np.pi
-  vertex_of_cell = f.variables['vertex_of_cell'][:].transpose()-1
-  f.close()
-  
-  ind_reg = np.where(   (clon>lon_reg[0])
-                      & (clon<=lon_reg[1])
-                      & (clat>lat_reg[0])
-                      & (clat<=lat_reg[1]) )[0]
-  vertex_of_cell_reg = vertex_of_cell[ind_reg,:]
-  Tri = matplotlib.tri.Triangulation(vlon, vlat, triangles=vertex_of_cell_reg)
+  if False:
+    # --- more elegant but not sure whether as efficient 
+    ds_tgrid = xr.open_dataset(fpath_tgrid)
+    ind_reg, Tri = pyic.triangulation(ds_tgrid, lon_reg, lat_reg)
+  else:
+    f = Dataset(fpath_tgrid, 'r')
+    clon = f.variables['clon'][:] * 180./np.pi
+    clat = f.variables['clat'][:] * 180./np.pi
+    vlon = f.variables['vlon'][:] * 180./np.pi
+    vlat = f.variables['vlat'][:] * 180./np.pi
+    vertex_of_cell = f.variables['vertex_of_cell'][:].transpose()-1
+    f.close()
+    
+    ind_reg = np.where(   (clon>lon_reg[0])
+                        & (clon<=lon_reg[1])
+                        & (clat>lat_reg[0])
+                        & (clat<=lat_reg[1]) )[0]
+    vertex_of_cell_reg = vertex_of_cell[ind_reg,:]
+    Tri = matplotlib.tri.Triangulation(vlon, vlat, triangles=vertex_of_cell_reg)
   data_reg = data.compute().data[ind_reg]
   print('Done deriving triangulation object.')
 
