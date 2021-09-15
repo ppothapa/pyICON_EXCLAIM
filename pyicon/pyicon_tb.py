@@ -18,8 +18,8 @@ import matplotlib.pyplot as plt
 # --- debugging
 print('mybreak')
 #from ipdb import set_trace as mybreak  
-#print('pnadas')
-#import pandas as pd
+print('pnadas')
+import pandas as pd
 print('xarray')
 import xarray as xr
 print('done xarray')
@@ -197,6 +197,56 @@ def interp_to_rectgrid(data, fpath_ckdtree,
     datai = datai.reshape([data.shape[0], lat.size, lon.size])
   datai[datai==0.] = np.ma.masked
   return lon, lat, datai
+
+def interp_to_rectgrid_xr(arr, fpath_ckdtree, 
+                          lon_reg=None, lat_reg=None,
+                          coordinates='clat clon',
+                          radius_of_influence=1000e3,
+                          compute=True,
+                          mask_out_of_range=True,
+                          mask_out_of_range_before=False,
+                         ):
+
+  # --- load interpolation indices
+  ds_ckdt = xr.open_dataset(fpath_ckdtree)
+  if ('clon' in coordinates) or (coordinates==''):
+    inds = ds_ckdt.ickdtree_c
+    dist = ds_ckdt.dckdtree_c
+  elif 'elon' in coordinates:
+    inds = ds_ckdt.ickdtree_e
+    dist = ds_ckdt.dckdtree_e
+  elif 'vlon' in coordinates:
+    inds = ds_ckdt.ickdtree_v
+    dist = ds_ckdt.dckdtree_v
+  else:
+    raise ValueError('::: Error: Unsupported coordinates: %s! ::: ' % (coordinates))
+  dist = dist.compute()
+  inds = inds.compute().data.flatten()
+  lon = ds_ckdt.lon.compute().data
+  lat = ds_ckdt.lat.compute().data
+
+  # --- interpolate by nearest neighbor
+  arr_interp = arr.isel(ncells=inds)
+
+  # --- reshape
+  arr_interp = arr_interp.assign_coords(ncells=pd.MultiIndex.from_product([lat, lon], names=("lat", "lon"))
+                                ).unstack()
+
+  # --- mask values where nearest neighbor is too far away
+  # (doing this after compute seems to be faster) FIXME check that!
+  if mask_out_of_range_before:
+    arr_interp = arr_interp.where(dist<radius_of_influence)
+
+  # --- compute data otherwise a lazy object is returned
+  if compute:
+    arr_interp = arr_interp.compute()
+
+  # --- mask values where nearest neighbor is too far away
+  # (doing this after compute seems to be faster) FIXME check that!
+  if mask_out_of_range:
+    arr_interp = arr_interp.where(dist<radius_of_influence)
+
+  return  arr_interp
 
 def interp_to_section(data, fpath_ckdtree, coordinates='clat clon'):
   ddnpz = np.load(fpath_ckdtree)
@@ -1020,6 +1070,25 @@ def mask_big_triangles(vlon, vertex_of_cell, Tri):
                 )
   Tri.set_mask(mask_bt)
   return Tri, mask_bt
+
+def triangulation(ds_tgrid, lon_reg=None, lat_reg=None):
+  vlon = ds_tgrid.vlon * 180./np.pi
+  vlat = ds_tgrid.vlat * 180./np.pi
+  vertex_of_cell = ds_tgrid.vertex_of_cell.transpose()-1
+
+  if lon_reg is not None:
+    clon = ds_tgrid.clon * 180./np.pi
+    clat = ds_tgrid.clat * 180./np.pi
+    ind_reg = (clon>lon_reg[0]) & (clon<=lon_reg[1]) & (clat>lat_reg[0]) & (clat<=lat_reg[1])
+    ind_reg = ind_reg.data
+    vertex_of_cell = vertex_of_cell[ind_reg,:]
+  else:
+    ind_reg = None
+
+  Tri = matplotlib.tri.Triangulation(vlon, vlat, triangles=vertex_of_cell[ind_reg,:])
+  Tri, mask_bt = pyic.mask_big_triangles(vlon, vertex_of_cell, Tri)
+  
+  return ind_reg, Tri
 
 def crop_tripolar_grid(lon_reg, lat_reg,
                        clon, clat, vertex_of_cell, edge_of_cell):
