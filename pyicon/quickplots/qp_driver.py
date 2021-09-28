@@ -655,6 +655,7 @@ if do_atmosphere_plots and not iopts.no_plots:
   
   if do_ocean_plots==False:
     IcD_monthly = IcD_atm_mon
+    IcD = IcD_atm3d
 
 if do_hamocc_plots and not iopts.no_plots:
   if not do_ocean_plots:
