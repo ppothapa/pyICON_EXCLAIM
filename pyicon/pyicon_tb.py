@@ -221,10 +221,27 @@ def interp_to_rectgrid_xr(arr, fpath_ckdtree,
     dist = ds_ckdt.dckdtree_v
   else:
     raise ValueError('::: Error: Unsupported coordinates: %s! ::: ' % (coordinates))
-  dist = dist.compute()
-  inds = inds.compute().data.flatten()
   lon = ds_ckdt.lon.compute().data
   lat = ds_ckdt.lat.compute().data
+  if lon_reg is not None:
+    indx = np.where((lon>=lon_reg[0]) & (lon<lon_reg[1]))[0]
+    indy = np.where((lat>=lat_reg[0]) & (lat<lat_reg[1]))[0]
+    lon = lon[indx]
+    lat = lat[indy]
+    dist = dist.isel(lon=indx, lat=indy)
+    inds = inds.isel(lon=indx, lat=indy)
+    
+  #if lon_reg is not None:
+  #  indx = np.where((lon>=lon_reg[0]) & (lon<lon_reg[1]))[0]
+  #  indy = np.where((lat>=lat_reg[0]) & (lat<lat_reg[1]))[0]
+  #  Lon, Lat = np.meshgrid(lon, lat) # full grid
+  #  lon = lon[indx]
+  #  lat = lat[indy]
+  #  ind_reg = ((Lon>=lon_reg[0]) & (Lon<lon_reg[1]) & (Lat>=lat_reg[0]) & (Lat<lat_reg[1])).flatten()
+  #  mask_reg = ind_reg
+  #  Lon, Lat = np.meshgrid(lon, lat) # cropped grid
+  dist = dist.compute()
+  inds = inds.compute().data.flatten()
 
   # --- interpolate by nearest neighbor
   arr_interp = arr.isel(ncells=inds)
