@@ -16,6 +16,7 @@ dependencies:
   - jupyter     
   - jupyterlab  # optional
   - jupyter-resource-usage # for showing memory resources in upper right corner of notebook
+  - jupyter_contrib_nbextensions
   - cmocean     # optional
   - sphinx      # optional for documentation
   - mpi4py      
@@ -24,6 +25,7 @@ dependencies:
   - xarray      
   - dask        
   - dask-jobqueue
+  - dask-labextension
   - python-graphviz
   - f90nml
   - dash
