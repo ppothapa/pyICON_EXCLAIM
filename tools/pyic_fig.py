@@ -46,7 +46,7 @@ parser.add_argument('var', metavar='var', type=str,
 # --- optional arguments
 parser.add_argument('--fpath_fig', type=str, default='none',
                     help='Path to save the figure.')
-parser.add_argument('--dontshow', action='store_false', default=False,
+parser.add_argument('--dontshow', action='store_true', default=False,
                     help='If dontshow is specified, the plot is not shown')
 parser.add_argument('--use_tgrid', default=False,
                     action='store_true',
