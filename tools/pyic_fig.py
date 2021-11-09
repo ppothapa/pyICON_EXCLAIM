@@ -89,6 +89,10 @@ parser.add_argument('--cbar_str', type=str, default='auto',
                     help='String for colorbar. Default is name of variable and its units.')
 parser.add_argument('--cbar_pos', type=str, default='bottom',
                     help='Position of colorbar. It is possible to choose between \'right\' and \'bottom\'.')
+parser.add_argument('--coastlines_color', type=str, default='k',
+                    help='Color of coastlines. Default is \'k\'. To disable set to \'none\'.')
+parser.add_argument('--land_facecolor', type=str, default='0.7',
+                    help='Color of land masses. Default is \'0.7\'. To disable set to \'none\'.')
 
 iopts = parser.parse_args()
 
@@ -310,7 +314,9 @@ if projection in ['np', 'sp']:
    ax.coastlines()
 else:
   if (lon_reg is None) and (lat_reg is None):
-    plot_settings(ax, template='global', do_xyticks=do_xyticks)
+    plot_settings(ax, template='global', do_xyticks=do_xyticks, 
+                  land_facecolor=iopts.land_facecolor, 
+                  coastlines_color=iopts.coastlines_color)
   else:
     plot_settings(ax, xlim=xlim, ylim=ylim, do_xyticks=do_xyticks)
 
