@@ -256,7 +256,11 @@ else:
 
 # --- title, colorbar, and x/y label  strings
 if iopts.cbar_str=='auto':
-  iopts.cbar_str = f'{data.long_name} [{data.units}]'
+  try:
+    units = data.units
+  except:
+    units = 'NA'
+  iopts.cbar_str = f'{data.long_name} [{units}]'
 if (iopts.title_right=='auto') and ('time' in ds[var].dims):
   tstr = str(data.time.data)
   #tstr = tstr.split('T')[0].replace('-', '')+'T'+tstr.split('T')[1].split('.')[0].replace(':','')+'Z'
