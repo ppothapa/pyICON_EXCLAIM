@@ -156,8 +156,10 @@ if lat_reg:
 do_xyticks = True
 if isinstance(projection, str) and projection=='pc':
   ccrs_proj = ccrs.PlateCarree()
+  shade_proj = ccrs.PlateCarree()
 elif isinstance(projection, str) and projection=='np':
   ccrs_proj = ccrs.NorthPolarStereo()
+  shade_proj = ccrs.PlateCarree()
   do_xyticks = False
   if lon_reg==None:
     lon_reg = [-180, 180]
@@ -167,6 +169,7 @@ elif isinstance(projection, str) and projection=='np':
   lat_reg[0] += -15 # increase data range to avoid white corners
 elif isinstance(projection, str) and projection=='sp':
   ccrs_proj = ccrs.SouthPolarStereo()
+  shade_proj = ccrs.PlateCarree()
   do_xyticks = False
   if lon_reg==None:
     lon_reg = [-180, 180]
@@ -174,6 +177,9 @@ elif isinstance(projection, str) and projection=='sp':
     lat_reg = [-90, -50]
   extent = [lon_reg[0], lon_reg[1], lat_reg[0], lat_reg[1]]
   lat_reg[1] += 15 # increase data range to avoid white corners
+else:
+  ccrs_proj = None
+  shade_proj = None
 
 # --- grid files and interpolation
 path_grid = '/mnt/lustre01/work/mh0033/m300602/icon/grids/'
@@ -182,11 +188,17 @@ if isinstance(fpath_data, list):
 else:
   fpath = fpath_data
 if gname=='auto':
-  Dgrid = pyic.identify_grid(path_grid, fpath)
-  gname = Dgrid['name']
+  try:
+    Dgrid = pyic.identify_grid(path_grid, fpath)
+    gname = Dgrid['name']
+  except:
+    gname = 'none'
 if fpath_tgrid=='auto':
-  Dgrid = pyic.identify_grid(path_grid, fpath)
-  fpath_tgrid = Dgrid['fpath_grid']
+  try:
+    Dgrid = pyic.identify_grid(path_grid, fpath)
+    fpath_tgrid = Dgrid['fpath_grid']
+  except:
+    fpath_tgrid = 'from_file'
 fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.npz'
 
 # --- open dataset
@@ -237,21 +249,33 @@ else:
     ds_tgrid = xr.open_dataset(fpath_tgrid)
     ind_reg, Tri = pyic.triangulation(ds_tgrid, lon_reg, lat_reg)
   else:
-    f = Dataset(fpath_tgrid, 'r')
-    clon = f.variables['clon'][:] * 180./np.pi
-    clat = f.variables['clat'][:] * 180./np.pi
-    vlon = f.variables['vlon'][:] * 180./np.pi
-    vlat = f.variables['vlat'][:] * 180./np.pi
-    vertex_of_cell = f.variables['vertex_of_cell'][:].transpose()-1
-    f.close()
+    if fpath_tgrid != 'from_file':
+      f = Dataset(fpath_tgrid, 'r')
+      clon = f.variables['clon'][:] * 180./np.pi
+      clat = f.variables['clat'][:] * 180./np.pi
+      vlon = f.variables['vlon'][:] * 180./np.pi
+      vlat = f.variables['vlat'][:] * 180./np.pi
+      vertex_of_cell = f.variables['vertex_of_cell'][:].transpose()-1
+      f.close()
+    else:
+      clon_bnds = ds.clon_bnds * 180./np.pi
+      clat_bnds = ds.clat_bnds * 180./np.pi
+      clon = ds.clon * 180./np.pi
+      clat = ds.clat * 180./np.pi
+      ntr = clon.size
+      vlon = clon_bnds.data.reshape(ntr*3)
+      vlat = clat_bnds.data.reshape(ntr*3)
+      vertex_of_cell = np.arange(ntr*3).reshape(ntr,3)
     
-    ind_reg = np.where(   (clon>lon_reg[0])
-                        & (clon<=lon_reg[1])
-                        & (clat>lat_reg[0])
-                        & (clat<=lat_reg[1]) )[0]
-    vertex_of_cell_reg = vertex_of_cell[ind_reg,:]
-    Tri = matplotlib.tri.Triangulation(vlon, vlat, triangles=vertex_of_cell_reg)
-  data_reg = data.compute().data[ind_reg]
+    if lon_reg is not None and lat_reg is not None:
+      ind_reg = np.where(   (clon>lon_reg[0])
+                          & (clon<=lon_reg[1])
+                          & (clat>lat_reg[0])
+                          & (clat<=lat_reg[1]) )[0]
+      vertex_of_cell = vertex_of_cell[ind_reg,:]
+      data = data[ind_reg]
+    Tri = matplotlib.tri.Triangulation(vlon, vlat, triangles=vertex_of_cell)
+  data = data.compute()
   print('Done deriving triangulation object.')
 
 # --- title, colorbar, and x/y label  strings
@@ -282,11 +306,11 @@ hca, hcb = arrange_axes(1,1, plot_cb=iopts.cbar_pos, asp=asp, fig_size_fac=2,
 ii=-1
 
 ii+=1; ax=hca[ii]; cax=hcb[ii]
-shade_kwargs = dict(ax=ax, cax=cax, clim=clim, projection=ccrs.PlateCarree(), cmap=cmap)
+shade_kwargs = dict(ax=ax, cax=cax, clim=clim, projection=shade_proj, cmap=cmap)
 if not use_tgrid:
   hm = shade(lon, lat, datai, **shade_kwargs)
 else:
-  hm = shade(Tri, data_reg, **shade_kwargs)
+  hm = shade(Tri, data, **shade_kwargs)
 
 if iopts.cbar_pos=='bottom':
   cax.set_xlabel(iopts.cbar_str)
@@ -318,11 +342,17 @@ if projection in ['np', 'sp']:
    ax.coastlines()
 else:
   if (lon_reg is None) and (lat_reg is None):
-    plot_settings(ax, template='global', do_xyticks=do_xyticks, 
+    plot_settings(ax, template='global', 
+                  do_xyticks=do_xyticks, 
                   land_facecolor=iopts.land_facecolor, 
-                  coastlines_color=iopts.coastlines_color)
+                  coastlines_color=iopts.coastlines_color,
+    )
   else:
-    plot_settings(ax, xlim=xlim, ylim=ylim, do_xyticks=do_xyticks)
+    plot_settings(ax, xlim=xlim, ylim=ylim, 
+                  do_xyticks=do_xyticks,
+                  land_facecolor=iopts.land_facecolor, 
+                  coastlines_color=iopts.coastlines_color,
+    )
 
 if fpath_fig!='none':
   if fpath_fig.startswith('~'):
