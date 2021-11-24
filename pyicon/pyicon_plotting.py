@@ -544,8 +544,8 @@ def shade(
           xc = 0.25*(x[1:,1:]+x[:-1,1:]+x[1:,:-1]+x[:-1,:-1])
           yc = 0.25*(y[1:,1:]+y[:-1,1:]+y[1:,:-1]+y[:-1,:-1])
         else:
-          xc = 1.*x
-          yc = 1.*y
+          xc = x.copy()
+          yc = y.copy()
       
     # --- allocate list of all plot handles
     hs = []
@@ -1745,3 +1745,20 @@ def patch_plot_shade(patches, datai, clim='auto', cmap='auto', ax='auto', cax='a
   ax.add_collection(p)
   plt.colorbar(p, cax=cax, orientation=cborientation, extend='both')
   return p
+
+def tbox(text, loc, ax, facecolor='w', alpha=1.0):
+  bbox=dict(facecolor=facecolor, alpha=alpha, edgecolor='none')
+  if loc=='ul':
+    x = 0.03; y=0.95
+    ha='left'; va='top'
+  elif loc=='ur':
+    x = 0.98; y=0.95
+    ha='right'; va='top'
+  elif loc=='ll':
+    x = 0.03; y=0.05
+    ha='left'; va='bottom'
+  elif loc=='lr':
+    x = 0.98; y=0.05
+    ha='right'; va='bottom'
+  ht = ax.text(x, y, text, ha=ha, va=va, bbox=bbox, transform=ax.transAxes)
+  return ht
