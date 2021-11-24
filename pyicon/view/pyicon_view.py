@@ -468,7 +468,8 @@ class hplot(object):
         data_nomasked_vals = data[self.IcD.mask_bt==False]
         self.hm[0].set_array(data_nomasked_vals)
       else:
-        self.hm[0].set_array(data[1:,1:].flatten())
+        #self.hm[0].set_array(data[1:,1:].flatten())
+        self.hm[0].set_array(data.flatten())
 
     # --- set info strings
     self.hrstr.set_text('rgrid: %s'%(self.IcD.rgrid_name))
@@ -737,7 +738,8 @@ class vplot(hplot):
         data[data<=0.0] = np.ma.masked
         data = np.ma.log10(data) 
       # --- update figure
-      self.hm[0].set_array(data[1:,1:].flatten())
+      #self.hm[0].set_array(data[1:,1:].flatten())
+      self.hm[0].set_array(data.flatten())
 
     # --- set info strings
     self.hsstr.set_text('section: %s'%(self.sec_name))
