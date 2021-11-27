@@ -153,7 +153,7 @@ class hplot(object):
     else:
       rgrid_name = 'pre_defined'
       self.rgrid_options = dict(pre_defined=fpath_ckdtree)
-    self.rgrid_options['tgrid'] = fpath_tgrid
+    self.rgrid_options['original'] = fpath_tgrid
     if fpath_tgrid=='auto':
       self.fpath_tgrid = self.Dgrid['fpath_grid']
     else:
@@ -193,10 +193,10 @@ class hplot(object):
 
     # --- make depth slider
     try:
-      bnds=[0,self.ds.depth.size-1]
+      bnds=[0,self.ds[self.lev_name].size-1]
     except:
       bnds=[0,1]
-    b_dec, w1, b_inc = my_slide(name='depth:', bnds=bnds)
+    b_dec, w1, b_inc = my_slide(name=f'{self.lev_name}', bnds=bnds)
     Box = HBox([b_dec, w1, b_inc])
     display(Box)
 
@@ -320,9 +320,26 @@ class hplot(object):
   # functions to inquire ICON data from xarray object
   # ------------------------------------------------------------ 
   def get_data(self):
-    self.diag_out('before arr')
+    # --- select time step
     arr = self.ds[self.var].isel(time=self.step_snap)
-    self.diag_out('after arr')
+    # --- vertical level (if appropriate, if 2D do nothing)
+    if 'depth' in arr.dims:
+      arr = arr.isel(depth=self.iz)
+      self.lev_name = 'depth'
+    elif 'depth_2' in arr.dims:
+      arr = arr.isel(depth_2=self.iz)
+      self.lev_name = 'depth_2'
+    elif 'height' in arr.dims:
+      arr = arr.isel(height=self.iz)
+      self.lev_name = 'height'
+    elif 'height_2' in arr.dims:
+      arr = arr.isel(height_2=self.iz)
+      self.lev_name = 'height_2'
+    else:
+      self.lev_name = 'none'
+    # --- mask land values (necessary for ocean data)
+    arr = arr.where(arr!=0)
+    # --- get current fpath_ckdtree
     self.fpath_ckdtree = self.rgrid_options[self.rgrid_name]
     # --- interpolate data 
     if self.grid_type=='igrid':
@@ -336,7 +353,8 @@ class hplot(object):
       arr = arr.isel(ncells=self.ind_reg)
     # --- take log
     if self.logplot:
-      arr = xr.ufuncs.log10(xr.ufuncs.fabs(arr))
+      arr = arr.where(arr>0)
+      arr = xr.ufuncs.log10(arr)
     self.arr = arr
     return 
 
@@ -358,12 +376,16 @@ class hplot(object):
 
   def update_infotext(self):
     try:
-      self.hdstr.set_text('depth = %4.1fm'%(self.ds.depth.data[self.iz]))
+      if 'depth' in self.lev_name:
+        dunit = 'm'
+      else:
+        dunit = ''
+      self.ht_depth.set_text(f'{self.lev_name} = {self.ds[self.lev_name].data[self.iz]:4.1f}{dunit}')
     except:
-      self.hdstr.set_text('')
-    self.htstr.set_text(str(self.ds.time.data[self.step_snap])[:16])
-    self.title = self.get_title()
-    self.ht_title.set_text(self.title)
+      self.ht_depth.set_text('')
+    self.ht_time.set_text(str(self.ds.time.data[self.step_snap])[:16])
+    self.ht_title.set_text(self.get_title())
+    self.ht_rgrid.set_text(self.rgrid_name)
     return
 
 #  def make_triangulation(self): 
@@ -429,9 +451,9 @@ class hplot(object):
 
     if do_infostr:
       # --- set info strings
-      self.hrstr = self.ax.text(0.05, 0.025, 'NA', transform=plt.gcf().transFigure)
-      self.hdstr = self.ax.text(0.3, 0.025, 'NA', transform=plt.gcf().transFigure)
-      self.htstr = self.ax.text(0.6, 0.025, 'NA', transform=plt.gcf().transFigure)
+      self.ht_rgrid = self.ax.text(0.05, 0.025, 'NA', transform=plt.gcf().transFigure)
+      self.ht_depth = self.ax.text(0.5, 0.025, 'NA', transform=plt.gcf().transFigure)
+      self.ht_time = self.ax.text(0.8, 0.025, 'NA', transform=plt.gcf().transFigure)
       self.ht_title = self.ax.set_title('NA')
 
       self.update_infotext()
@@ -452,7 +474,7 @@ class hplot(object):
     self.iz = iz
     self.step_snap = step_snap
 
-    if rgrid_name=='tgrid':
+    if rgrid_name=='original':
       self.use_tgrid = True
       self.grid_type = 'tgrid'
     else:
@@ -480,7 +502,8 @@ class hplot(object):
     # --- if rgrid is unchange or tgrid is used only update data
     else:
       self.get_data()
-      self.hm[0].set_array(self.arr.data.flatten())
+      #self.hm[0].set_array(self.arr.data.flatten())
+      self.hm[0].set_array(self.arr.to_masked_array().flatten())
 
     # --- set info strings
     self.update_infotext()
