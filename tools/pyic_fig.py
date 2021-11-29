@@ -93,6 +93,9 @@ parser.add_argument('--coastlines_color', type=str, default='k',
                     help='Color of coastlines. Default is \'k\'. To disable set to \'none\'.')
 parser.add_argument('--land_facecolor', type=str, default='0.7',
                     help='Color of land masses. Default is \'0.7\'. To disable set to \'none\'.')
+parser.add_argument('--lonlat_for_mask', default=False,
+                    action='store_true',
+                    help='If specified, mask for triangles which are swapped at periodic boundaries is calculated from clon and clat (and not only from clon). Relevant for torus setup.')
 
 iopts = parser.parse_args()
 
@@ -244,37 +247,30 @@ if not use_tgrid:
   lon, lat, datai = interp_to_rectgrid(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
 else:
   print('Deriving triangulation object, this can take a while...')
-  if False:
-    # --- more elegant but not sure whether as efficient 
-    ds_tgrid = xr.open_dataset(fpath_tgrid)
-    ind_reg, Tri = pyic.triangulation(ds_tgrid, lon_reg, lat_reg)
-  else:
-    if fpath_tgrid != 'from_file':
-      f = Dataset(fpath_tgrid, 'r')
-      clon = f.variables['clon'][:] * 180./np.pi
-      clat = f.variables['clat'][:] * 180./np.pi
-      vlon = f.variables['vlon'][:] * 180./np.pi
-      vlat = f.variables['vlat'][:] * 180./np.pi
-      vertex_of_cell = f.variables['vertex_of_cell'][:].transpose()-1
-      f.close()
-    else:
-      clon_bnds = ds.clon_bnds * 180./np.pi
-      clat_bnds = ds.clat_bnds * 180./np.pi
-      clon = ds.clon * 180./np.pi
-      clat = ds.clat * 180./np.pi
-      ntr = clon.size
-      vlon = clon_bnds.data.reshape(ntr*3)
-      vlat = clat_bnds.data.reshape(ntr*3)
-      vertex_of_cell = np.arange(ntr*3).reshape(ntr,3)
     
-    if lon_reg is not None and lat_reg is not None:
-      ind_reg = np.where(   (clon>lon_reg[0])
-                          & (clon<=lon_reg[1])
-                          & (clat>lat_reg[0])
-                          & (clat<=lat_reg[1]) )[0]
-      vertex_of_cell = vertex_of_cell[ind_reg,:]
-      data = data[ind_reg]
-    Tri = matplotlib.tri.Triangulation(vlon, vlat, triangles=vertex_of_cell)
+  if fpath_tgrid != 'from_file':
+    ds_tgrid = xr.open_dataset(fpath_tgrid)
+  else:
+    ds_tgrid = xr.Dataset()
+    ntr = ds.clon.size
+    vlon = ds.clon_bnds.data.reshape(ntr*3)
+    vlat = ds.clat_bnds.data.reshape(ntr*3)
+    vertex_of_cell = np.arange(ntr*3).reshape(ntr,3)
+    vertex_of_cell = vertex_of_cell.transpose()+1
+    ds_tgrid['clon'] = xr.DataArray(ds.clon.data, dims=['cell'])
+    ds_tgrid['clat'] = xr.DataArray(ds.clat.data, dims=['cell'])
+    ds_tgrid['vlon'] = xr.DataArray(vlon, dims=['vertex'])
+    ds_tgrid['vlat'] = xr.DataArray(vlat, dims=['vertex'])
+    ds_tgrid['vertex_of_cell'] = xr.DataArray(vertex_of_cell, dims=['nv', 'cell'])
+
+  if iopts.lonlat_for_mask:
+    only_lon = False
+  else:
+    only_lon = True
+  ind_reg, Tri = pyic.triangulation(ds_tgrid, lon_reg, lat_reg, only_lon=only_lon)
+
+  if lon_reg is not None and lat_reg is not None:
+    data = data[ind_reg]
   data = data.compute()
   print('Done deriving triangulation object.')
 
