@@ -75,7 +75,7 @@ def my_slide(name='slider:', bnds=[0,10]):
 # hplot
 # (main class for horizontal plots)
 # ------------------------------------------------------------ 
-class hplot(object):
+class hplot_xr(object):
   output = widgets.Output()
 
   def __init__(self, 
@@ -89,6 +89,8 @@ class hplot(object):
     fpath_ckdtree='auto',
     fpath_tgrid='auto',
     do_mask_big_triangles=False,
+    title='auto',
+    do_mask_zeros=True,
     ):
     """
     Parameters
@@ -116,6 +118,12 @@ class hplot(object):
     do_mask_big_triangles : bool
         When plotting on the triangular grid, matplotlib can have problems with triangles
         which cross the map boundary. To avoid this, set do_mask_big_triangles=False.
+    title: str
+        Set title string for plot. If 'auto' then title string is set by variable name and unit 
+        and updated when variable is changed.
+    do_mask_zeros: bool
+        If set to 'True' then all data values which are exactly zero are masked. This is helpful for 
+        plotting ocean data where land values are always zero.
       
     """
     # ------------------------------------------------------------ 
@@ -127,6 +135,8 @@ class hplot(object):
     self.varnames = list(ds.keys())
     self.ds = ds.copy()
     self.var = self.varnames[0]
+    self.title = title
+    self.do_mask_zeros = do_mask_zeros
     # --- location
     self.iz = 0
     self.step_snap = 0
@@ -338,7 +348,8 @@ class hplot(object):
     else:
       self.lev_name = 'none'
     # --- mask land values (necessary for ocean data)
-    arr = arr.where(arr!=0)
+    if self.do_mask_zeros:
+      arr = arr.where(arr!=0)
     # --- get current fpath_ckdtree
     self.fpath_ckdtree = self.rgrid_options[self.rgrid_name]
     # --- interpolate data 
@@ -359,19 +370,22 @@ class hplot(object):
     return 
 
   def get_title(self):
-    try:
-      long_name = self.arr.long_name
-    except:
-      #long_name = 'NA'
-      long_name = self.arr.name
-    try:
-      units = self.arr.units
-    except:
-      units = 'NA'
-    if self.logplot:
-      title = f'log_10({long_name}) [{units}]'
+    if self.title=='auto':
+      try:
+        long_name = self.arr.long_name
+      except:
+        #long_name = 'NA'
+        long_name = self.arr.name
+      try:
+        units = self.arr.units
+      except:
+        units = 'NA'
+      if self.logplot:
+        title = f'log_10({long_name}) [{units}]'
+      else:
+        title = f'{long_name} [{units}]'
     else:
-      title = f'{long_name} [{units}]'
+      title = self.title
     return title
 
   def update_infotext(self):
