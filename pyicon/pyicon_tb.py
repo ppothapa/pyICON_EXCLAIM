@@ -957,7 +957,10 @@ def conv_gname(gname):
 Grid related functions
 """
 def identify_grid(path_grid, fpath_data):
-  """ Identifies ICON grid in depending on clon.size in fpath_data.
+  """ Identifies ICON grid from fpath_data which can be either a path to 
+  a file containing a 'clon' variable or an xarray dataset or array where
+  the cell dimension name is either 'ncells' or 'cell'.
+  
   
   r2b4:  160km:    15117: OceanOnly_Icos_0158km_etopo40.nc
   r2b4a: 160km:    20480: /pool/data/ICON/grids/public/mpim/0013/icon_grid_0013_R02B04_G.nc
@@ -1065,17 +1068,45 @@ def identify_grid(path_grid, fpath_data):
   #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '.nc'
   Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
   
-  f = Dataset(fpath_data, 'r')
-  try:
-    gsize = f.variables['clon'].size
-  except:
-    ds = xr.open_dataset(fpath_data)
-    gsize = ds.ncells.size
-  f.close()
+  if isinstance(fpath_data, str):
+    try:
+      f = Dataset(fpath_data, 'r')
+      gsize = f.variables['clon'].size
+      f.close()
+    except:
+      ds = xr.open_dataset(fpath_data)
+      gsize = ds.ncells.size
+  else:
+    # assume fpath_data is an xarray dataset or array
+    try:
+      gsize = fpath_data.ncells.size
+    except:
+      try:
+        gsize = fpath_data.cells.size
+      except:
+        raise ValueError('::: Error: Could not read numer ob cells from fpath_data! :::')
+
   for grid_name in Dgrid_list.keys():
     if gsize == Dgrid_list[grid_name]['size']:
       Dgrid = Dgrid_list[grid_name]
       break
+
+  # --- get all available interpolation files
+  glist = glob.glob(f"{path_grid}/{Dgrid['name']}/ckdtree/rectgrids/*.nc")
+  glist.sort()
+  Drectgrids = dict()
+  for gg in glist:
+    key = gg.split('.nc')[0].split(Dgrid['name']+'_')[1]
+    Drectgrids[key] = gg
+  Dgrid['Drectgrids'] = Drectgrids
+  glist = glob.glob(f"{path_grid}/{Dgrid['name']}/ckdtree/sections/*.nc")
+  glist.sort()
+  Dsections = dict()
+  for gg in glist:
+    key = gg.split('.nc')[0].split(Dgrid['name']+'_')[1]
+    Dsections[key] = gg
+  Dgrid['Drectgrids'] = Drectgrids
+  Dgrid['Dsections'] = Dsections
   #fpath_grid = '/pool/data/ICON/oes/input/r0003/' + Dgrid['long_name'] +'/' + Dgrid['long_name'] + '.nc'
   return Dgrid
 
