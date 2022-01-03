@@ -156,7 +156,7 @@ class IconData(object):
     self.sal_ice = 5.
     rcpl = 3.1733
     cpd = 1004.64 
-    self.cp = (rcpl + 1.0) * cpd
+    self.cp = (rcpl + 1.0) * cpd  # = 4192.6641119999995 J/kg/K
     self.tref = 273.15
     self.tmelt = 273.15
     self.tfreeze = -1.9
