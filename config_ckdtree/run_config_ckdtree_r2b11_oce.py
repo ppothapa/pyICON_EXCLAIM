@@ -1,10 +1,11 @@
 #! /bin/bash
 #SBATCH --job-name=pysmt
-#SBATCH --time=08:00:00
+#SBATCH --time=12:00:00
 #SBATCH --output=log.o-%j.out
 #SBATCH --error=log.o-%j.out
 #SBATCH --ntasks=1
-#SBATCH --partition=gpu
+#SBATCH --partition=prepost
+#SABTCH --mem=5300
 #####SBATCH --account=bm0371
 #####SBATCH --account=mh0033
 #SBATCH --account=bm1102
