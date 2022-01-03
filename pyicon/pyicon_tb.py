@@ -451,6 +451,7 @@ def ckdtree_hgrid(lon_reg, lat_reg, res,
                  load_vgrid=True,
                  n_nearest_neighbours=1,
                  n_jobs=1,
+                 save_as_nc=True,
                  ):
   """
   """
@@ -460,10 +461,15 @@ def ckdtree_hgrid(lon_reg, lat_reg, res,
   lon1str, lat1str = lonlat2str(lon_reg[0], lat_reg[0])
   lon2str, lat2str = lonlat2str(lon_reg[1], lat_reg[1])
 
-  if n_nearest_neighbours==1:
-    fname = '%s_res%3.2f_%s-%s_%s-%s.npz'%(tgname, res, lon1str, lon2str, lat1str, lat2str) 
+  if save_as_nc:
+    ending='nc'
   else:
-    fname = '%s_res%3.2f_%dnn_%s-%s_%s-%s.npz'%(tgname, res, n_nearest_neighbours, lon1str, lon2str, lat1str, lat2str) 
+    ending='npz'
+
+  if n_nearest_neighbours==1:
+    fname = f'{tgname}_res{res:3.2f}_{lon1str}-{lon2str}_{lat1str}-{lat2str}.{ending}'
+  else:
+    fname = f'{tgname}_res{res:3.2f}_{n_nearest_neighbours:d}_{lon1str}-{lon2str}_{lat1str}-{lat2str}.{ending}'
   fpath_ckdtree = path_ckdtree+fname
   fpath_tgrid   = path_tgrid+fname_tgrid
 
@@ -481,14 +487,20 @@ def ckdtree_hgrid(lon_reg, lat_reg, res,
 
   # --- save grid
   print('Saving grid file: %s' % (fpath_ckdtree))
-  np.savez(fpath_ckdtree,
-            lon=lon,
-            lat=lat,
-            sname=sname,
-            gname=gname,
-            tgname='test',
-            **Dind_dist,
-           )
+  if save_as_nc:
+    ds = xr.Dataset(coords=dict(lat=lat, lon=lon))
+    for var in Dind_dist.keys(): 
+      ds[var] = xr.DataArray(Dind_dist[var].reshape(lat.size, lon.size), dims=['lat', 'lon'])
+    ds.to_netcdf(fpath_ckdtree)
+  else:
+    np.savez(fpath_ckdtree,
+              lon=lon,
+              lat=lat,
+              sname=sname,
+              gname=gname,
+              tgname='test',
+              **Dind_dist,
+             )
   return
 
 def ckdtree_section(p1, p2, npoints=101, 
@@ -503,6 +515,7 @@ def ckdtree_section(p1, p2, npoints=101,
                  load_cgrid=True,
                  load_egrid=True,
                  load_vgrid=True,
+                 save_as_nc=True,
                  ):
   """
   """
@@ -515,7 +528,12 @@ def ckdtree_section(p1, p2, npoints=101,
   if sname=='auto':
     sname = fpath_ckdtree.split('/')[-1][:-4]
 
-  fname = '%s_nps%d_%s%s_%s%s.npz'%(tgname, npoints, lon1str, lat1str, lon2str, lat2str) 
+  if save_as_nc:
+    ending='nc'
+  else:
+    ending='npz'
+  #fname = '%s_nps%d_%s%s_%s%s.npz'%(tgname, npoints, lon1str, lat1str, lon2str, lat2str) 
+  fname = f'{tgname}_nps{npoints:d}_{lon1str}{lat1str}_{lon2str}{lat2str}.{ending}'
   fpath_ckdtree = path_ckdtree+fname
   fpath_tgrid   = path_tgrid+fname_tgrid
 
@@ -530,14 +548,23 @@ def ckdtree_section(p1, p2, npoints=101,
 
   # --- save grid
   print('Saving grid file: %s' % (fpath_ckdtree))
-  np.savez(fpath_ckdtree,
-            lon_sec=lon_sec,
-            lat_sec=lat_sec,
-            dist_sec=dist_sec,
-            sname=sname,
-            gname=gname,
-            **Dind_dist
-           )
+  if save_as_nc:
+    ds = xr.Dataset()
+    ds['lon_sec'] = xr.DataArray(lon_sec, dims=['isec'])
+    ds['lat_sec'] = xr.DataArray(lat_sec, dims=['isec'])
+    ds['dist_sec'] = xr.DataArray(dist_sec, dims=['isec'])
+    for var in Dind_dist.keys(): 
+      ds[var] = xr.DataArray(Dind_dist[var], dims=['isec'])
+    ds.to_netcdf(fpath_ckdtree)
+  else:
+    np.savez(fpath_ckdtree,
+              lon_sec=lon_sec,
+              lat_sec=lat_sec,
+              dist_sec=dist_sec,
+              sname=sname,
+              gname=gname,
+              **Dind_dist
+             )
   return Dind_dist['dckdtree_c'], Dind_dist['ickdtree_c'], lon_sec, lat_sec, dist_sec
 
 def ckdtree_points(fpath_tgrid, lon_o, lat_o, load_cgrid=True, load_egrid=True, load_vgrid=True, n_nearest_neighbours=1, n_jobs=1):
@@ -1065,6 +1092,14 @@ def identify_grid(path_grid, fpath_data):
   Dgrid_list[grid_name]['res'] = '500m-11km'
   Dgrid_list[grid_name]['long_name'] = 'SMT WAVE grid'
   Dgrid_list[grid_name]['size'] = 66859144
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
+
+  grid_name = 'icon_244_0158km60'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = 'XXXkm'
+  Dgrid_list[grid_name]['long_name'] = 'icon_244_0158km60'
+  Dgrid_list[grid_name]['size'] = 862265
   #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '.nc'
   Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
   
