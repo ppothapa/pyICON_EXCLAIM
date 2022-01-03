@@ -96,6 +96,9 @@ parser.add_argument('--land_facecolor', type=str, default='0.7',
 parser.add_argument('--lonlat_for_mask', default=False,
                     action='store_true',
                     help='If specified, mask for triangles which are swapped at periodic boundaries is calculated from clon and clat (and not only from clon). Relevant for torus setup.')
+parser.add_argument('--logplot', default=False,
+                    action='store_true',
+                    help='Plot logarithm of the data.')
 
 iopts = parser.parse_args()
 
@@ -138,6 +141,7 @@ arrange_axes = pyic.arrange_axes
 shade = pyic.shade
 plot_settings = pyic.plot_settings
 interp_to_rectgrid = pyic.interp_to_rectgrid
+interp_to_rectgrid_xr = pyic.interp_to_rectgrid_xr
 triangulation = pyic.triangulation
 
 # --- variable replacements
@@ -202,7 +206,8 @@ if fpath_tgrid=='auto':
     fpath_tgrid = Dgrid['fpath_grid']
   except:
     fpath_tgrid = 'from_file'
-fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.npz'
+#fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.npz'
+fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.nc'
 
 # --- open dataset
 mfdset_kwargs = dict(combine='nested', concat_dim='time', 
@@ -244,7 +249,12 @@ if projection in ['np', 'sp']:
 
 # --- interpolate and cut to region
 if not use_tgrid:
-  lon, lat, datai = interp_to_rectgrid(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
+  try:
+    datai = interp_to_rectgrid_xr(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
+    lon = datai.lon
+    lat = datai.lat
+  except:
+    lon, lat, datai = interp_to_rectgrid(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
 else:
   print('Deriving triangulation object, this can take a while...')
     
@@ -280,7 +290,10 @@ if iopts.cbar_str=='auto':
     units = data.units
   except:
     units = 'NA'
-  iopts.cbar_str = f'{data.long_name} [{units}]'
+  if iopts.logplot:
+    iopts.cbar_str = f'log_10({data.long_name}) [{units}]'
+  else:
+    iopts.cbar_str = f'{data.long_name} [{units}]'
 if (iopts.title_right=='auto') and ('time' in ds[var].dims):
   tstr = str(data.time.data)
   #tstr = tstr.split('T')[0].replace('-', '')+'T'+tstr.split('T')[1].split('.')[0].replace(':','')+'Z'
@@ -302,11 +315,11 @@ hca, hcb = arrange_axes(1,1, plot_cb=iopts.cbar_pos, asp=asp, fig_size_fac=2,
 ii=-1
 
 ii+=1; ax=hca[ii]; cax=hcb[ii]
-shade_kwargs = dict(ax=ax, cax=cax, clim=clim, projection=shade_proj, cmap=cmap)
+shade_kwargs = dict(ax=ax, cax=cax, clim=clim, projection=shade_proj, cmap=cmap, logplot=iopts.logplot)
 if not use_tgrid:
-  hm = shade(lon, lat, datai, **shade_kwargs)
+  hm = shade(lon, lat, datai.data, **shade_kwargs)
 else:
-  hm = shade(Tri, data, **shade_kwargs)
+  hm = shade(Tri, data.data, **shade_kwargs)
 
 if iopts.cbar_pos=='bottom':
   cax.set_xlabel(iopts.cbar_str)
