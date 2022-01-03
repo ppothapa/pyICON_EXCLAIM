@@ -687,7 +687,7 @@ qp.write_to_file()
 
   def __init__(self, title='Quick Plot', author='', date='', 
                info='', path_data='',
-               fpath_css='', fpath_html='./qp_index.html'):
+               fpath_css='', fpath_html='./qp_index.html', links='auto'):
     self.author = author 
     self.title = title
     self.date = date
@@ -700,18 +700,19 @@ qp.write_to_file()
 
     self.main = ""
     self.toc = ""
-    if 'timeaverages' in title:
-      links = """
+    if links=='auto':
+      if 'timeaverages' in title:
+        links = """
 &emsp; <a href="../index.html">list simulations</a>
 """
-    elif 'simulations' in title:
-      links = ""
-    elif path_data.startswith('Compare'):
-      links = """
+      elif 'simulations' in title:
+        links = ""
+      elif path_data.startswith('Compare'):
+        links = """
 &emsp; <a href="../index.html">list comparisons</a>
 """
-    else:
-      links = """
+      else:
+        links = """
 &emsp; <a href="../qp_index.html">list time averages</a>
 &emsp; <a href="../../index.html">list simulations</a>
 &emsp; <a href="../add_info/add_info.html">additional information</a>
