@@ -86,7 +86,7 @@ mfdset_kwargs = dict(
 )
 if True:
   timi = pyic.timing(timi, 'open_mfdataset')
-  ds = xr.open_mfdataset(fpath, **mfdset_kwargs, chunks={'time': 1})
+  ds = xr.open_mfdataset(flist, **mfdset_kwargs, chunks={'time': 1})
   # --- correct time steps (only for atm data)
   if not do_ocean_data:
     ds['time'] = pyic.nctime_to_datetime64(ds.time.data, time_mode='float2date')
@@ -130,7 +130,7 @@ for ax in hca:
   pyic.plot_settings(ax, template='global')
  
 # --- (optional) verify whether plot looks like you want it to look
-#plt.draw()
+#plt.show()
 #sys.exit()
 
 def update_fig(step):
