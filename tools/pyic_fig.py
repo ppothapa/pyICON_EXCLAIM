@@ -99,6 +99,8 @@ parser.add_argument('--lonlat_for_mask', default=False,
 parser.add_argument('--logplot', default=False,
                     action='store_true',
                     help='Plot logarithm of the data.')
+parser.add_argument('--coordinates', type=str, default='clat clon',
+                    help='Coordinates of variable which should be plotted. Choose between \'clat clon\' (default), \'vlat vlon\' or \'elat elon\'')
 
 iopts = parser.parse_args()
 
@@ -250,7 +252,7 @@ if projection in ['np', 'sp']:
 # --- interpolate and cut to region
 if not use_tgrid:
   try:
-    datai = interp_to_rectgrid_xr(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
+    datai = interp_to_rectgrid_xr(data.compute(), fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg, coordinates=iopts.coordinates)
     lon = datai.lon
     lat = datai.lat
   except:
