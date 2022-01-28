@@ -26,6 +26,7 @@ dependencies:
   - dask        
   - dask-jobqueue
   - dask-labextension
+  - dask-mpi
   - python-graphviz
   - f90nml
   - dash
