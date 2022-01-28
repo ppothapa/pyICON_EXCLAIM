@@ -216,6 +216,7 @@ def interp_to_rectgrid_xr(arr, fpath_ckdtree,
   elif 'elon' in coordinates:
     inds = ds_ckdt.ickdtree_e
     dist = ds_ckdt.dckdtree_e
+    arr = arr.rename(ncells_2='ncells')
   elif 'vlon' in coordinates:
     inds = ds_ckdt.ickdtree_v
     dist = ds_ckdt.dckdtree_v
