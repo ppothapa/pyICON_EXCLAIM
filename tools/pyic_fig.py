@@ -189,7 +189,8 @@ else:
   shade_proj = None
 
 # --- grid files and interpolation
-path_grid = '/mnt/lustre01/work/mh0033/m300602/icon/grids/'
+#path_grid = '/mnt/lustre01/work/mh0033/m300602/icon/grids/'
+path_grid = '/home/m/m300602/icon/grids/'
 if isinstance(fpath_data, list):
   fpath = fpath_data[0]
 else:
