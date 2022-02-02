@@ -4,10 +4,11 @@ import numpy as np
 import pyicon as pyic
 import xarray as xr
 
-gname = 'r2b4_oce_r0004'
+#gname = 'r2b4_oce_r0004'
 #gname = 'r2b6_oce_r0004'
 #gname = 'r2b8_oce_r0004'
 #gname = 'r2b9_oce_r0004'
+gname = 'r2b10_oce'
 #gname = 'smtwv_oce_2018'
 #gname = 'smt'
 #gname = 'smt20km'

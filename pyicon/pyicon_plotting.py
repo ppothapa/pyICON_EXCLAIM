@@ -436,7 +436,8 @@ def shade(
     #  raise ValueError('::: Error: Only one of use_pcol or use_contf can be True. :::')
 
     # --- mask 0 and negative values in case of log plot
-    data = 1.*datai
+    #data = 1.*datai
+    data = datai.copy()
     if logplot and isinstance(data, np.ma.MaskedArray):
       data[data<=0.0] = np.ma.masked
       data = np.ma.log10(data) 
@@ -1709,7 +1710,8 @@ def patch_plot_patches_from_bnds(clon_bnds, clat_bnds, vlon_bnds, vlat_bnds, cel
 def patch_plot_shade(patches, datai, clim='auto', cmap='auto', ax='auto', cax='auto', edgecolor='none', logplot=False, cborientation='vertical'):
       
   # --- mask 0 and negative values in case of log plot
-  data = 1.*datai
+  #data = 1.*datai
+  data = datai.copy()
   if logplot and isinstance(data, np.ma.MaskedArray):
     data[data<=0.0] = np.ma.masked
     data = np.ma.log10(data)
