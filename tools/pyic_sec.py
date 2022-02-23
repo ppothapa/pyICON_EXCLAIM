@@ -8,22 +8,25 @@ Makes a figure from ICON data
 Usage notes:
 ------------
 Basic usage:
-pyic_fig netcdf_file.nc var_name [options]
+pyic_sec.py netcdf_file.nc var_name [options]
 
 Change color limits, colorbar:
-pyic_fig netcdf_file.nc var_name --clim=-10,32 --cmap=viridis
+pyic_sec.py netcdf_file.nc var_name --clim=-10,32 --cmap=viridis
 
 Select time step by indices:
-pyic_fig netcdf_file.nc var_name --it=3 
+pyic_sec.py netcdf_file.nc var_name --it=3 
 
 Select date:
-pyic_fig netcdf_files_*.nc var_name --time=2010-03-02 --depth=1000
+pyic_sec.py netcdf_files_*.nc var_name --time=2010-03-02 --depth=1000
 
 Change x/y-limits:
-pyic_fig netcdf_file.nc var_name ---xlim=20,30 --ylim=0,3000
+pyic_sec.py netcdf_file.nc var_name ---xlim=-30,80 --ylim=0,3000
+
+Add contours:
+pyic_sec.py netcdf_file.nc var_name --clim=16 --cincr=2 --conts=auto --clabel
 
 Save the figure:
-pyic_fig netcdf_file.nc var_name --fpath_fig=/path/to/figure.png
+pyic_sec.py netcdf_file.nc var_name --fpath_fig=/path/to/figure.png
 
 Argument list:
 --------------
@@ -56,6 +59,16 @@ parser.add_argument('--cmap', type=str, default='auto',
                     help='Colormap used for plot.')
 parser.add_argument('--clim', type=str, default='auto',
                     help='Color limits of the plot. Either specify one or two values.If one value is specified color limits are taken symetrically around zero. If \'auto\' is specified color limits are derived automatically.')
+parser.add_argument('--cincr', type=float, default=-1.0,
+                    help='Increment for pcolor plot to specify levels between clims.')
+parser.add_argument('--clevs', type=str, default=None,
+                    help='Color levels for pcolor plot.')
+parser.add_argument('--conts', type=str, default=None,
+                    help='Contour levels for monochromatic contours.')
+parser.add_argument('--contfs', type=str, default=None,
+                    help='Contour levels for filled contour patches.')
+parser.add_argument('--clabel', action='store_true', default=False,
+                    help='If clabel is specified, color labels will be shown.')
 parser.add_argument('--facecolor', type=str, default=None,
                     help='Background color')
 parser.add_argument('--title_center', type=str, default='auto',
@@ -117,16 +130,26 @@ arrange_axes = pyic.arrange_axes
 shade = pyic.shade
 plot_settings = pyic.plot_settings
 
+def str_to_array(string):
+  string = string.replace(' ', '')
+  array = np.array(string.split(','), dtype=float)
+  return array
+
 # --- limits
 if iopts.clim!='auto':
-  iopts.clim = iopts.clim.replace(' ', '')
-  iopts.clim = np.array(iopts.clim.split(','), dtype=float)
+  iopts.clim = str_to_array(iopts.clim)
 if iopts.xlim:
-  iopts.xlim = iopts.xlim.replace(' ', '')
-  iopts.xlim = np.array(iopts.xlim.split(','), dtype=float)
+  iopts.xlim = str_to_array(iopts.xlim)
 if iopts.ylim:
-  iopts.ylim = iopts.ylim.replace(' ', '')
-  iopts.ylim = np.array(iopts.ylim.split(','), dtype=float)
+  iopts.ylim = str_to_array(iopts.ylim)
+
+# --- contour values
+if iopts.conts and iopts.conts!='auto':
+  iopts.conts = str_to_array(iopts.conts)
+if iopts.contfs and iopts.contfs!='auto':
+  iopts.contfs = str_to_array(iopts.contfs)
+if iopts.clevs:
+  iopts.clevs = str_to_array(iopts.clevs)
 
 # --- open dataset
 mfdset_kwargs = dict(combine='nested', concat_dim='time', 
@@ -191,8 +214,21 @@ hca, hcb = arrange_axes(1,1, plot_cb=iopts.cbar_pos, asp=asp, fig_size_fac=2,
 ii=-1
 
 ii+=1; ax=hca[ii]; cax=hcb[ii]
-shade_kwargs = dict(ax=ax, cax=cax, clim=iopts.clim, cmap=iopts.cmap, logplot=iopts.logplot)
+shade_kwargs = dict(ax=ax, cax=cax, 
+                    logplot=iopts.logplot, 
+                    clim=iopts.clim, 
+                    cmap=iopts.cmap, 
+                    cincr=iopts.cincr,
+                    clevs=iopts.clevs,
+                    conts=iopts.conts,
+                    contfs=iopts.contfs,
+                   )
 hm = shade(xdim, ydim, data.data, **shade_kwargs)
+
+if iopts.clabel:
+  Cl = ax.clabel(hm[1], colors='k', fontsize=6, fmt='%.1f', inline=False)
+  for txt in Cl:
+    txt.set_bbox(dict(facecolor='white', edgecolor='none', pad=0))
 
 if iopts.cbar_pos=='bottom':
   cax.set_xlabel(iopts.cbar_str)
