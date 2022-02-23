@@ -13,20 +13,14 @@ pyic_fig netcdf_file.nc var_name [options]
 Change color limits, colorbar:
 pyic_fig netcdf_file.nc var_name --clim=-10,32 --cmap=viridis
 
-Select time step and depth level by indices:
-pyic_fig netcdf_file.nc var_name --it=3 --iz=0
+Select time step by indices:
+pyic_fig netcdf_file.nc var_name --it=3 
 
-Select date and depth:
+Select date:
 pyic_fig netcdf_files_*.nc var_name --time=2010-03-02 --depth=1000
 
-Change region:
-pyic_fig netcdf_file.nc var_name --lon_reg=-20,30 --lat_reg=-45,-20
-
-Plot on original triangle grid (it is recommended to cut the domain otherwise, it takes a long time):
-pyic_fig netcdf_file.nc var_name --use_tgrid --lon_reg=-72,-68 --lat_reg=33,35
-
-Change projection to North Polar Stereographic projection:
-pyic_fig netcdf_file.nc var_name --projection=np
+Change x/y-limits:
+pyic_fig netcdf_file.nc var_name ---xlim=20,30 --ylim=0,3000
 
 Save the figure:
 pyic_fig netcdf_file.nc var_name --fpath_fig=/path/to/figure.png
