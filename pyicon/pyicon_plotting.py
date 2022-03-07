@@ -508,6 +508,8 @@ def shade(
     else:
       use_cont = True
       conts = calc_conts(conts, clim, cincr, nclev)
+    if use_norm:
+      clim = [None, None]
   
     # --- decide whether there should be black edges at colorbar
     if isinstance(cbdrawedges, str) and cbdrawedges=='auto':
