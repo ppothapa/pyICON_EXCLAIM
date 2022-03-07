@@ -138,7 +138,11 @@ def apply_ckdtree(data, fpath_ckdtree, mask=None, coordinates='clat clon', radiu
   * credits
     function modified from pyfesom (Nikolay Koldunov)
   """
-  ddnpz = np.load(fpath_ckdtree)
+  if fpath_ckdtree.endswith('npz'):
+    #print("::: Warning: using npz ckdtree files is outdated, use nc-files instead! :::")
+    ddnpz = np.load(fpath_ckdtree)
+  else:
+    ddnpz = Dataset(fpath_ckdtree, 'r')
   #if coordinates=='clat clon':
   if ('clon' in coordinates) or (coordinates==''):
     distances = ddnpz['dckdtree_c']
@@ -153,6 +157,10 @@ def apply_ckdtree(data, fpath_ckdtree, mask=None, coordinates='clat clon', radiu
     inds = ddnpz['ickdtree_v'] 
   else:
     raise ValueError('::: Error: Unsupported coordinates: %s! ::: ' % (coordinates))
+  if fpath_ckdtree.endswith('nc'):
+    distances = distances[:]
+    inds = inds[:]
+    f.close()
 
   if mask is not None:
     #if data.ndim==1:
@@ -174,9 +182,16 @@ def interp_to_rectgrid(data, fpath_ckdtree,
                        lon_reg=None, lat_reg=None,             # for new way of cropping
                        indx='all', indy='all', mask_reg=None,  # for old way of cropping
                        coordinates='clat clon'):
-  ddnpz = np.load(fpath_ckdtree)
-  lon = ddnpz['lon'] 
-  lat = ddnpz['lat'] 
+  if fpath_ckdtree.endswith('npz'):
+    #print("::: Warning: using npz ckdtree files is outdated, use nc-files instead! :::")
+    ddnpz = np.load(fpath_ckdtree)
+    lon = ddnpz['lon']
+    lat = ddnpz['lat']
+  else:
+    f = Dataset(fpath_ckdtree, 'r')
+    lon = f.variables['lon'][:]
+    lat = f.variables['lat'][:]
+    f.close()
   # --- old way of cropping
   if not isinstance(indx, str):
     lon = lon[indx]
