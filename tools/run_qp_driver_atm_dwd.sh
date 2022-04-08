@@ -72,7 +72,6 @@ tave_ints = [
 
 # --- what to plot and what not?
 # --- not to plot:
-#red_list = ['ts_fwfoce_gmean', 'atm_curl_tau', 'atm_wek']
 red_list = ['ts_fwfoce_gmean']
 # --- to plot:
 #green_list = ['atm_temp_850_reg']
