@@ -587,6 +587,16 @@ class IconData(object):
     self.vlat = f.variables['vlat'][:] * 180./np.pi
     self.elon = f.variables['elon'][:] * 180./np.pi
     self.elat = f.variables['elat'][:] * 180./np.pi
+    #GB: add the above in radians
+    clon = f.variables['clon'][:]
+    clat = f.variables['clat'][:]
+    vlon = f.variables['vlon'][:]
+    vlat = f.variables['vlat'][:]
+    elon = f.variables['elon'][:]
+    elat = f.variables['elat'][:]
+    #GB: add normals of primal edges
+    elon_pn = f.variables['zonal_normal_primal_edge'][:]
+    elat_pn = f.variables['meridional_normal_primal_edge'][:]
 
     # --- distances and areas 
     self.cell_area = f.variables['cell_area'][:]
@@ -609,30 +619,48 @@ class IconData(object):
     self.tangent_orientation = f.variables['edge_system_orientation'][:].transpose()
 
     # --- masks
-    self.cell_sea_land_mask = f.variables['cell_sea_land_mask'][:]
-    self.edge_sea_land_mask = f.variables['edge_sea_land_mask'][:]
+    #GB: with NWP physics land sea mask to be taken from 2D output files
+    #self.cell_sea_land_mask = f.variables['cell_sea_land_mask'][:]
+    #self.edge_sea_land_mask = f.variables['edge_sea_land_mask'][:]
 
     # --- coordinates
+    #GB: with NWP physics no cartesian info in grid files
     self.cell_cart_vec = np.ma.zeros((self.clon.size,3), dtype=self.dtype)
-    self.cell_cart_vec[:,0] = f.variables['cell_circumcenter_cartesian_x'][:]
-    self.cell_cart_vec[:,1] = f.variables['cell_circumcenter_cartesian_y'][:]
-    self.cell_cart_vec[:,2] = f.variables['cell_circumcenter_cartesian_z'][:]
+    #self.cell_cart_vec[:,0] = f.variables['cell_circumcenter_cartesian_x'][:]
+    #self.cell_cart_vec[:,1] = f.variables['cell_circumcenter_cartesian_y'][:]
+    #self.cell_cart_vec[:,2] = f.variables['cell_circumcenter_cartesian_z'][:]
+    self.cell_cart_vec[:,0] = np.cos(clat[:])*np.cos(clon[:])
+    self.cell_cart_vec[:,1] = np.cos(clat[:])*np.sin(clon[:])
+    self.cell_cart_vec[:,2] = np.sin(clat[:])
+
     self.vert_cart_vec = np.ma.zeros((self.vlon.size,3), dtype=self.dtype)
-    self.vert_cart_vec[:,0] = f.variables['cartesian_x_vertices'][:]
-    self.vert_cart_vec[:,1] = f.variables['cartesian_y_vertices'][:]
-    self.vert_cart_vec[:,2] = f.variables['cartesian_z_vertices'][:]
+    #self.vert_cart_vec[:,0] = f.variables['cartesian_x_vertices'][:]
+    #self.vert_cart_vec[:,1] = f.variables['cartesian_y_vertices'][:]
+    #self.vert_cart_vec[:,2] = f.variables['cartesian_z_vertices'][:]
+    self.vert_cart_vec[:,0] = np.cos(vlat[:])*np.cos(vlon[:])
+    self.vert_cart_vec[:,1] = np.cos(vlat[:])*np.sin(vlon[:])
+    self.vert_cart_vec[:,2] = np.sin(vlat[:])
+
     self.edge_cart_vec = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
-    self.edge_cart_vec[:,0] = f.variables['edge_middle_cartesian_x'][:]
-    self.edge_cart_vec[:,1] = f.variables['edge_middle_cartesian_y'][:]
-    self.edge_cart_vec[:,2] = f.variables['edge_middle_cartesian_z'][:]
+    #self.edge_cart_vec[:,0] = f.variables['edge_middle_cartesian_x'][:]
+    #self.edge_cart_vec[:,1] = f.variables['edge_middle_cartesian_y'][:]
+    #self.edge_cart_vec[:,2] = f.variables['edge_middle_cartesian_z'][:]
+    self.edge_cart_vec[:,0] = np.cos(elat[:])*np.cos(elon[:])
+    self.edge_cart_vec[:,1] = np.cos(elat[:])*np.sin(elon[:])
+    self.edge_cart_vec[:,2] = np.sin(elat[:])
+
     self.dual_edge_cart_vec = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
-    self.dual_edge_cart_vec[:,0] = f.variables['edge_dual_middle_cartesian_x'][:]
-    self.dual_edge_cart_vec[:,1] = f.variables['edge_dual_middle_cartesian_y'][:]
-    self.dual_edge_cart_vec[:,2] = f.variables['edge_dual_middle_cartesian_z'][:]
+    #self.dual_edge_cart_vec[:,0] = f.variables['edge_dual_middle_cartesian_x'][:]
+    #self.dual_edge_cart_vec[:,1] = f.variables['edge_dual_middle_cartesian_y'][:]
+    #self.dual_edge_cart_vec[:,2] = f.variables['edge_dual_middle_cartesian_z'][:]
+
     self.edge_prim_norm = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
-    self.edge_prim_norm[:,0] = f.variables['edge_primal_normal_cartesian_x'][:]
-    self.edge_prim_norm[:,1] = f.variables['edge_primal_normal_cartesian_y'][:]
-    self.edge_prim_norm[:,2] = f.variables['edge_primal_normal_cartesian_z'][:]
+    #self.edge_prim_norm[:,0] = f.variables['edge_primal_normal_cartesian_x'][:]
+    #self.edge_prim_norm[:,1] = f.variables['edge_primal_normal_cartesian_y'][:]
+    #self.edge_prim_norm[:,2] = f.variables['edge_primal_normal_cartesian_z'][:]
+    self.edge_prim_norm[:,0] = - elon_pn[:]*np.sin(elon[:]) - elat_pn[:]*np.sin(elat[:])*np.cos(elon[:])
+    self.edge_prim_norm[:,1] =   elon_pn[:]*np.cos(elon[:]) - elat_pn[:]*np.sin(elat[:])*np.sin(elon[:])
+    self.edge_prim_norm[:,2] =   elat_pn[:]*np.cos(elat[:])
     f.close()
 
     return
@@ -655,7 +683,6 @@ class IconData(object):
     rot_coeff = (  self.dual_edge_length[self.edges_of_vertex]/self.grid_sphere_radius
                       * self.grid_sphere_radius
                       * self.edge_orientation )
-    
 
     if self.model_type=='oce':
       #iv = 3738
