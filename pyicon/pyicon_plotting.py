@@ -486,6 +486,10 @@ def shade(
       use_norm = True
     else:
       use_norm = False
+
+    # --- to be clarified why do I need this to make it work
+    print ('Warning: use_norm=False by GB')
+    use_norm = False
         
     if use_norm:
       #norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)

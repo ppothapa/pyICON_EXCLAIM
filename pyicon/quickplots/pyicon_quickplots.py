@@ -324,7 +324,8 @@ def time_averages_monitoring(IcD, t1, t2, varlist, var_fac_list=[], var_add_list
     yy += -1
     mm = 13
   # first time value is first value of time series minus one month
-  time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+  #time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+  time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}','D').astype(dt64type)],time_bnds)) #GB
   # dt is the length of a time interval
   dt = np.diff(time_bnds).astype(float)
 
@@ -420,7 +421,8 @@ def qp_timeseries(IcD, fname, vars_plot,
       yy += -1
       mm = 13
     # first time value is first value of time series minus one month
-    time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+    #time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+    time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}','D').astype(dt64type)],time_bnds)) #GB
     # dt is the length of a time interval
     dt = np.diff(time_bnds).astype(float)
     nresh = int(times.size/ave_freq)
@@ -455,7 +457,12 @@ def qp_timeseries(IcD, fname, vars_plot,
     data = np.array([])
     for nn, fpath in enumerate(flist):
       f = Dataset(fpath, 'r')
-      data_file = f.variables[var][:,0,0]
+#GB: T2m, u10m, v10m have a height dimesnsion in ICON-NWP
+      #data_file = f.variables[var][:,0,0]
+      if var=='t_2m' or var=='td_2m' or var=='sp_10m' or var=='u_10m' or var=='v_10m':
+        data_file = f.variables[var][:,0,0,0]
+      else: 
+        data_file = f.variables[var][:,0,0]
       data = np.concatenate((data, data_file))
       if nn==0:
         long_name_ncout = f.variables[var].long_name
