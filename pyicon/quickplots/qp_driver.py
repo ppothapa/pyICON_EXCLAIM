@@ -22,6 +22,7 @@ omit_last_file = False
 # --- decide which set of plots to do
 do_ocean_plots = True
 do_atmosphere_plots = False
+do_conf_dwd = False
 do_hamocc_plots = False
 
 # --- grid information
@@ -60,8 +61,7 @@ tave_ints = [['1950-02-01', '1952-01-01']]
 # --- decide which data files to take for time series plots
 tstep     = '????????????????'
 # --- set this to 12 for yearly averages in timeseries plots, set to 0 for no averaging
-#ave_freq = 12
-ave_freq = 1 #GB: for short simulations with NWP physics
+ave_freq = 12
 
 # --- xarray usage
 xr_chunks = None
@@ -221,6 +221,7 @@ omit_last_file = {omit_last_file}
 # --- decide which set of plots to do
 do_ocean_plots      = {do_ocean_plots}
 do_atmosphere_plots = {do_atmosphere_plots}
+do_conf_dwd         = {do_conf_dwd}
 do_hamocc_plots     = {do_hamocc_plots}
 
 # --- grid information
@@ -351,6 +352,67 @@ if do_atmosphere_plots:
   fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave', 'atm_psi']
 #fig_names += ['sec:TKE and IDEMIX']
 #fig_names += ['tke30w', 'iwe30w', 'kv30w']
+  # --- variable names
+  if not do_conf_dwd:
+     vtas_gmean    = 'tas_gmean'
+     vradtop_gmean = 'radtop_gmean'
+     vrsdt_gmean   = 'rsdt_gmean'
+     vrsut_gmean   = 'rsut_gmean'
+     vrlut_gmean   = 'rlut_gmean'
+     vprec_gmean   = 'prec_gmean'
+     vevap_gmean   = 'evap_gmean'
+     vpfull   = 'pfull'
+     vtas     = 'tas'
+     vts      = 'ts'
+     vprw     = 'prw'
+     vpsl     = 'psl'
+     vzg      = 'zg'
+     vta      = 'ta'
+     vtauu    = 'tauu'
+     vtauv    = 'tauv'
+     vcllvi   = 'cllvi'
+     vclivi   = 'clivi'
+     vpr      = 'pr'
+     vclt     = 'clt'
+     vevspsbl = 'evspsbl'
+     vsfcwind = 'sfcwind'
+     vua      = 'ua'
+     vva      = 'va'
+     vhus     = 'hus'
+     vhur     = 'hur'
+     vcl      = 'cl'
+     vclw     = 'clw'
+     vcli     = 'cli'
+  else:
+     vtas_gmean    = 't_2m'
+     vradtop_gmean = 'radtot'
+     vrsdt_gmean   = 'sod_t'
+     vrsut_gmean   = 'sou_t'
+     vrlut_gmean   = 'thb_t'
+     vprec_gmean   = 'tot_prec_rate'
+     vevap_gmean   = 'qhfl_s'
+     vpfull   = 'pres'
+     vtas     = 't_2m'
+     vts      = 't_s'
+     vprw     = 'tqv_dia'
+     vpsl     = 'pres_msl'
+     vzg      = 'geopot'
+     vta      = 'temp'
+     vtauu    = 'umfl_s'
+     vtauv    = 'vmfl_s'
+     vcllvi   = 'tqc_dia'
+     vclivi   = 'tqi_dia'
+     vpr      = 'tot_prec_rate'
+     vclt     = 'clct'
+     vevspsbl = 'qhfl_s'
+     vsfcwind = 'sp_10m'
+     vua      = 'u'
+     vva      = 'v'
+     vhus     = 'qv'
+     vhur     = 'rh'
+     vcl      = 'clc'
+     vclw     = 'tot_qc_dia'
+     vcli     = 'tot_qi_dia'
 if do_hamocc_plots:
   fig_names += ['sec:Hamocc time series']
   fig_names += ['ts_global_npp', 'ts_global_nppcya', 'ts_global_zoograzing', 'ts_global_netco2flux']
@@ -607,6 +669,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  verbose                = verbose,
                  time_mode    = 'float2date',
                  model_type   = 'atm',
+                 do_conf_dwd   = do_conf_dwd,
                 )
 
   fname_atm_3d = '%s%s_%s.nc' % (run, atm_3d, tstep)
@@ -629,6 +692,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  verbose                = verbose,
                  time_mode    = 'float2date',
                  model_type   = 'atm',
+                 do_conf_dwd   = do_conf_dwd,
                 )
   fpath_ckdtree_atm = IcD_atm3d.rgrid_fpath_dict[rgrid_name_atm]
 
@@ -652,6 +716,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  verbose                = verbose,
                  #time_mode    = 'float2date',
                  model_type   = 'atm',
+                 do_conf_dwd   = do_conf_dwd,
                 )
   
   if do_ocean_plots==False:
@@ -1928,9 +1993,7 @@ for tave_int in tave_ints:
     # --- atmosphere monitoring
     fig_name = 'ts_tas_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, 
-        #['tas_gmean'],
-        ['t_2m'],
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vtas_gmean],
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file,
         var_add=-273.15, units='$^o$C', lstart=1,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
@@ -1938,60 +2001,60 @@ for tave_int in tave_ints:
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_radtop_gmean'
     if fig_name in fig_names:
-      #FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['radtop_gmean'], 
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['radtot'], 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vradtop_gmean], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rsdt_gmean'
     if fig_name in fig_names:
-      #FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsdt_gmean'], 
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['sod_t'], 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vrsdt_gmean], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rsut_gmean'
     if fig_name in fig_names:
-      #FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsut_gmean'], 
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['sou_t'], 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vrsut_gmean], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rlut_gmean'
     if fig_name in fig_names:
-      #FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rlut_gmean'], 
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['thb_t'], 
-        #t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=-1., lstart=1, 
+      if not do_conf_dwd:
+         vfc = 1.
+      else:
+         vfc = -1.
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vrlut_gmean], 
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, lstart=1, 
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_prec_gmean'
     if fig_name in fig_names:
-      #FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['prec_gmean'], 
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['tot_prec_rate'],
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vprec_gmean], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_evap_gmean'
     if fig_name in fig_names:
-      #FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['evap_gmean'], 
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['qhfl_s'], 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vevap_gmean], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_fwfoce_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['fwfoce_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
-        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-      )
-      save_fig(fig_name, path_pics, fig_name)
+      if not do_conf_dwd:
+         FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['fwfoce_gmean'], 
+           t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
+           save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+         )
+         save_fig(fig_name, path_pics, fig_name)
+      else:
+         print('Fresh water flux not yet implemented for ICON-NWP... skipping...')
 
     # -------------------------------------------------------------------------------- 
     # Overview table 
@@ -2092,9 +2155,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_zonal_wind_stress'
     if fig_name in fig_names:
-      #FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='tauu', it=0,
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='umfl_s', it=0,
-      #FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='drag_u_grid', it=0,
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vtauu, it=0,
                                t1=t1, t2=t2,
                                var_fac=1e3,
                                units='mN/m$^2$',
@@ -2107,9 +2168,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_meridional_wind_stress'
     if fig_name in fig_names:
-      #FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='tauv', it=0,
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='vmfl_s', it=0,
-      #FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='drag_v_grid', it=0,
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vtauv, it=0,
                                t1=t1, t2=t2,
                                var_fac=1e3,
                                units='mN/m$^2$',
@@ -2123,26 +2182,21 @@ for tave_int in tave_ints:
     fig_name = 'atm_curl_tau'
     if fig_name in fig_names:
       IcD_atm2d.edge2cell_coeff_cc_t = pyic.calc_edge2cell_coeff_cc_t(IcD_atm2d) # to calculate wind stress curl
-      #tauu, it_ave   = pyic.time_average(IcD_atm2d, 'tauu', t1=t1, t2=t2, iz='all')         
-      tauu, it_ave   = pyic.time_average(IcD_atm2d, 'umfl_s', t1=t1, t2=t2, iz='all')         
-      #tauu, it_ave   = pyic.time_average(IcD_atm2d, 'drag_u_grid', t1=t1, t2=t2, iz='all')         
-      #tauv, it_ave   = pyic.time_average(IcD_atm2d, 'tauv', t1=t1, t2=t2, iz='all')
-      tauv, it_ave   = pyic.time_average(IcD_atm2d, 'vmfl_s', t1=t1, t2=t2, iz='all')
-      #tauv, it_ave   = pyic.time_average(IcD_atm2d, 'drag_v_grid', t1=t1, t2=t2, iz='all')
-      #GB: with NWP physics land sea mask to be taken from 2D output files
-      #tauu[IcD_atm2d.cell_sea_land_mask>0] = np.ma.masked
-      #tauv[IcD_atm2d.cell_sea_land_mask>0] = np.ma.masked
-      print ('t1', t1)
-      fname = '%s_atm_2d_ml_%s.nc' % (run, tstep)
-      fname = '%s_atm_2d_ml_18700101T000000Z.nc' % (run)
-      fpath=path_data+fname
-      f = Dataset(fpath, 'r')
-      frl = f.variables['fr_land'][:]
-      f.close()
-      tauu = np.ma.masked_where(frl>0., tauu, copy=False)
-      tauv = np.ma.masked_where(frl>0., tauv, copy=False)
-      #tauu[frl>0.] = np.ma.masked
-      #tauv[frl>0.] = np.ma.masked
+      tauu, it_ave   = pyic.time_average(IcD_atm2d, vtauu, t1=t1, t2=t2, iz='all')         
+      tauv, it_ave   = pyic.time_average(IcD_atm2d, vtauv, t1=t1, t2=t2, iz='all')
+      if not do_conf_dwd:
+         tauu[IcD_atm2d.cell_sea_land_mask>0] = np.ma.masked
+         tauv[IcD_atm2d.cell_sea_land_mask>0] = np.ma.masked
+      else:
+         print ('t1', t1)
+         #fname = '%s_atm_2d_ml_%s.nc' % (run, tstep)
+         fname = '%s_atm_2d_ml_18700101T000000Z.nc' % (run)
+         fpath=path_data+fname
+         f = Dataset(fpath, 'r')
+         frl = f.variables['fr_land'][:]
+         f.close()
+         tauu = np.ma.masked_where(frl>0., tauu, copy=False)
+         tauv = np.ma.masked_where(frl>0., tauv, copy=False)
       p_tau = pyic.calc_3d_from_2dlocal(IcD_atm2d, tauu[np.newaxis,:], tauv[np.newaxis,:])
       ptp_tau = pyic.cell2edges(IcD_atm2d, p_tau)
       curl_tau = pyic.calc_curl(IcD_atm2d, ptp_tau)
@@ -2190,8 +2244,7 @@ for tave_int in tave_ints:
     if do_atmosphere_plots:
       print('Calculate atmosphere pressure interpolation weights...')
       # --- load 3D pressure
-      #pfull, it_ave = pyic.time_average(IcD_atm3d, 'pfull', t1, t2, iz='all')
-      pfull, it_ave = pyic.time_average(IcD_atm3d, 'pres', t1, t2, iz='all')
+      pfull, it_ave = pyic.time_average(IcD_atm3d, vpfull, t1, t2, iz='all')
       # linear vert ax
       IcD_atm3d.plevc = np.array([100000,92500,85000,77500,70000,60000,50000,40000,30000,25000,20000,15000,10000,7000,5000,3000,1000])
       icall, ind_lev, fac = pyic.calc_vertical_interp_weights(pfull, IcD_atm3d.plevc)
@@ -2204,8 +2257,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_2m_temp'
     if fig_name in fig_names:
-      #FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='tas', it=0,
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='t_2m', it=0,
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vtas, it=0,
                                t1=t1, t2=t2,
                                var_add=-273.15,
                                units = '$^o$C',
@@ -2219,8 +2271,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_surface_temp'
     if fig_name in fig_names:
-      #FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='ts', it=0,
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='t_s', it=0,
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vts, it=0,
                                t1=t1, t2=t2,
                                var_add=-273.15,
                                units = '$^o$C',
@@ -2234,8 +2285,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_tas_bias'
     if fig_name in fig_names:
-      #var = 'tas'
-      var = 't_2m'
+      var = vtas
       var_ref = 'tas'
       # --- interpolate data
       data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
@@ -2243,12 +2293,10 @@ for tave_int in tave_ints:
       datai = data2di
       # --- reference
       f = Dataset(fpath_ref_data_atm, 'r')
-      #data_ref = f.variables[var][:]
       data_ref = f.variables[var_ref][:]
       f.close()
       # --- calculate bias
       data_bias = datai-data_ref
-      #IaV = pyic.IconVariable('data_bias', 'deg C', 'bias: surface temperature')
       IaV = pyic.IconVariable('data_bias', 'deg C', 'bias: 2m temperature')
       IaV.data = data_bias
       pyic.hplot_base(IcD_atm2d, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
@@ -2264,8 +2312,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_prw_bias'
     if fig_name in fig_names:
-      #var = 'prw'
-      var = 'tqv_dia'
+      var = vprw
       var_ref = 'prw'
       # --- interpolate data
       data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
@@ -2273,7 +2320,6 @@ for tave_int in tave_ints:
       datai = data2di
       # --- reference
       f = Dataset(fpath_ref_data_atm, 'r')
-      #data_ref = f.variables[var][:]
       data_ref = f.variables[var_ref][:]
       f.close()
       # --- calculate bias
@@ -2293,8 +2339,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_psl_bias'
     if fig_name in fig_names:
-      #var = 'psl'
-      var = 'pres_msl'
+      var = vpsl
       var_ref = 'psl'
       # --- interpolate data
       data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz='all')
@@ -2302,7 +2347,6 @@ for tave_int in tave_ints:
       datai = data2di
       # --- reference
       f = Dataset(fpath_ref_data_atm, 'r')
-      #data_ref = f.variables[var][:]
       data_ref = f.variables[var_ref][:]
       f.close()
       # --- calculate bias
@@ -2322,14 +2366,14 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_geoh_500'
     if fig_name in fig_names:
-      #f = Dataset(IcD_atm3d.flist_ts[0], 'r')
-      #zg = f.variables['zg'][:]
-      #f.close()
-      zg, it_ave = pyic.time_average(IcD_atm3d, 'geopot', t1, t2, iz='all')
+      if not do_conf_dwd:
+         f = Dataset(IcD_atm3d.flist_ts[0], 'r')
+         zg = f.variables['zg'][:]
+         f.close()
+      else:
+         zg, it_ave = pyic.time_average(IcD_atm3d, vzg, t1, t2, iz='all')
       zgvi = zg[ind_lev,icall]*fac+zg[ind_lev+1,icall]*(1.-fac)
       zgvi = zgvi / 9.81
-      #lon, lat, zgvihi = pyic.interp_to_rectgrid(zgvi, fpath_ckdtree_atm, coordinates='clat clon')
-
       IaV = pyic.IconVariable('zgvihi', 'm', 'geopotential height of 500 hPa')
       IaV.data = zgvi[ip500,:]
       IaV.interp_to_rectgrid(fpath_ckdtree_atm)
@@ -2346,8 +2390,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_temp_850'
     if fig_name in fig_names:
-      #ta, it_ave = pyic.time_average(IcD_atm3d, 'ta', t1, t2, iz='all')
-      ta, it_ave = pyic.time_average(IcD_atm3d, 'temp', t1, t2, iz='all')
+      ta, it_ave = pyic.time_average(IcD_atm3d, vta, t1, t2, iz='all')
       tavi = ta[ind_lev,icall]*fac+ta[ind_lev-1,icall]*(1.-fac)
       tavi += -273.15
       IaV = pyic.IconVariable('tavi', '$^o$C', 'temperature at 850 hPa')
@@ -2366,7 +2409,7 @@ for tave_int in tave_ints:
     # --- GB: try regional cut
     fig_name = 'atm_temp_850_reg'
     if fig_name in fig_names:
-      ta, it_ave = pyic.time_average(IcD_atm3d, 'temp', t1, t2, iz='all')
+      ta, it_ave = pyic.time_average(IcD_atm3d, vta, t1, t2, iz='all')
       tavi = ta[ind_lev,icall]*fac+ta[ind_lev-1,icall]*(1.-fac)
       tavi += -273.15
       IaV = pyic.IconVariable('tavi', '$^o$C', 'temperature at 850 hPa')
@@ -2385,9 +2428,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_tauu_bias'
     if fig_name in fig_names:
-      #var = 'tauu'
-      var = 'umfl_s'
-      #var = 'drag_u_grid'
+      var = vtauu
       var_ref = 'tauu'
       # --- interpolate data
       data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz='all')
@@ -2395,7 +2436,6 @@ for tave_int in tave_ints:
       datai = data2di
       # --- reference
       f = Dataset(fpath_ref_data_atm, 'r')
-      #data_ref = f.variables[var][:]
       data_ref = f.variables[var_ref][:]
       f.close()
       # --- calculate bias
@@ -2415,9 +2455,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_tauv_bias'
     if fig_name in fig_names:
-      #var = 'tauv'
-      var = 'vmfl_s'
-      #var = 'drag_v_grid'
+      var = vtauv
       var_ref = 'tauv'
       # --- interpolate data
       data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz='all')
@@ -2425,7 +2463,6 @@ for tave_int in tave_ints:
       datai = data2di
       # --- reference
       f = Dataset(fpath_ref_data_atm, 'r')
-      #data_ref = f.variables[var][:]
       data_ref = f.variables[var_ref][:]
       f.close()
       # --- calculate bias
@@ -2445,8 +2482,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_sea_level_pressure'
     if fig_name in fig_names:
-      #FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='psl', it=0,
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='pres_msl', it=0,
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vpsl, it=0,
                                t1=t1, t2=t2,
                                var_add=-1000.,
                                var_fac=0.01,
@@ -2461,8 +2497,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_column_water_vapour'
     if fig_name in fig_names:
-      #FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='prw', it=0,
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='tqv_dia', it=0,
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vprw, it=0,
                                t1=t1, t2=t2,
                                clim=[10.,50.], cincr=10.0, cmap='RdYlBu_r',
                                land_facecolor='none',
@@ -2474,10 +2509,8 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_cllvi_clivi'
     if fig_name in fig_names:
-      #cllvi, it_ave = pyic.time_average(IcD_atm2d, 'cllvi', t1, t2, iz='all')
-      cllvi, it_ave = pyic.time_average(IcD_atm2d, 'tqc_dia', t1, t2, iz='all')
-      #clivi, it_ave = pyic.time_average(IcD_atm2d, 'clivi', t1, t2, iz='all')
-      clivi, it_ave = pyic.time_average(IcD_atm2d, 'tqi_dia', t1, t2, iz='all')
+      cllvi, it_ave = pyic.time_average(IcD_atm2d, vcllvi, t1, t2, iz='all')
+      clivi, it_ave = pyic.time_average(IcD_atm2d, vclivi, t1, t2, iz='all')
       IaV = pyic.IconVariable('cclvi_clivi', 'g/m$^2', 'Liquid water + ice content')
       IaV.data = (cllvi+clivi)*1e3
       pyic.hplot_base(IcD_atm2d, IaV, clim=[10,300], clevs=[10,50,100,200,300], cmap='RdYlBu_r', 
@@ -2493,11 +2526,9 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_total_precipitation'
     if fig_name in fig_names:
-      #FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='pr', it=0,
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='tot_prec_rate', it=0,
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vpr, it=0,
                                t1=t1, t2=t2,
                                var_fac=86400.,
-                               #var_fac=1.,
                                units='mm/d',
                                clim=[1,12], clevs=[1,2,4,8,12], cmap='RdYlBu',
                                land_facecolor='none',
@@ -2509,11 +2540,13 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_total_cloud_cover'
     if fig_name in fig_names:
-      #FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='clt', it=0,
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='clct', it=0,
+      if not do_conf_dwd:
+         vfc = 100.
+      else:
+         vfc = 1.
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vclt, it=0,
                                t1=t1, t2=t2,
-                               #var_fac=100,
-                               var_fac=1.,
+                               var_fac=vfc,
                                units='%',
                                clim=[10.,90.], cincr=20.0, cmap='RdYlBu_r',
                                land_facecolor='none',
@@ -2525,13 +2558,10 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_p_e'
     if fig_name in fig_names:
-      #pr, it_ave = pyic.time_average(IcD_atm2d, 'pr', t1, t2, iz='all')
-      pr, it_ave = pyic.time_average(IcD_atm2d, 'tot_prec_rate', t1, t2, iz='all')
-      #evspsbl, it_ave = pyic.time_average(IcD_atm2d, 'evspsbl', t1, t2, iz='all')
-      evspsbl, it_ave = pyic.time_average(IcD_atm2d, 'qhfl_s', t1, t2, iz='all')
+      pr, it_ave = pyic.time_average(IcD_atm2d, vpr, t1, t2, iz='all')
+      evspsbl, it_ave = pyic.time_average(IcD_atm2d, vevspsbl, t1, t2, iz='all')
       IaV = pyic.IconVariable('p_e', 'mm/day', 'P-E')
       IaV.data = (pr+evspsbl)*86400
-      #IaV.data = (pr+evspsbl)
       IaV.interp_to_rectgrid(fpath_ckdtree_atm)
       pyic.hplot_base(IcD_atm2d, IaV, clim=5, cincr=1, cmap='RdBu', 
                       use_tgrid=False,
@@ -2546,23 +2576,20 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_10m_wind'
     if fig_name in fig_names:
-      #FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='sfcwind', it=0, iz=0,
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='sp_10m', it=0, iz=0,
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vsfcwind, it=0, iz=0,
                                t1=t1, t2=t2,
                                clim=[0.5, 10.], clevs=[0.5,1.,2.,3.,5.,7.,10.], cmap='RdYlBu_r',
                                land_facecolor='none',
                                IcD=IcD_atm2d,
                                save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                                **Ddict_global)
-      #save_fig('surface temperature', path_pics, fig_name, FigInf)
       save_fig('10m wind', path_pics, fig_name, FigInf)
  
     # ----------  zonal averages
     # --- temperature
     fig_name = 'atm_temp_zave'
     if fig_name in fig_names:
-      #data, it_ave = pyic.time_average(IcD_atm3d, 'ta', t1, t2, iz='all')
-      data, it_ave = pyic.time_average(IcD_atm3d, 'temp', t1, t2, iz='all')
+      data, it_ave = pyic.time_average(IcD_atm3d, vta, t1, t2, iz='all')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
 
       IaV = pyic.IconVariable('temp', 'deg C', 'zon. ave. temperature')
@@ -2596,9 +2623,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_logv_temp_zave'
     if fig_name in fig_names:
-      #data, it_ave = pyic.time_average(IcD_atm3d, 'ta', t1, t2, iz='all')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev_log, fac_log, fpath_ckdtree_atm)
-
       IaV = pyic.IconVariable('temp', 'deg C', 'zon. ave. temperature')
       IaV.data = 1.*data_zave
       IaV.data += -273.15
@@ -2617,7 +2642,6 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm , 'r')
       data_ref_zave = f.variables['ta_L47'][:]
       f.close()
-      
       IaV = pyic.IconVariable('temp bias', 'deg C', 'zon. ave. temperature bias')
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
@@ -2632,11 +2656,8 @@ for tave_int in tave_ints:
     # --- zon. vel.
     fig_name = 'atm_u_zave'
     if fig_name in fig_names:
-      #data, it_ave = pyic.time_average(IcD_atm3d, 'ua', t1, t2, iz='all')
-      data, it_ave = pyic.time_average(IcD_atm3d, 'u', t1, t2, iz='all')
+      data, it_ave = pyic.time_average(IcD_atm3d, vua, t1, t2, iz='all')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-
-      #IaV = pyic.IconVariable('ua', 'm/s', 'zon. ave. zonal velocity')
       IaV = pyic.IconVariable('u', 'm/s', 'zon. ave. zonal velocity')
       IaV.data = 1.*data_zave
       IaV.lat_sec = lat_sec
@@ -2653,8 +2674,6 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables['ua_L17'][:]
       f.close()
-
-      #IaV = pyic.IconVariable('ua', 'm/s', 'zon. ave. zonal velocity bias')
       IaV = pyic.IconVariable('u', 'm/s', 'zon. ave. zonal velocity bias')
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
@@ -2668,10 +2687,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_logv_u_zave'
     if fig_name in fig_names:
-      #data, it_ave = pyic.time_average(IcD_atm3d, 'ta', t1, t2, iz='all')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev_log, fac_log, fpath_ckdtree_atm)
-
-      #IaV = pyic.IconVariable('ua', 'm/s', 'zon. ave. zonal velocity')
       IaV = pyic.IconVariable('u', 'm/s', 'zon. ave. zonal velocity')
       IaV.data = 1.*data_zave
       IaV.lat_sec = lat_sec
@@ -2689,8 +2705,6 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm , 'r')
       data_ref_zave = f.variables['ua_L47'][:]
       f.close()
-      
-      #IaV = pyic.IconVariable('ua', 'm/s', 'zon. ave. zonal velocity bias')
       IaV = pyic.IconVariable('u', 'm/s', 'zon. ave. zonal velocity bias')
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
@@ -2705,11 +2719,8 @@ for tave_int in tave_ints:
     # --- mer. vel.
     fig_name = 'atm_v_zave'
     if fig_name in fig_names:
-      #data, it_ave = pyic.time_average(IcD_atm3d, 'va', t1, t2, iz='all')
-      data, it_ave = pyic.time_average(IcD_atm3d, 'v', t1, t2, iz='all')
+      data, it_ave = pyic.time_average(IcD_atm3d, vva, t1, t2, iz='all')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-
-      #IaV = pyic.IconVariable('va', 'm/s', 'zon. ave. meridional velocity')
       IaV = pyic.IconVariable('v', 'm/s', 'zon. ave. meridional velocity')
       IaV.data = 1.*data_zave
       IaV.lat_sec = lat_sec
@@ -2726,8 +2737,6 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables['va_L17'][:]
       f.close()
-
-      #IaV = pyic.IconVariable('va', 'm/s', 'zon. ave. meridional velocity bias')
       IaV = pyic.IconVariable('v', 'm/s', 'zon. ave. meridional velocity bias')
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
@@ -2741,10 +2750,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_logv_v_zave'
     if fig_name in fig_names:
-      #data, it_ave = pyic.time_average(IcD_atm3d, 'ta', t1, t2, iz='all')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev_log, fac_log, fpath_ckdtree_atm)
-
-      #IaV = pyic.IconVariable('va', 'm/s', 'zon. ave. meridional velocity')
       IaV = pyic.IconVariable('v', 'm/s', 'zon. ave. meridional velocity')
       IaV.data = 1.*data_zave
       IaV.lat_sec = lat_sec
@@ -2762,8 +2768,6 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm , 'r')
       data_ref_zave = f.variables['va_L47'][:]
       f.close()
-      
-      #IaV = pyic.IconVariable('va', 'm/s', 'zon. ave. meridional velocity bias')
       IaV = pyic.IconVariable('v', 'm/s', 'zon. ave. meridional velocity bias')
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
@@ -2778,8 +2782,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_spec_hum_zave'
     if fig_name in fig_names:
-      #data, it_ave = pyic.time_average(IcD_atm3d, 'hus', t1, t2, iz='all')
-      data, it_ave = pyic.time_average(IcD_atm3d, 'qv', t1, t2, iz='all')
+      data, it_ave = pyic.time_average(IcD_atm3d, vhus, t1, t2, iz='all')
       IaV = pyic.IconVariable('hus', 'g/kg', 'zon. ave. specific humidity')
       IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
       IaV.data *= 1000.
@@ -2792,11 +2795,11 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_rel_hum_zave'
     if fig_name in fig_names:
-      #data, it_ave = pyic.time_average(IcD_atm3d, 'hur', t1, t2, iz='all')
-      data, it_ave = pyic.time_average(IcD_atm3d, 'rh', t1, t2, iz='all')
+      data, it_ave = pyic.time_average(IcD_atm3d, vhur, t1, t2, iz='all')
       IaV = pyic.IconVariable('hur', '%', 'zon. ave. relative humidity')
       IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      #IaV.data *= 100.
+      if not do_conf_dwd:
+         IaV.data *= 100.
       pyic.vplot_base(IcD_atm3d, IaV, clim=[0,100.], cincr=10., contfs='auto',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
@@ -2806,11 +2809,11 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_cloud_cover_zave'
     if fig_name in fig_names:
-      #data, it_ave = pyic.time_average(IcD_atm3d, 'cl', t1, t2, iz='all')
-      data, it_ave = pyic.time_average(IcD_atm3d, 'clc', t1, t2, iz='all')
+      data, it_ave = pyic.time_average(IcD_atm3d, vcl, t1, t2, iz='all')
       IaV = pyic.IconVariable('cl', '%', 'zon. ave. cloud cover')
       IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      #IaV.data *= 100.
+      if not do_conf_dwd:
+         IaV.data *= 100.
       pyic.vplot_base(IcD_atm3d, IaV, clim=[0,25.], cincr=2.5, contfs='auto',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
@@ -2820,8 +2823,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_cloud_water_zave'
     if fig_name in fig_names:
-      #data, it_ave = pyic.time_average(IcD_atm3d, 'clw', t1, t2, iz='all')
-      data, it_ave = pyic.time_average(IcD_atm3d, 'tot_qc_dia', t1, t2, iz='all')
+      data, it_ave = pyic.time_average(IcD_atm3d, vclw, t1, t2, iz='all')
       IaV = pyic.IconVariable('clw', 'mg/kg', 'zon. ave. cloud water')
       IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
       IaV.data *= 1e6
@@ -2835,8 +2837,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_cloud_ice_zave'
     if fig_name in fig_names:
-      #data, it_ave = pyic.time_average(IcD_atm3d, 'cli', t1, t2, iz='all')
-      data, it_ave = pyic.time_average(IcD_atm3d, 'tot_qi_dia', t1, t2, iz='all')
+      data, it_ave = pyic.time_average(IcD_atm3d, vcli, t1, t2, iz='all')
       IaV = pyic.IconVariable('cli', 'mg/kg', 'zon. ave. cloud ice')
       IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
       IaV.data *= 1e6
@@ -2863,8 +2864,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_psi'
     if fig_name in fig_names:
-      #data, it_ave = pyic.time_average(IcD_atm3d, 'va', t1, t2, iz='all')
-      data, it_ave = pyic.time_average(IcD_atm3d, 'v', t1, t2, iz='all')
+      data, it_ave = pyic.time_average(IcD_atm3d, vva, t1, t2, iz='all')
       IaV = pyic.IconVariable('psi', '10$^9$kg/s', 'Psi')
       IaV.lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
       plevi = np.concatenate(([107500],0.5*(IcD_atm3d.plevc[1:]+IcD_atm3d.plevc[:-1]),[0.]))
@@ -2881,10 +2881,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'np_zonal_wind_stress'
     if fig_name in fig_names:
-      #ax = plt.axes(projection=ccrs.NorthPolarStereo())
-      #tauu, it_ave   = pyic.time_average(IcD_atm2d, 'tauu', it_ave=it_ave_mar, iz='all')
-      tauu, it_ave   = pyic.time_average(IcD_atm2d, 'umfl_s', it_ave=it_ave_mar, iz='all')
-      #tauu, it_ave   = pyic.time_average(IcD_atm2d, 'drag_u_grid', it_ave=it_ave_mar, iz='all')
+      tauu, it_ave   = pyic.time_average(IcD_atm2d, vtauu, it_ave=it_ave_mar, iz='all')
       IaV = pyic.IconVariable('tauu', 'mN/m$^2$', 'zonal wind stress')
       IaV.data = tauu*1e3
       IaV.interp_to_rectgrid(fpath_ckdtree_atm)

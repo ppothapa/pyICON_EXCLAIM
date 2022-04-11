@@ -50,6 +50,7 @@ class IconData(object):
                do_only_timesteps     = False,
                time_mode             = 'num2date',
                model_type            = 'oce',
+               do_conf_dwd           = False,
                output_freq           = 'auto',
                verbose               = False,
                dtype                 = 'float32',
@@ -210,7 +211,10 @@ class IconData(object):
     # --- load grid
     if load_triangular_grid:
       self.diag_out('load tgrid')
-      self.load_tgrid()
+      if not do_conf_dwd:
+         self.load_tgrid()
+      else:
+         self.load_tgrid_dwd()
     if load_rectangular_grid:
       self.diag_out('load rgrid')
       self.load_rgrid()
@@ -587,14 +591,74 @@ class IconData(object):
     self.vlat = f.variables['vlat'][:] * 180./np.pi
     self.elon = f.variables['elon'][:] * 180./np.pi
     self.elat = f.variables['elat'][:] * 180./np.pi
-    #GB: add the above in radians
+
+    # --- distances and areas 
+    self.cell_area = f.variables['cell_area'][:]
+    self.cell_area_p = f.variables['cell_area_p'][:]
+    self.dual_area = f.variables['dual_area'][:]
+    self.edge_length = f.variables['edge_length'][:]
+    self.dual_edge_length = f.variables['dual_edge_length'][:]
+    self.edge_cell_distance = f.variables['edge_cell_distance'][:].transpose()
+    # --- neighbor information
+    self.vertex_of_cell = f.variables['vertex_of_cell'][:].transpose()-1
+    self.edge_of_cell = f.variables['edge_of_cell'][:].transpose()-1
+    self.vertices_of_vertex = f.variables['vertices_of_vertex'][:].transpose()-1
+    self.edges_of_vertex = f.variables['edges_of_vertex'][:].transpose()-1
+    self.edge_vertices = f.variables['edge_vertices'][:].transpose()-1
+    self.adjacent_cell_of_edge = f.variables['adjacent_cell_of_edge'][:].transpose()-1
+    self.cells_of_vertex = f.variables['cells_of_vertex'][:].transpose()-1
+    # --- orientation
+    self.orientation_of_normal = f.variables['orientation_of_normal'][:].transpose()
+    self.edge_orientation = f.variables['edge_orientation'][:].transpose()
+    self.tangent_orientation = f.variables['edge_system_orientation'][:].transpose()
+
+    # --- masks
+    self.cell_sea_land_mask = f.variables['cell_sea_land_mask'][:]
+    self.edge_sea_land_mask = f.variables['edge_sea_land_mask'][:]
+
+    # --- coordinates
+    self.cell_cart_vec = np.ma.zeros((self.clon.size,3), dtype=self.dtype)
+    self.cell_cart_vec[:,0] = f.variables['cell_circumcenter_cartesian_x'][:]
+    self.cell_cart_vec[:,1] = f.variables['cell_circumcenter_cartesian_y'][:]
+    self.cell_cart_vec[:,2] = f.variables['cell_circumcenter_cartesian_z'][:]
+    self.vert_cart_vec = np.ma.zeros((self.vlon.size,3), dtype=self.dtype)
+    self.vert_cart_vec[:,0] = f.variables['cartesian_x_vertices'][:]
+    self.vert_cart_vec[:,1] = f.variables['cartesian_y_vertices'][:]
+    self.vert_cart_vec[:,2] = f.variables['cartesian_z_vertices'][:]
+    self.edge_cart_vec = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
+    self.edge_cart_vec[:,0] = f.variables['edge_middle_cartesian_x'][:]
+    self.edge_cart_vec[:,1] = f.variables['edge_middle_cartesian_y'][:]
+    self.edge_cart_vec[:,2] = f.variables['edge_middle_cartesian_z'][:]
+    self.dual_edge_cart_vec = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
+    self.dual_edge_cart_vec[:,0] = f.variables['edge_dual_middle_cartesian_x'][:]
+    self.dual_edge_cart_vec[:,1] = f.variables['edge_dual_middle_cartesian_y'][:]
+    self.dual_edge_cart_vec[:,2] = f.variables['edge_dual_middle_cartesian_z'][:]
+    self.edge_prim_norm = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
+    self.edge_prim_norm[:,0] = f.variables['edge_primal_normal_cartesian_x'][:]
+    self.edge_prim_norm[:,1] = f.variables['edge_primal_normal_cartesian_y'][:]
+    self.edge_prim_norm[:,2] = f.variables['edge_primal_normal_cartesian_z'][:]
+    f.close()
+
+    return
+
+  def load_tgrid_dwd(self):
+    """ Load certain variables related to the triangular grid from the grid file self.fpath_tgrid.
+    """
+    f = Dataset(self.fpath_tgrid, 'r')
+
+    # --- lonn lat of cells, vertices and edges
+    self.clon = f.variables['clon'][:] * 180./np.pi
+    self.clat = f.variables['clat'][:] * 180./np.pi
+    self.vlon = f.variables['vlon'][:] * 180./np.pi
+    self.vlat = f.variables['vlat'][:] * 180./np.pi
+    self.elon = f.variables['elon'][:] * 180./np.pi
+    self.elat = f.variables['elat'][:] * 180./np.pi
     clon = f.variables['clon'][:]
     clat = f.variables['clat'][:]
     vlon = f.variables['vlon'][:]
     vlat = f.variables['vlat'][:]
     elon = f.variables['elon'][:]
     elat = f.variables['elat'][:]
-    #GB: add normals of primal edges
     elon_pn = f.variables['zonal_normal_primal_edge'][:]
     elat_pn = f.variables['meridional_normal_primal_edge'][:]
 
@@ -618,33 +682,19 @@ class IconData(object):
     self.edge_orientation = f.variables['edge_orientation'][:].transpose()
     self.tangent_orientation = f.variables['edge_system_orientation'][:].transpose()
 
-    # --- masks
-    #GB: with NWP physics land sea mask to be taken from 2D output files
-    #self.cell_sea_land_mask = f.variables['cell_sea_land_mask'][:]
-    #self.edge_sea_land_mask = f.variables['edge_sea_land_mask'][:]
-
     # --- coordinates
     #GB: with NWP physics no cartesian info in grid files
     self.cell_cart_vec = np.ma.zeros((self.clon.size,3), dtype=self.dtype)
-    #self.cell_cart_vec[:,0] = f.variables['cell_circumcenter_cartesian_x'][:]
-    #self.cell_cart_vec[:,1] = f.variables['cell_circumcenter_cartesian_y'][:]
-    #self.cell_cart_vec[:,2] = f.variables['cell_circumcenter_cartesian_z'][:]
     self.cell_cart_vec[:,0] = np.cos(clat[:])*np.cos(clon[:])
     self.cell_cart_vec[:,1] = np.cos(clat[:])*np.sin(clon[:])
     self.cell_cart_vec[:,2] = np.sin(clat[:])
 
     self.vert_cart_vec = np.ma.zeros((self.vlon.size,3), dtype=self.dtype)
-    #self.vert_cart_vec[:,0] = f.variables['cartesian_x_vertices'][:]
-    #self.vert_cart_vec[:,1] = f.variables['cartesian_y_vertices'][:]
-    #self.vert_cart_vec[:,2] = f.variables['cartesian_z_vertices'][:]
     self.vert_cart_vec[:,0] = np.cos(vlat[:])*np.cos(vlon[:])
     self.vert_cart_vec[:,1] = np.cos(vlat[:])*np.sin(vlon[:])
     self.vert_cart_vec[:,2] = np.sin(vlat[:])
 
     self.edge_cart_vec = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
-    #self.edge_cart_vec[:,0] = f.variables['edge_middle_cartesian_x'][:]
-    #self.edge_cart_vec[:,1] = f.variables['edge_middle_cartesian_y'][:]
-    #self.edge_cart_vec[:,2] = f.variables['edge_middle_cartesian_z'][:]
     self.edge_cart_vec[:,0] = np.cos(elat[:])*np.cos(elon[:])
     self.edge_cart_vec[:,1] = np.cos(elat[:])*np.sin(elon[:])
     self.edge_cart_vec[:,2] = np.sin(elat[:])
@@ -655,9 +705,6 @@ class IconData(object):
     #self.dual_edge_cart_vec[:,2] = f.variables['edge_dual_middle_cartesian_z'][:]
 
     self.edge_prim_norm = np.ma.zeros((self.elon.size,3), dtype=self.dtype)
-    #self.edge_prim_norm[:,0] = f.variables['edge_primal_normal_cartesian_x'][:]
-    #self.edge_prim_norm[:,1] = f.variables['edge_primal_normal_cartesian_y'][:]
-    #self.edge_prim_norm[:,2] = f.variables['edge_primal_normal_cartesian_z'][:]
     self.edge_prim_norm[:,0] = - elon_pn[:]*np.sin(elon[:]) - elat_pn[:]*np.sin(elat[:])*np.cos(elon[:])
     self.edge_prim_norm[:,1] =   elon_pn[:]*np.cos(elon[:]) - elat_pn[:]*np.sin(elat[:])*np.sin(elon[:])
     self.edge_prim_norm[:,2] =   elat_pn[:]*np.cos(elat[:])

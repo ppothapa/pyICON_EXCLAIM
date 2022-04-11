@@ -26,14 +26,13 @@ omit_last_file = False
 
 # --- do ocean and/or atmosphere plots
 do_atmosphere_plots = True
-do_conf_dwd         = True
 do_ocean_plots      = False
 
 # --- grid information
 gname     = 'R2B4-R2B4'
 lev       = 'L40'
-gname_atm = 'r2b4_atm_r0012'
-lev_atm   = 'L90'
+gname_atm = 'r2b4_atm_r0013'
+lev_atm   = 'L87'
 
 # --- path to interpolation files
 path_grid        = '/hpc/uwork/gboeloen/pyICON/grids/'+gname+'/'
@@ -70,21 +69,14 @@ tave_ints = [
 #['1630-02-01', '1640-01-01'],
 ['4450-02-01', '4500-01-01'],
 ]
-
-# --- what to plot and what not?
-# --- not to plot:
-#red_list = ['']
-# --- to plot:
-#green_list = ['temp_850_reg']
 %eof%
 
 # --- start qp_driver
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-run="sml1"
-path_data="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/sml1/output/icon/"
-#python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1870-01-01,1889-12-31'
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1870-01-01,1870-12-31'
+run="slo1327"
+path_data="/hpc/uwork/gboeloen/pyICON/test_data_atm/${run}/"
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1870-01-01,1889-12-31'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 
