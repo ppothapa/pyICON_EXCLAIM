@@ -74,10 +74,10 @@ tave_ints = [
 # --- start qp_driver
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-#run="P1V5_mean"
-#path_data="/hpc/uwork/csgoff/gcfs3.0/experiments/Prototype1_V5/feedback/ensemble_mean/"
-run="coupleR2B4"
-path_data="/hpc/uwork/mkoehler/run-icon/experiments/coupleR2B4_022/"
+run="P1V5_mean"
+path_data="/hpc/uwork/csgoff/gcfs3.0/experiments/Prototype1_V5/feedback/ensemble_mean/"
+#run="coupleR2B4"
+#path_data="/hpc/uwork/mkoehler/run-icon/experiments/coupleR2B4_022/"
 #python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1960-01-01,1979-12-31'
 #python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1960-02-01,1960-04-30'
 python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1979-01-01,1989-01-01'

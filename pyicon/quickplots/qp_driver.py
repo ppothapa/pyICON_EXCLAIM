@@ -61,7 +61,7 @@ tave_ints = [['1950-02-01', '1952-01-01']]
 # --- decide which data files to take for time series plots
 tstep     = '????????????????'
 # --- set this to 12 for yearly averages in timeseries plots, set to 0 for no averaging
-ave_freq = 12
+ave_freq = 1
 
 # --- xarray usage
 xr_chunks = None
@@ -2188,15 +2188,25 @@ for tave_int in tave_ints:
          tauu[IcD_atm2d.cell_sea_land_mask>0] = np.ma.masked
          tauv[IcD_atm2d.cell_sea_land_mask>0] = np.ma.masked
       else:
-         print ('t1', t1)
-         #fname = '%s_atm_2d_ml_%s.nc' % (run, tstep)
-         fname = '%s_atm_2d_ml_18700101T000000Z.nc' % (run)
-         fpath=path_data+fname
-         f = Dataset(fpath, 'r')
-         frl = f.variables['fr_land'][:]
-         f.close()
-         tauu = np.ma.masked_where(frl>0., tauu, copy=False)
-         tauv = np.ma.masked_where(frl>0., tauv, copy=False)
+         # ICON-NWP gridfiles do not contain land-sea mask. i
+         # We take it therefore from output files (real variable 
+         # 'fr_land \in [0., 1.]').
+         fdt=tave_int[0]
+         fdt=fdt[0:4]+fdt[5:7]+fdt[8:10]
+         # fr_land does not have a time dimension, it is so far 
+         # constant so time averaging does not work for it. We
+         # simply take it from the first file of the period.
+         file_frl = '%s_atm_2d_ml_' % (run)
+         file_frl = file_frl+fdt+'T000000Z.nc'
+         fpath_frl=path_data+file_frl
+         if os.path.exists(fpath_frl):
+            f = Dataset(fpath_frl, 'r')
+            frl = f.variables['fr_land'][:]
+            f.close()
+            tauu = np.ma.masked_where(frl>0., tauu, copy=False)
+            tauv = np.ma.masked_where(frl>0., tauv, copy=False)
+         else:
+            print ('File not found for reading land-sea mask... continue without.')
       p_tau = pyic.calc_3d_from_2dlocal(IcD_atm2d, tauu[np.newaxis,:], tauv[np.newaxis,:])
       ptp_tau = pyic.cell2edges(IcD_atm2d, p_tau)
       curl_tau = pyic.calc_curl(IcD_atm2d, ptp_tau)
