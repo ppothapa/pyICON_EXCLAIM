@@ -2380,10 +2380,11 @@ for tave_int in tave_ints:
          f = Dataset(IcD_atm3d.flist_ts[0], 'r')
          zg = f.variables['zg'][:]
          f.close()
+         zgvi = zg[ind_lev,icall]*fac+zg[ind_lev+1,icall]*(1.-fac)
       else:
          zg, it_ave = pyic.time_average(IcD_atm3d, vzg, t1, t2, iz='all')
-      zgvi = zg[ind_lev,icall]*fac+zg[ind_lev+1,icall]*(1.-fac)
-      zgvi = zgvi / 9.81
+         zgvi = zg[ind_lev,icall]*fac+zg[ind_lev+1,icall]*(1.-fac)
+         zgvi = zgvi / 9.81
       IaV = pyic.IconVariable('zgvihi', 'm', 'geopotential height of 500 hPa')
       IaV.data = zgvi[ip500,:]
       IaV.interp_to_rectgrid(fpath_ckdtree_atm)

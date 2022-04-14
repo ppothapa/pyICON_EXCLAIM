@@ -83,8 +83,7 @@ startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
 run="sml1"
 path_data="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/sml1/output/icon/"
-#python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1870-01-01,1889-12-31'
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1870-01-01,1870-12-31'
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1870-01-01,1889-12-31'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 
