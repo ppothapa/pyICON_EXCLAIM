@@ -354,13 +354,6 @@ if do_atmosphere_plots:
 #fig_names += ['tke30w', 'iwe30w', 'kv30w']
   # --- variable names
   if not do_conf_dwd:
-     vtas_gmean    = 'tas_gmean'
-     vradtop_gmean = 'radtop_gmean'
-     vrsdt_gmean   = 'rsdt_gmean'
-     vrsut_gmean   = 'rsut_gmean'
-     vrlut_gmean   = 'rlut_gmean'
-     vprec_gmean   = 'prec_gmean'
-     vevap_gmean   = 'evap_gmean'
      vpfull   = 'pfull'
      vtas     = 'tas'
      vts      = 'ts'
@@ -384,13 +377,6 @@ if do_atmosphere_plots:
      vclw     = 'clw'
      vcli     = 'cli'
   else:
-     vtas_gmean    = 't_2m'
-     vradtop_gmean = 'radtot'
-     vrsdt_gmean   = 'sod_t'
-     vrsut_gmean   = 'sou_t'
-     vrlut_gmean   = 'thb_t'
-     vprec_gmean   = 'tot_prec_rate'
-     vevap_gmean   = 'qhfl_s'
      vpfull   = 'pres'
      vtas     = 't_2m'
      vts      = 't_s'
@@ -1993,7 +1979,7 @@ for tave_int in tave_ints:
     # --- atmosphere monitoring
     fig_name = 'ts_tas_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vtas_gmean],
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['tas_gmean'],
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file,
         var_add=-273.15, units='$^o$C', lstart=1,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
@@ -2001,21 +1987,21 @@ for tave_int in tave_ints:
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_radtop_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vradtop_gmean], 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['radtop_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rsdt_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vrsdt_gmean], 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsdt_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rsut_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vrsut_gmean], 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsut_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
@@ -2026,21 +2012,21 @@ for tave_int in tave_ints:
          vfc = 1.
       else:
          vfc = -1.
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vrlut_gmean], 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rlut_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, lstart=1, 
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_prec_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vprec_gmean], 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['prec_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_evap_gmean'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, [vevap_gmean], 
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['evap_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
