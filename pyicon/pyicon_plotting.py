@@ -475,6 +475,8 @@ def shade(
       elif use_pcol and clevs is not None:
         clevs = np.array(clevs)
         use_norm = True
+      elif norm is not None:
+        use_norm = False # prevent that norm is overwritten later on
       else:
         norm = None
         use_norm = False
@@ -498,6 +500,10 @@ def shade(
       cmap.set_over(cmap_e(norm_e(nlev)))
       vmin = None
       vmax = None
+    elif norm:
+      vmin = None
+      vmax = None
+      clim = [None, None]
     else:
       vmin = clim[0]
       vmax = clim[1]
@@ -650,7 +656,10 @@ def shade(
       # ------ prevent white lines if fig is saved as pdf
       cb.solids.set_edgecolor("face")
       # ------ use exponential notation for large colorbar ticks
-      cb.formatter.set_powerlimits((-3, 3))
+      try:
+        cb.formatter.set_powerlimits((-3, 3))
+      except:
+        pass
       # ------ colorbar ticks
       if isinstance(cbticks, np.ndarray) or isinstance(cbticks, list):
         cb.set_ticks(cbticks)
@@ -661,6 +670,8 @@ def shade(
             cb.set_ticks(clevs[::2])
           else:
             cb.set_ticks(clevs)
+        elif use_norm==False and norm is not None:
+          pass
         else:
           cb.locator = ticker.MaxNLocator(nbins=5)
       cb.update_ticks()
