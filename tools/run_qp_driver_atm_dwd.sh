@@ -70,6 +70,7 @@ tave_ints = [
 #['1630-02-01', '1640-01-01'],
 ['4450-02-01', '4500-01-01'],
 ]
+ave_freq = 1
 
 # --- what to plot and what not?
 # --- not to plot:

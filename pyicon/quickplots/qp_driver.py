@@ -61,7 +61,7 @@ tave_ints = [['1950-02-01', '1952-01-01']]
 # --- decide which data files to take for time series plots
 tstep     = '????????????????'
 # --- set this to 12 for yearly averages in timeseries plots, set to 0 for no averaging
-ave_freq = 1
+ave_freq = 12
 
 # --- xarray usage
 xr_chunks = None
@@ -2362,15 +2362,13 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_geoh_500'
     if fig_name in fig_names:
+      f = Dataset(IcD_atm3d.flist_ts[0], 'r')
       if not do_conf_dwd:
-         f = Dataset(IcD_atm3d.flist_ts[0], 'r')
-         zg = f.variables['zg'][:]
-         f.close()
-         zgvi = zg[ind_lev,icall]*fac+zg[ind_lev+1,icall]*(1.-fac)
+         zg = f.variables[vzg][:,:]
       else:
-         zg, it_ave = pyic.time_average(IcD_atm3d, vzg, t1, t2, iz='all')
-         zgvi = zg[ind_lev,icall]*fac+zg[ind_lev+1,icall]*(1.-fac)
-         zgvi = zgvi / 9.81
+         zg = f.variables[vzg][0,:,:]/9.81
+      f.close()
+      zgvi = zg[ind_lev,icall]*fac+zg[ind_lev+1,icall]*(1.-fac)
       IaV = pyic.IconVariable('zgvihi', 'm', 'geopotential height of 500 hPa')
       IaV.data = zgvi[ip500,:]
       IaV.interp_to_rectgrid(fpath_ckdtree_atm)

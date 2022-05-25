@@ -9,7 +9,8 @@ path_conda_bin="/hpc/uhome/gboeloen/miniconda3/bin/"
 #conda_env="pyicon_env3"
 #conda_env="pyicon_env4"
 #conda_env="pyicon_py37"
-conda_env="pyicon_py38"
+#conda_env="pyicon_py38"
+conda_env="pyicon_py39"
 #conda_env="myenv_py3"
 
 # --- add pyicon to PYTHONPATH
