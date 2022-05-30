@@ -13,7 +13,7 @@ tgname        = f'r2b8_oce_{rev}'
 gname         = f'OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_sills_srtm30_1min'
 path_tgrid    = f'/pool/data/ICON/oes/input/{rev}/OceanOnly_Global_IcosSymmetric_0010km_rotatedZ37d_modified_srtm30_1min/'
 fname_tgrid   = f'{gname}.nc'
-path_ckdtree  = f'/mnt/lustre01/work/mh0033/m300602/icon/grids/{tgname}/ckdtree/'
+path_ckdtree  = f'/work/mh0033/m300602/icon/grids/{tgname}/ckdtree/'
 path_rgrid    = path_ckdtree + 'rectgrids/' 
 path_sections = path_ckdtree + 'sections/' 
 
