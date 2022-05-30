@@ -21,6 +21,7 @@ notebooks/Untitled*
 tools/log.o*
 config_ckdtree/log.o*
 pyicon/quickplots/log.o*
+config_qp_compare/log.o*
 
 tools/config_qp_???.py
 
@@ -29,3 +30,4 @@ trash
 
 # all_qps
 all_qps
+all_qp_compare
