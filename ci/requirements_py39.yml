@@ -31,4 +31,5 @@ dependencies:
   - f90nml
   - dash
   - papermill
+  - intake-esm
 

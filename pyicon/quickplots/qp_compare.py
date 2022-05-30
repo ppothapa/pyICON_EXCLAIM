@@ -61,6 +61,7 @@ Set.path_pics = Set.path_base+'pics/'
 
 Set.do_diff = True
 Set.compare_with_reference = False
+Set.omit_last_file = False
 
 Set.tstr = '????????????????'
 Set.prfx_3d      = '_P1Y_3d'
@@ -241,27 +242,39 @@ else:
   os.mkdir(Set.path_base)
   os.mkdir(Set.path_base+'/pics/')
 
+def get_flist(searchstr):
+  flist = glob.glob(searchstr)
+  flist.sort()
+  if Set.omit_last_file:
+    flist = flist[:-1]
+  return flist
+
 if True:
   for nn, S in enumerate(Sims):
     print(f'Loading {S.run}')
 
-    S.ds_ts = xr.open_mfdataset(f'{S.path_data}{S.run}{Set.prfx_monitor}_{Set.tstr}.nc',
+    flist = get_flist(f'{S.path_data}{S.run}{Set.prfx_monitor}_{Set.tstr}.nc')
+    S.ds_ts = xr.open_mfdataset(flist,
       **Set.mfdset_kwargs
       )
   
-    S.ds_moc = xr.open_mfdataset(f'{S.path_data}{S.run}{Set.prfx_moc}_{Set.tstr}.nc',
+    flist = get_flist(f'{S.path_data}{S.run}{Set.prfx_moc}_{Set.tstr}.nc')
+    S.ds_moc = xr.open_mfdataset(flist,
       **Set.mfdset_kwargs
       )
   
-    S.ds_3d = xr.open_mfdataset(f'{S.path_data}{S.run}{Set.prfx_3d}_{Set.tstr}.nc',
+    flist = get_flist(f'{S.path_data}{S.run}{Set.prfx_3d}_{Set.tstr}.nc')
+    S.ds_3d = xr.open_mfdataset(flist,
       **Set.mfdset_kwargs
       )
 
-    S.ds_2d = xr.open_mfdataset(f'{S.path_data}{S.run}{Set.prfx_2d}_{Set.tstr}.nc',
+    flist = get_flist(f'{S.path_data}{S.run}{Set.prfx_2d}_{Set.tstr}.nc')
+    S.ds_2d = xr.open_mfdataset(flist,
       **Set.mfdset_kwargs
       )
 
-    S.ds_cvmix = xr.open_mfdataset(f'{S.path_data}{S.run}{Set.prfx_cvmix}_{Set.tstr}.nc',
+    flist = get_flist(f'{S.path_data}{S.run}{Set.prfx_cvmix}_{Set.tstr}.nc')
+    S.ds_cvmix = xr.open_mfdataset(flist,
       **Set.mfdset_kwargs
       )
 
@@ -276,8 +289,18 @@ if True:
     #months = S.ds_2d.time.data.astype('datetime64[M]').astype(int) % 12 + 1
     #S.it_ave_mar = np.where( mask_int & (months==4)  )[0]
     #S.it_ave_sep = np.where( mask_int & (months==10) )[0]
-    S.it_mar = S.ds_2d.groupby(S.ds_2d.time.dt.month==4).groups[1]    
-    S.it_sep = S.ds_2d.groupby(S.ds_2d.time.dt.month==10).groups[1]    
+    try:
+      # for numpy.datetime64 (only works for some time periods)
+      month_list = S.ds_2d.time.dt.month
+      S.it_mar = S.ds_2d.groupby(month_list==4).groups[1]    
+      S.it_sep = S.ds_2d.groupby(month_list==10).groups[1]    
+    except:
+      # for pandas / cftime
+      month_list = [item.month for item in S.ds_2d.time.data]
+      S.it_mar = month_list==4
+      S.it_sep = month_list==10
+    #S.it_mar = S.ds_2d.groupby(S.ds_2d.time.dt.month==4).groups[1]
+    #S.it_sep = S.ds_2d.groupby(S.ds_2d.time.dt.month==10).groups[1]
 
     # --- data set of interpolated data
     S.dsi = xr.Dataset()

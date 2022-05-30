@@ -8,7 +8,9 @@ import xarray as xr
 #gname = 'r2b6_oce_r0004'
 #gname = 'r2b8_oce_r0004'
 #gname = 'r2b9_oce_r0004'
-gname = 'r2b10_oce'
+gname = 'r2b9_atm_r0015'
+#gname = 'r2b10_oce'
+#gname = 'r2b11_oce'
 #gname = 'smtwv_oce_2018'
 #gname = 'smt'
 #gname = 'smt20km'
@@ -17,7 +19,7 @@ gname = 'r2b10_oce'
 #gname = 'r2b4_atm_r0013'
 
 # --- rectgrids
-path_grid = f'/mnt/lustre01/work/mh0033/m300602/icon/grids/{gname}/ckdtree/rectgrids/'
+path_grid = f'/work/mh0033/m300602/icon/grids/{gname}/ckdtree/rectgrids/'
 flist = glob.glob(path_grid+'/*.npz')
 flist.sort()
 
