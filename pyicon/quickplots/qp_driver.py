@@ -329,7 +329,7 @@ if do_ocean_plots:
   fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
 if do_atmosphere_plots:
   fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
-  fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_fwfoce_gmean']
+  fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_pme_gmean', 'ts_fwfoce_gmean']
   fig_names += ['sec:Surface fluxes']
   fig_names += ['atm_zonal_wind_stress', 'atm_meridional_wind_stress']
   fig_names += ['atm_curl_tau', 'atm_wek']
@@ -469,7 +469,7 @@ if iopts.debug:
   #fig_names += ['tab_passage_transports']
   #fig_names += ['ts_amoc', 'tab_overview']
   #fig_names += ['ts_radtop_gmean', 'tab_overview']
-  #fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_fwfoce_gmean']
+  #fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_pme_gmean', 'ts_fwfoce_gmean']
   #fig_names += ['tab_overview']
 
 fig_names = np.array(fig_names)
@@ -2031,6 +2031,16 @@ for tave_int in tave_ints:
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
+    fig_name = 'ts_pme_gmean'
+    if fig_name in fig_names:
+      if do_conf_dwd:
+         FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['pme_gmean'], 
+           t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
+           save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+         )
+         save_fig(fig_name, path_pics, fig_name)
+      else:
+         print('P-E only for ICON-NWP implemented... skipping...')
     fig_name = 'ts_fwfoce_gmean'
     if fig_name in fig_names:
       if not do_conf_dwd:
@@ -2066,7 +2076,7 @@ for tave_int in tave_ints:
           toprow.append( tab_name )
 
       if do_atmosphere_plots:
-        varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'fwfoce_gmean']
+        varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean', 'ts_pme_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'fwfoce_gmean']
         var_fac_list = [1]*len(varlist)
         var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0]
         var_units_list = ['deg C', '', '', '', '', '', '', '']
