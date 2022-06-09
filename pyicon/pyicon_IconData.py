@@ -211,10 +211,6 @@ class IconData(object):
     # --- load grid
     if load_triangular_grid:
       self.diag_out('load tgrid')
-      #if not do_conf_dwd:
-      #   self.load_tgrid()
-      #else:
-      #   self.load_tgrid_dwd()
       self.load_tgrid(do_conf_dwd=do_conf_dwd)
     if load_rectangular_grid:
       self.diag_out('load rgrid')
@@ -592,14 +588,6 @@ class IconData(object):
     self.vlat = f.variables['vlat'][:] * 180./np.pi
     self.elon = f.variables['elon'][:] * 180./np.pi
     self.elat = f.variables['elat'][:] * 180./np.pi
-    clon = f.variables['clon'][:]
-    clat = f.variables['clat'][:]
-    vlon = f.variables['vlon'][:]
-    vlat = f.variables['vlat'][:]
-    elon = f.variables['elon'][:]
-    elat = f.variables['elat'][:]
-    elon_pn = f.variables['zonal_normal_primal_edge'][:]
-    elat_pn = f.variables['meridional_normal_primal_edge'][:]
 
     # --- distances and areas 
     self.cell_area = f.variables['cell_area'][:]
@@ -657,6 +645,15 @@ class IconData(object):
 
        # --- coordinates
        #GB: at DWD no cartesian info in grid files --> calculate
+       clon = f.variables['clon'][:]
+       clat = f.variables['clat'][:]
+       vlon = f.variables['vlon'][:]
+       vlat = f.variables['vlat'][:]
+       elon = f.variables['elon'][:]
+       elat = f.variables['elat'][:]
+       elon_pn = f.variables['zonal_normal_primal_edge'][:]
+       elat_pn = f.variables['meridional_normal_primal_edge'][:]
+
        self.cell_cart_vec = np.ma.zeros((self.clon.size,3), dtype=self.dtype)
        self.cell_cart_vec[:,0] = np.cos(clat[:])*np.cos(clon[:])
        self.cell_cart_vec[:,1] = np.cos(clat[:])*np.sin(clon[:])
