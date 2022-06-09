@@ -455,7 +455,11 @@ def qp_timeseries(IcD, fname, vars_plot,
     data = np.array([])
     for nn, fpath in enumerate(flist):
       f = Dataset(fpath, 'r')
-      data_file = f.variables[var][:,0,0]
+#GB: T2m, u10m, v10m have a height dimesnsion in ICON-NWP
+      if f.variables[var].ndim==5:
+        data_file = f.variables[var][:,0,0,0]
+      else: 
+        data_file = f.variables[var][:,0,0]
       data = np.concatenate((data, data_file))
       if nn==0:
         long_name_ncout = f.variables[var].long_name

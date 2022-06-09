@@ -486,7 +486,7 @@ def shade(
       use_norm = True
     else:
       use_norm = False
-        
+
     if use_norm:
       #norm = matplotlib.colors.BoundaryNorm(boundaries=clevs, ncolors=cmap.N)
       nlev = clevs.size
