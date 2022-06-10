@@ -956,7 +956,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'mld_mar'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mld', depth=0,
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mlotst', depth=0,
                                it_ave=it_ave_mar,
                                title='mixed layer depth March [m]',
                                #clim=[0,5000.], cincr=250., cmap=PyicCmaps().WhiteBlueGreenYellowRed,
@@ -970,7 +970,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'mld_sep'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mld', depth=0,
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mlotst', depth=0,
                                it_ave=it_ave_sep,
                                title='mixed layer depth September [m]',
                                clim=[0,5000.], cincr=250., cmap='RdYlBu_r',
