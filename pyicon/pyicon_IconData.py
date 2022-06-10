@@ -115,7 +115,8 @@ class IconData(object):
       self.run = run
 
     # --- check if all important files and paths exist
-    for pname in ['path_data', 'path_ckdtree', 'fpath_tgrid']: #, 'fpath_fx']:
+    #for pname in ['path_data', 'path_ckdtree', 'fpath_tgrid']: #, 'fpath_fx']:
+    for pname in ['path_ckdtree', 'fpath_tgrid']: #, 'fpath_fx']:
       fp = getattr(self, pname)
       if not os.path.exists(fp):
         raise ValueError('::: Error: Cannot find %s: %s! :::' % (pname, fp))
