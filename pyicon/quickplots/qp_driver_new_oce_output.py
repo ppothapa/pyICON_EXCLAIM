@@ -311,7 +311,7 @@ if do_ocean_plots:
   fig_names += ['sec:Overview']
   fig_names += ['tab_overview']
   fig_names += ['sec:Upper ocean']
-  fig_names += ['ssh', 'ssh_variance', 'sst', 'sss', 'mld_mar', 'mld_sep'] 
+  fig_names += ['ssh', 'ssh_variance', 'sst', 'sss', 'mlotst_mar', 'mlotst_sep'] 
   fig_names += ['sec:Ice']
   fig_names += ['ice_concentration_nh', 'ice_thickness_nh', 'snow_thickness_nh',] 
   fig_names += ['ice_concentration_sh', 'ice_thickness_sh', 'snow_thickness_sh',]
@@ -325,7 +325,7 @@ if do_ocean_plots:
   fig_names += ['arctic_budgets']
   fig_names += ['amoc', 'pmoc', 'gmoc']
   fig_names += ['ke_100m', 'ke_2000m']
-  fig_names += ['heat_flux', 'freshwater_flux']
+  fig_names += ['heat_flux', 'heat_hfbasin', 'freshwater_flux']
   fig_names += ['sec:Biases']
   fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
   fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
@@ -435,7 +435,7 @@ if iopts.debug:
   #fig_names += ['sst']
   #fig_names += ['ts_amoc']
   #fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
-  #fig_names += ['mld_mar', 'mld_sep']
+  #fig_names += ['mlotst_mar', 'mlotst_sep']
   #fig_names = ['temp_bias_gzave']
   #fig_names = ['sss']
   #fig_names = ['ssh_variance']
@@ -992,7 +992,7 @@ for tave_int in tave_ints:
                 )
     
     # ---
-    fig_name = 'mld_mar'
+    fig_name = 'mlotst_mar'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mlotst', depth=0,
                                it_ave=it_ave_mar,
@@ -1006,7 +1006,7 @@ for tave_int in tave_ints:
       save_fig('Mixed layer depth March', path_pics, fig_name, FigInf)
     
     # ---
-    fig_name = 'mld_sep'
+    fig_name = 'mlotst_sep'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mlotst', depth=0,
                                it_ave=it_ave_sep,
@@ -1717,14 +1717,24 @@ for tave_int in tave_ints:
     if do_ocean_plots:
       tmp_plist = ['bstr', 'arctic_budgets', 'passage_transports']
       if np.any(np.in1d(fig_names, tmp_plist)):
-        print('Load 3D mass_flux...')
-        mass_flux, it_ave = pyic.time_average(DIcD['massflux'], 'mass_flux', t1, t2, iz='all')
+        try:
+          print('Load 3D mass_flux...')
+          mass_flux, it_ave = pyic.time_average(IcD_massflux, 'mass_flux', t1, t2, iz='all')
+          mass_flux_vint = mass_flux.sum(axis=0)
+        except:
+          print("No 3D mass flux found. Check 2D mass flux.")
     
-    # ---
+        try:
+          mass_flux, it_ave = pyic.time_average(IcD_massflux, 'verticallyTotal_mass_flux_e', t1, t2, iz='all')
+          mass_flux_vint = mass_flux
+        except:
+          print("No mass flux found.")
+
+    # XX ---
     fig_name = 'bstr'
     if fig_name in fig_names:
       print('Execute calc_bstr_vgrid...')
-      mass_flux_vint = mass_flux.sum(axis=0)
+#      mass_flux_vint = mass_flux.sum(axis=0)
     
       # --- derive and interp bstr
       bstr = pyic.calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90.)
@@ -1756,7 +1766,7 @@ for tave_int in tave_ints:
       ax = hca[0]
       cax = hcb[0]
       pyic.plot_settings(ax, template='global')
-      mass_flux_vint = mass_flux.sum(axis=0)
+#      mass_flux_vint = mass_flux.sum(axis=0)
 
       f = Dataset(path_grid+'section_mask_'+gname+'.nc', 'r')
       snames = []
@@ -1863,7 +1873,7 @@ for tave_int in tave_ints:
       save_fig('Global MOC', path_pics, fig_name, FigInf)
     
     # -------------------------------------------------------------------------------- 
-    # heat flux
+    # implied heat flux
     # -------------------------------------------------------------------------------- 
     fig_name = 'heat_flux'
     if fig_name in fig_names:
@@ -1883,6 +1893,35 @@ for tave_int in tave_ints:
       ax.plot(lat_hlf, global_hfl/1e15, label='global_hfl')
       ax.plot(lat_hlf, atlantic_hfl/1e15, label='atlantic_hfl')
       ax.plot(lat_hlf, pacific_hfl/1e15, label='pacific_hfl')
+      ax.grid(True)
+      ax.legend()
+      ax.set_title(f'implied heat transport [PW]')
+    
+      save_fig('Implied Heat transport', path_pics, fig_name)
+    
+      # -------------------------------------------------------------------------------- 
+
+    # -------------------------------------------------------------------------------- 
+    # heat flux
+    # -------------------------------------------------------------------------------- 
+    fig_name = 'heat_hfbasin'
+    if fig_name in fig_names:
+      global_hfbasin,   it_ave = pyic.time_average(IcD_moc, 'global_hfbasin',   t1, t2, iz='all')
+      atlantic_hfbasin, it_ave = pyic.time_average(IcD_moc, 'atlantic_hfbasin', t1, t2, iz='all')
+      pacific_hfbasin,  it_ave = pyic.time_average(IcD_moc, 'pacific_hfbasin',  t1, t2, iz='all')
+    
+      f = Dataset(IcD_moc.flist_ts[0], 'r')
+      lat_hlf = f.variables['lat'][:]
+      f.close()
+    
+      hca, hcb = pyic.arrange_axes(1,1, plot_cb=False, asp=0.5, fig_size_fac=2.,
+                   sharex=True, sharey=True, xlabel="latitude", ylabel="",)
+      ii=-1
+      
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      ax.plot(lat_hlf, global_hfbasin/1e15, label='global_hfbasin')
+      ax.plot(lat_hlf, atlantic_hfbasin/1e15, label='atlantic_hfbasin')
+      ax.plot(lat_hlf, pacific_hfbasin/1e15, label='pacific_hfbasin')
       ax.grid(True)
       ax.legend()
       ax.set_title(f'heat transport [PW]')
