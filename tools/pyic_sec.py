@@ -47,10 +47,14 @@ parser.add_argument('--dontshow', action='store_true', default=False,
                     help='If dontshow is specified, the plot is not shown')
 parser.add_argument('--invert_yaxis', action='store_true', default=True,
                     help='Invert y-axis, starting with largest and ending with smalles value.')
+parser.add_argument('--gname', type=str, default='auto',
+                    help='Grid name of the ICON data.')
 parser.add_argument('--it', type=int, default=0,
                     help='Time index which should be plotted.')
 parser.add_argument('--time', type=str, default='none',
                     help='Time string \'yyyy-mm-dd\' wich should be plotted (if specified overwrites \'it\').')
+parser.add_argument('--fpath_tgrid', type=str, default='auto',
+                    help='Path to triangular grid file. If \'auto\' the path is guessed automatically. Only necessary if \'--use_tgrid\' is used.')
 parser.add_argument('--xlim', type=str, default=None,
                     help='Limits for x-axis.')
 parser.add_argument('--ylim', type=str, default=None,
@@ -69,11 +73,11 @@ parser.add_argument('--contfs', type=str, default=None,
                     help='Contour levels for filled contour patches.')
 parser.add_argument('--clabel', action='store_true', default=False,
                     help='If clabel is specified, color labels will be shown.')
-parser.add_argument('--facecolor', type=str, default=None,
+parser.add_argument('--facecolor', type=str, default='0.7',
                     help='Background color')
 parser.add_argument('--title_center', type=str, default='auto',
                     help='Title string center.')
-parser.add_argument('--title_left', type=str, default=None,
+parser.add_argument('--title_left', type=str, default='auto',
                     help='Title string left.')
 parser.add_argument('--title_right', type=str, default='auto',
                     help='Title string right.')
@@ -90,6 +94,10 @@ parser.add_argument('--logplot', default=False,
                     help='Plot logarithm of the data.')
 parser.add_argument('--factor', type=float, default=None,
                     help='Factor to mulitply data with.')
+parser.add_argument('--xdim', type=str, default='auto',
+                    help='Dimension of x-axes of the plot. Choose between \{\'auto\'\}, \'lon\', or \'lat\'.')
+parser.add_argument('--section', type=str, default='auto',
+                    help='Section which is used for interpolation. At the moment, the following sections are supported: \'30W\', \'170W\'.')
 
 iopts = parser.parse_args()
 
@@ -151,6 +159,27 @@ if iopts.contfs and iopts.contfs!='auto':
 if iopts.clevs:
   iopts.clevs = str_to_array(iopts.clevs)
 
+# --- grid files and interpolation
+path_grid = '/work/mh0033/m300602/icon/grids/'
+#path_grid = '/home/m/m300602/icon/grids/'
+if isinstance(iopts.fpath_data, list):
+  fpath = iopts.fpath_data[0]
+else:
+  fpath = iopts.fpath_data
+if iopts.gname=='auto':
+  try:
+    Dgrid = pyic.identify_grid(path_grid, fpath)
+    iopts.gname = Dgrid['name']
+  except:
+    iopts.gname = 'none'
+if iopts.fpath_tgrid=='auto':
+  try:
+    Dgrid = pyic.identify_grid(path_grid, fpath)
+    iopts.fpath_tgrid = Dgrid['fpath_grid']
+  except:
+    iopts.fpath_tgrid = 'from_file'
+fpath_ckdtree = f'{path_grid}/{iopts.gname}/ckdtree/sections/{iopts.gname}_nps300_{iopts.section}80S_{iopts.section}80N.nc'
+
 # --- open dataset
 mfdset_kwargs = dict(combine='nested', concat_dim='time', 
                      data_vars='minimal', coords='minimal', 
@@ -172,11 +201,37 @@ if 'time' in data.dims:
   else:
     data = data.sel(time=iopts.time, method='nearest')
 
+if 'ncells' in data.dims:
+  coordinates = 'clat clon'
+  interp = True
+elif 'ncells_2' in data.dims:
+  data = data.rename(ncells_2='ncells') 
+  coordinates = 'vlat vlon'
+  interp = True
+else:
+  interp = False
+if interp:
+  ds_ckdt = xr.open_dataset(fpath_ckdtree)
+  if 'clat' in coordinates:
+    inds = ds_ckdt.ickdtree_c.data
+  elif 'vlat' in coordinates:
+    inds = ds_ckdt.ickdtree_v.data
+  data = data.isel(ncells=inds)
+
 if iopts.factor:
   data *= iopts.factor
 data = data.squeeze()
-xdim = data[data.dims[1]]
+if iopts.xdim=='auto':
+  xdim = data[data.dims[1]]
+elif 'lat' in iopts.xdim:
+  xdim = ds_ckdt.lat_sec
+  xdim = xdim.assign_attrs(long_name='latitude')
+elif 'lon' in iopts.xdim:
+  xdim = 'longitude'
+  xdim = xdim.assign_attrs(long_name='longitude')
 ydim = data[data.dims[0]]
+
+data = data.where(data!=0)
 
 # --- aspect ratio of the plot
 asp = 0.5
@@ -187,10 +242,14 @@ if iopts.cbar_str=='auto':
     units = data.units
   except:
     units = 'NA'
+  try:
+    long_name = data.long_name
+  except:
+    long_name = iopts.var
   if iopts.logplot:
-    iopts.cbar_str = f'log_10({data.long_name}) [{units}]'
+    iopts.cbar_str = f'log_10({long_name}) [{units}]'
   else:
-    iopts.cbar_str = f'{data.long_name} [{units}]'
+    iopts.cbar_str = f'{long_name} [{units}]'
 if (iopts.title_right=='auto') and ('time' in ds[iopts.var].dims):
   tstr = str(data.time.data)
   #tstr = tstr.split('T')[0].replace('-', '')+'T'+tstr.split('T')[1].split('.')[0].replace(':','')+'Z'
@@ -199,8 +258,12 @@ if (iopts.title_right=='auto') and ('time' in ds[iopts.var].dims):
 if (iopts.title_center=='auto'):
   iopts.title_center = ''
 if (iopts.xlabel=='auto'):
-  iopts.xlabel = xdim.long_name
-#if (iopts.title_left=='auto') and (depth_name!='none'):
+  try:
+    iopts.xlabel = xdim.long_name
+  except:
+    iopts.xlabel = 'xlabel'
+if (iopts.title_left=='auto') and (iopts.section!='auto'):
+  iopts.title_left = iopts.section
 #  iopts.title_left = f'depth = {data[depth_name].data:.1f}m'
 #elif iopts.title_left=='auto':
 #  iopts.title_left = ''
