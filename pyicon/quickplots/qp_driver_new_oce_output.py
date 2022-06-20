@@ -1719,14 +1719,13 @@ for tave_int in tave_ints:
       if np.any(np.in1d(fig_names, tmp_plist)):
         try:
           print('Load 3D mass_flux...')
-          mass_flux, it_ave = pyic.time_average(IcD_massflux, 'mass_flux', t1, t2, iz='all')
+          mass_flux, it_ave = pyic.time_average(DIcD['massflux'], 'mass_flux', t1, t2, iz='all')
           mass_flux_vint = mass_flux.sum(axis=0)
         except:
           print("No 3D mass flux found. Check 2D mass flux.")
     
         try:
-          mass_flux, it_ave = pyic.time_average(IcD_massflux, 'verticallyTotal_mass_flux_e', t1, t2, iz='all')
-          mass_flux_vint = mass_flux
+          mass_flux_vint, it_ave = pyic.time_average(DIcD['massflux'], 'verticallyTotal_mass_flux_e', t1, t2, iz='all')
         except:
           print("No mass flux found.")
 
