@@ -8,7 +8,7 @@
 #SBATCH --account=mh0033
 
 module list
-source ~/pyicon/tools/conda_act_mistral_pyicon_env.sh
+source ~/pyicon/tools/act_pyicon_py39.sh
 which python
 
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
