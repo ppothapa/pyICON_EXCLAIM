@@ -105,9 +105,9 @@ ds_tg and ds_IcD are both lazy xarray data sets containing dask arrays.
     ds_IcD['vlon'] *= 180./np.pi
     ds_IcD['vlat'] *= 180./np.pi
 
-    ds_IcD['fc'] = 2.* ds_IcD.earth_angular_velocity * xr.ufuncs.sin(ds_IcD.clat*np.pi/180.)
-    ds_IcD['fe'] = 2.* ds_IcD.earth_angular_velocity * xr.ufuncs.sin(ds_IcD.elat*np.pi/180.)
-    ds_IcD['fv'] = 2.* ds_IcD.earth_angular_velocity * xr.ufuncs.sin(ds_IcD.vlat*np.pi/180.)
+    ds_IcD['fc'] = 2.* ds_IcD.earth_angular_velocity * np.sin(ds_IcD.clat*np.pi/180.)
+    ds_IcD['fe'] = 2.* ds_IcD.earth_angular_velocity * np.sin(ds_IcD.elat*np.pi/180.)
+    ds_IcD['fv'] = 2.* ds_IcD.earth_angular_velocity * np.sin(ds_IcD.vlat*np.pi/180.)
     
     try:
         ds_IcD = ds_IcD.rename({'ncells': 'cell'})
@@ -221,10 +221,10 @@ def xr_crop_tgrid(ds_tg, ireg_c):
 
 ## Functions to map between 3D Cartesian and 2D local vectors
 def xr_calc_2dlocal_from_3d(ds_IcD, p_vn_c):
-    sinLon = xr.ufuncs.sin(ds_IcD.clon*np.pi/180.)
-    cosLon = xr.ufuncs.cos(ds_IcD.clon*np.pi/180.)
-    sinLat = xr.ufuncs.sin(ds_IcD.clat*np.pi/180.)
-    cosLat = xr.ufuncs.cos(ds_IcD.clat*np.pi/180.)
+    sinLon = np.sin(ds_IcD.clon*np.pi/180.)
+    cosLon = np.cos(ds_IcD.clon*np.pi/180.)
+    sinLat = np.sin(ds_IcD.clat*np.pi/180.)
+    cosLat = np.cos(ds_IcD.clat*np.pi/180.)
 
     u1 = p_vn_c.isel(cart=0)
     u2 = p_vn_c.isel(cart=1)
@@ -238,10 +238,10 @@ def xr_calc_2dlocal_from_3d(ds_IcD, p_vn_c):
     return uo, vo
 
 def xr_calc_3d_from_2dlocal(ds_IcD, uo, vo):
-    sinLon = xr.ufuncs.sin(ds_IcD.clon*np.pi/180.)
-    cosLon = xr.ufuncs.cos(ds_IcD.clon*np.pi/180.)
-    sinLat = xr.ufuncs.sin(ds_IcD.clat*np.pi/180.)
-    cosLat = xr.ufuncs.cos(ds_IcD.clat*np.pi/180.)
+    sinLon = np.sin(ds_IcD.clon*np.pi/180.)
+    cosLon = np.cos(ds_IcD.clon*np.pi/180.)
+    sinLat = np.sin(ds_IcD.clat*np.pi/180.)
+    cosLat = np.cos(ds_IcD.clat*np.pi/180.)
 
     u1 = -uo*sinLon - vo*sinLat*cosLon
     u2 =  uo*cosLon - vo*sinLat*sinLon
@@ -256,9 +256,9 @@ def xr_calc_3d_from_2dlocal(ds_IcD, uo, vo):
 def xr_calc_edge2cell_coeff_cc_t(ds_IcD):
     dist_vector = ds_IcD.edge_cart_vec - ds_IcD.cell_cart_vec.isel(cell=ds_IcD.adjacent_cell_of_edge)#).transpose('edge', 'nc', 'cart')
     orientation = (dist_vector*ds_IcD.edge_prim_norm).sum(dim='cart')
-    dist_vector *= xr.ufuncs.sign(orientation)
+    dist_vector *= np.sign(orientation)
     edge2cell_coeff_cc_t = (  ds_IcD.edge_prim_norm*ds_IcD.grid_sphere_radius
-                              * xr.ufuncs.sqrt((dist_vector**2).sum(dim='cart'))
+                              * np.sqrt((dist_vector**2).sum(dim='cart'))
                               / ds_IcD.dual_edge_length )
     edge2cell_coeff_cc_t = edge2cell_coeff_cc_t.transpose('edge', 'nc', 'cart')
     return edge2cell_coeff_cc_t
@@ -288,7 +288,7 @@ def xr_calc_fixed_volume_norm(ds_IcD):
         ds_IcD.edge_cart_vec.isel(edge=ds_IcD.edge_of_cell) 
         - ds_IcD.cell_cart_vec
     )
-    norm = xr.ufuncs.sqrt((dist_vector**2).sum(dim='cart'))
+    norm = np.sqrt((dist_vector**2).sum(dim='cart'))
     fixed_vol_norm = (
         0.5 * norm 
         * ds_IcD.edge_length.isel(edge=ds_IcD.edge_of_cell)
