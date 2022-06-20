@@ -1,6 +1,6 @@
 import sys, glob, os
 import argparse
-from ipdb import set_trace as mybreak
+#from ipdb import set_trace as mybreak
 
 #class DS_attributes(object):
 #  def __init__(self, prefix, output_freq='yearly'):
@@ -46,11 +46,19 @@ fpath_ref_data_atm = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_
 fpath_fx            = '' 
 
 # --- nc file prefixes
-oce_def = ''
-oce_moc = '_MOC'
-oce_mon = '_oceanMonitor'
-oce_ice = oce_def
-oce_monthly = oce_def
+D_variable_container = dict(
+  default  = '_P1M_to',
+  to       = '_P1M_to',
+  so       = '_P1M_so',
+  u        = '_P1M_u',
+  v        = '_P1M_v',
+  massflux = '_P1M_mass_flux',
+  moc      = '_P1M_moc',
+  mon      = '_P1M_mon',
+  ice      = '_P1M_2d',
+  monthly  = '_P1M_2d',
+  sqr      = '_P1M_sqr',
+)
 
 atm_2d      = '' 
 atm_3d      = '' 
@@ -244,11 +252,7 @@ fpath_ref_data_atm  = \'{fpath_ref_data_atm}\'
 fpath_fx            = \'{fpath_fx}\'
 
 # --- nc file prefixes
-oce_def     = \'{oce_def}\'
-oce_moc     = \'{oce_moc}\'
-oce_mon     = \'{oce_mon}\'
-oce_ice     = \'{oce_ice}\'
-oce_monthly = \'{oce_monthly}\'
+D_variable_container = \'{D_variable_container}\'
 
 atm_2d      = \'{atm_2d}\'
 atm_3d      = \'{atm_3d}\'
@@ -307,7 +311,7 @@ if do_ocean_plots:
   fig_names += ['sec:Overview']
   fig_names += ['tab_overview']
   fig_names += ['sec:Upper ocean']
-  fig_names += ['ssh', 'ssh_variance', 'sst', 'sss', 'mld_mar', 'mld_sep'] 
+  fig_names += ['ssh', 'ssh_variance', 'sst', 'sss', 'mlotst_mar', 'mlotst_sep'] 
   fig_names += ['sec:Ice']
   fig_names += ['ice_concentration_nh', 'ice_thickness_nh', 'snow_thickness_nh',] 
   fig_names += ['ice_concentration_sh', 'ice_thickness_sh', 'snow_thickness_sh',]
@@ -321,7 +325,7 @@ if do_ocean_plots:
   fig_names += ['arctic_budgets']
   fig_names += ['amoc', 'pmoc', 'gmoc']
   fig_names += ['ke_100m', 'ke_2000m']
-  fig_names += ['heat_flux', 'freshwater_flux']
+  fig_names += ['heat_flux', 'heat_hfbasin', 'freshwater_flux']
   fig_names += ['sec:Biases']
   fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
   fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
@@ -431,7 +435,7 @@ if iopts.debug:
   #fig_names += ['sst']
   #fig_names += ['ts_amoc']
   #fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
-  #fig_names += ['mld_mar', 'mld_sep']
+  #fig_names += ['mlotst_mar', 'mlotst_sep']
   #fig_names = ['temp_bias_gzave']
   #fig_names = ['sss']
   #fig_names = ['ssh_variance']
@@ -527,7 +531,29 @@ if load_xarray_dset and not xr_chunks is None:
 # Load all necessary data sets (can take a while)
 # -------------------------------------------------------------------------------- 
 if do_ocean_plots and not iopts.no_plots:
-  fname = '%s%s_%s.nc' % (run, oce_def, tstep)
+
+  IDsettings = dict(
+    path_data    = path_data,
+    path_grid    = path_grid,
+    path_ckdtree = path_ckdtree,
+    fpath_fx     = fpath_fx,
+    fpath_tgrid  = fpath_tgrid,
+    gname        = gname,
+    lev          = lev,
+    rgrid_name   = rgrid_name,
+    do_triangulation       = False,
+    omit_last_file         = omit_last_file,
+    load_vertical_grid     = False,
+    load_triangular_grid   = False, # needed for bstr
+    load_rectangular_grid  = True,
+    calc_coeff             = False,
+    load_xarray_dset       = load_xarray_dset,
+    xr_chunks              = xr_chunks,
+    verbose                = verbose,
+  )
+
+  # --- start with IconData objects
+  fname = '%s%s_%s.nc' % (run, D_variable_container['default'], tstep)
   print('Dataset %s' % (fname))
   IcD = pyic.IconData(
                  fname        = fname,
@@ -552,8 +578,16 @@ if do_ocean_plots and not iopts.no_plots:
                 )
   fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
   [k100, k500, k800, k1000, k2000, k3000] = indfind(IcD.depthc, [100., 500., 800., 1000., 2000., 3000.])
+
+  DIcD = dict()
+  for var in ['to', 'so', 'u', 'v', 'massflux', 'ice', 'monthly', 'mon']:
+    fname = '%s%s_%s.nc' % (run, D_variable_container[var], tstep)
+    print('Dataset %s' % (fname))
+    DIcD[var] = pyic.IconData(
+      fname=fname, **IDsettings)
+  DIcD['massflux'].load_tgrid()
   
-  fname_moc = '%s%s_%s.nc' % (run, oce_moc, tstep)
+  fname_moc = '%s%s_%s.nc' % (run, D_variable_container['moc'], tstep)
   print('Dataset %s' % (fname_moc))
   IcD_moc = pyic.IconData(
                  fname        = fname_moc,
@@ -575,64 +609,68 @@ if do_ocean_plots and not iopts.no_plots:
   IcD_moc.depthc = IcD.depthc
   IcD_moc.depthi = IcD.depthi
 
-  fname_monthly = '%s%s_%s.nc' % (run, oce_monthly, tstep)
-  print('Dataset %s' % (fname_monthly))
-  IcD_monthly = pyic.IconData(
-                 fname        = fname_monthly,
-                 path_data    = path_data,
-                 path_grid    = path_grid,
-                 path_ckdtree = path_ckdtree,
-                 fpath_tgrid  = fpath_tgrid,
-                 gname        = gname,
-                 lev          = lev,
-                 rgrid_name   = rgrid_name,
-                 do_triangulation       = False,
-                 omit_last_file         = omit_last_file,
-                 load_vertical_grid     = False,
-                 load_triangular_grid   = False,
-                 load_rectangular_grid  = True,
-                 calc_coeff             = False,
-                 verbose                = verbose,
-                )
+  #fname_monthly = '%s%s_%s.nc' % (run, D_variable_container['monthly'], tstep)
+  #print('Dataset %s' % (fname_monthly))
+  #IcD_monthly = pyic.IconData(
+  #               fname        = fname_monthly,
+  #               path_data    = path_data,
+  #               path_grid    = path_grid,
+  #               path_ckdtree = path_ckdtree,
+  #               fpath_tgrid  = fpath_tgrid,
+  #               gname        = gname,
+  #               lev          = lev,
+  #               rgrid_name   = rgrid_name,
+  #               do_triangulation       = False,
+  #               omit_last_file         = omit_last_file,
+  #               load_vertical_grid     = False,
+  #               load_triangular_grid   = False,
+  #               load_rectangular_grid  = True,
+  #               calc_coeff             = False,
+  #               verbose                = verbose,
+  #              )
+  IcD_mon = DIcD['mon']
+  IcD_monthly = DIcD['monthly']
   IcD_monthly.wet_c = IcD.wet_c
+  #IcD_monthly.lon = IcD.lon
+  #IcD_monthly.lat = IcD.lat
 
-  fname_ice = '%s%s_%s.nc' % (run, oce_ice, tstep)
-  print('Dataset %s' % (fname_ice))
-  IcD_ice = pyic.IconData(
-                 fname        = fname_ice,
-                 path_data    = path_data,
-                 path_grid    = path_grid,
-                 path_ckdtree = path_ckdtree,
-                 fpath_tgrid  = fpath_tgrid,
-                 gname        = gname,
-                 lev          = lev,
-                 do_triangulation       = False,
-                 omit_last_file         = omit_last_file,
-                 load_vertical_grid     = False,
-                 load_triangular_grid   = False,
-                 load_rectangular_grid  = False,
-                 calc_coeff             = False,
-                 verbose                = verbose,
-                )
+  #fname_ice = '%s%s_%s.nc' % (run, D_variable_container['ice'], tstep)
+  #print('Dataset %s' % (fname_ice))
+  #IcD_ice = pyic.IconData(
+  #               fname        = fname_ice,
+  #               path_data    = path_data,
+  #               path_grid    = path_grid,
+  #               path_ckdtree = path_ckdtree,
+  #               fpath_tgrid  = fpath_tgrid,
+  #               gname        = gname,
+  #               lev          = lev,
+  #               do_triangulation       = False,
+  #               omit_last_file         = omit_last_file,
+  #               load_vertical_grid     = False,
+  #               load_triangular_grid   = False,
+  #               load_rectangular_grid  = False,
+  #               calc_coeff             = False,
+  #               verbose                = verbose,
+  #              )
 
-  fname_mon = '%s%s_%s.nc' % (run, oce_mon, tstep)
-  print('Dataset %s' % (fname_mon))
-  IcD_mon = pyic.IconData(
-                 fname        = fname_mon,
-                 path_data    = path_data,
-                 path_grid    = path_grid,
-                 path_ckdtree = path_ckdtree,
-                 fpath_tgrid  = fpath_tgrid,
-                 gname        = gname,
-                 lev          = lev,
-                 do_triangulation       = False,
-                 omit_last_file         = omit_last_file,
-                 load_vertical_grid     = False,
-                 load_triangular_grid   = False,
-                 load_rectangular_grid  = False,
-                 calc_coeff             = False,
-                 verbose                = verbose,
-                )
+  #fname_mon = '%s%s_%s.nc' % (run, D_variable_container['mon'], tstep)
+  #print('Dataset %s' % (fname_mon))
+  #IcD_mon = pyic.IconData(
+  #               fname        = fname_mon,
+  #               path_data    = path_data,
+  #               path_grid    = path_grid,
+  #               path_ckdtree = path_ckdtree,
+  #               fpath_tgrid  = fpath_tgrid,
+  #               gname        = gname,
+  #               lev          = lev,
+  #               do_triangulation       = False,
+  #               omit_last_file         = omit_last_file,
+  #               load_vertical_grid     = False,
+  #               load_triangular_grid   = False,
+  #               load_rectangular_grid  = False,
+  #               calc_coeff             = False,
+  #               verbose                = verbose,
+  #              )
 
 if do_atmosphere_plots and not iopts.no_plots:
   fname_atm_2d = '%s%s_%s.nc' % (run, atm_2d, tstep)
@@ -711,7 +749,7 @@ if do_atmosphere_plots and not iopts.no_plots:
 
 if do_hamocc_plots and not iopts.no_plots:
   if not do_ocean_plots:
-    fname = '%s%s_%s.nc' % (run, oce_def, tstep)
+    fname = '%s%s_%s.nc' % (run, DIcD['default'], tstep)
     print('Dataset %s' % (fname))
     IcD = pyic.IconData(
                    fname        = fname,
@@ -944,7 +982,8 @@ for tave_int in tave_ints:
     # -------------------------------------------------------------------------------- 
     # upper ocean
     # -------------------------------------------------------------------------------- 
-    fname = '%s%s_%s.nc' % (run, oce_def, tstep)
+    #fname = '%s%s_%s.nc' % (run, oce_def, tstep)
+    fname = '%s%s_%s.nc' % (run, DIcD['monthly'], tstep)
     Ddict_global = dict(
       xlim=[-180.,180.], ylim=[-90.,90.],
       rgrid_name=rgrid_name,
@@ -953,9 +992,9 @@ for tave_int in tave_ints:
                 )
     
     # ---
-    fig_name = 'mld_mar'
+    fig_name = 'mlotst_mar'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mld', depth=0,
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mlotst', depth=0,
                                it_ave=it_ave_mar,
                                title='mixed layer depth March [m]',
                                #clim=[0,5000.], cincr=250., cmap=PyicCmaps().WhiteBlueGreenYellowRed,
@@ -967,9 +1006,9 @@ for tave_int in tave_ints:
       save_fig('Mixed layer depth March', path_pics, fig_name, FigInf)
     
     # ---
-    fig_name = 'mld_sep'
+    fig_name = 'mlotst_sep'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mld', depth=0,
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mlotst', depth=0,
                                it_ave=it_ave_sep,
                                title='mixed layer depth September [m]',
                                clim=[0,5000.], cincr=250., cmap='RdYlBu_r',
@@ -985,7 +1024,7 @@ for tave_int in tave_ints:
       FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='to', depth=0, it=0,
                                t1=t1, t2=t2,
                                clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
-                               IcD=IcD,
+                               IcD=DIcD['to'],
                                save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                                **Ddict_global)
       save_fig('SST', path_pics, fig_name, FigInf)
@@ -997,7 +1036,7 @@ for tave_int in tave_ints:
                                t1=t1, t2=t2,
                                #clim=[32.,37], cincr=0.25, cmap='cmo.haline',
                                clim=[25.,40.], clevs=[25, 28, 30, 32, 32.5, 33, 33.5, 34, 34.5, 35, 35.5, 36, 37, 38, 40], cmap='cmo.haline',
-                               IcD=IcD,
+                               IcD=DIcD['so'],
                                save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                                **Ddict_global)
       save_fig('SSS', path_pics, fig_name, FigInf)
@@ -1008,7 +1047,7 @@ for tave_int in tave_ints:
       FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='zos', depth=0, it=0,
                                t1=t1, t2=t2,
                                clim=2, cincr=0.2, cmap='RdBu_r',
-                               IcD=IcD,
+                               IcD=DIcD['monthly'],
                                save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                                **Ddict_global)
       save_fig('SSH', path_pics, fig_name, FigInf)
@@ -1016,8 +1055,10 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'ssh_variance'
     if fig_name in fig_names:
-      zos, it_ave          = pyic.time_average(IcD, 'zos',        t1=t1, t2=t2)
-      zos_square, it_ave   = pyic.time_average(IcD, 'zos_square', t1=t1, t2=t2)
+      #zos, it_ave          = pyic.time_average(IcD, 'zos',        t1=t1, t2=t2)
+      #zos_square, it_ave   = pyic.time_average(IcD, 'zos_square', t1=t1, t2=t2)
+      zos, it_ave          = pyic.time_average(DIcD['monthly'], 'zos',        t1=t1, t2=t2)
+      zos_square, it_ave   = pyic.time_average(DIcD['monthly'], 'zos_square', t1=t1, t2=t2)
       zos_var = np.sqrt(zos_square-zos**2)
       IaV = pyic.IconVariable('zos_var', 'm', 'ssh variance')
       IaV.data = zos_var
@@ -1034,17 +1075,19 @@ for tave_int in tave_ints:
     fig_name = 'ice_concentration_nh'
     if fig_name in fig_names:
 
-      conc_mar, it_ave = pyic.time_average(IcD_monthly, 'conc', it_ave=it_ave_mar, iz='all')
-      hi_mar, it_ave   = pyic.time_average(IcD_monthly, 'hi', it_ave=it_ave_mar, iz='all')
-      hs_mar, it_ave   = pyic.time_average(IcD_monthly, 'hs', it_ave=it_ave_mar, iz='all')
-      hiconc_mar = (hi_mar*conc_mar)[0,:]
-      hsconc_mar = (hs_mar*conc_mar)[0,:]
+      #izice = 'all' 
+      izice = 0
+      conc_mar, it_ave = pyic.time_average(IcD_monthly, 'conc', it_ave=it_ave_mar, iz=izice)
+      hi_mar, it_ave   = pyic.time_average(IcD_monthly, 'hi', it_ave=it_ave_mar, iz=izice)
+      hs_mar, it_ave   = pyic.time_average(IcD_monthly, 'hs', it_ave=it_ave_mar, iz=izice)
+      hiconc_mar = (hi_mar*conc_mar)
+      hsconc_mar = (hs_mar*conc_mar)
 
-      conc_sep, it_ave = pyic.time_average(IcD_monthly, 'conc', it_ave=it_ave_sep, iz='all')
-      hi_sep, it_ave   = pyic.time_average(IcD_monthly, 'hi', it_ave=it_ave_sep, iz='all')
-      hs_sep, it_ave   = pyic.time_average(IcD_monthly, 'hs', it_ave=it_ave_sep, iz='all')
-      hiconc_sep = (hi_sep*conc_sep)[0,:]
-      hsconc_sep = (hs_sep*conc_sep)[0,:]
+      conc_sep, it_ave = pyic.time_average(IcD_monthly, 'conc', it_ave=it_ave_sep, iz=izice)
+      hi_sep, it_ave   = pyic.time_average(IcD_monthly, 'hi', it_ave=it_ave_sep, iz=izice)
+      hs_sep, it_ave   = pyic.time_average(IcD_monthly, 'hs', it_ave=it_ave_sep, iz=izice)
+      hiconc_sep = (hi_sep*conc_sep)
+      hsconc_sep = (hs_sep*conc_sep)
 
     # ---
     fig_name = 'ice_concentration_nh'
@@ -1057,7 +1100,7 @@ for tave_int in tave_ints:
 
       ii+=1; ax=hca[ii]; cax=hcb[ii]
       IaV = pyic.IconVariable('conc_mar', '', 'sea ice concentration March')
-      IaV.data = conc_mar[0,:]
+      IaV.data = conc_mar
       IaV.interp_to_rectgrid(fpath_ckdtree)
       pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
                       clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
@@ -1069,7 +1112,7 @@ for tave_int in tave_ints:
 
       ii+=1; ax=hca[ii]; cax=hcb[ii]
       IaV = pyic.IconVariable('conc_sep', 'm', 'sea ice concentration September')
-      IaV.data = conc_sep[0,:]
+      IaV.data = conc_sep
       IaV.interp_to_rectgrid(fpath_ckdtree)
       pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
                       clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
@@ -1181,7 +1224,7 @@ for tave_int in tave_ints:
 
       ii+=1; ax=hca[ii]; cax=hcb[ii]
       IaV = pyic.IconVariable('conc_mar', '', 'sea ice concentration March')
-      IaV.data = conc_mar[0,:]
+      IaV.data = conc_mar
       IaV.interp_to_rectgrid(fpath_ckdtree)
       pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
                       clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
@@ -1193,7 +1236,7 @@ for tave_int in tave_ints:
 
       ii+=1; ax=hca[ii]; cax=hcb[ii]
       IaV = pyic.IconVariable('conc_sep', 'm', 'sea ice concentration September')
-      IaV.data = conc_sep[0,:]
+      IaV.data = conc_sep
       IaV.interp_to_rectgrid(fpath_ckdtree)
       pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
                       clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
@@ -1307,8 +1350,8 @@ for tave_int in tave_ints:
                  ]
       if np.any(np.in1d(fig_names, tmp_list)) or calc_bias:
         print('Load 3D temp and salt...')
-        temp, it_ave = pyic.time_average(IcD, 'to', t1, t2, iz='all', use_xr=load_xarray_dset, load_xr_data=True)
-        salt, it_ave = pyic.time_average(IcD, 'so', t1, t2, iz='all', use_xr=load_xarray_dset, load_xr_data=True)
+        temp, it_ave = pyic.time_average(DIcD['to'], 'to', t1, t2, iz='all', use_xr=load_xarray_dset, load_xr_data=True)
+        salt, it_ave = pyic.time_average(DIcD['so'], 'so', t1, t2, iz='all', use_xr=load_xarray_dset, load_xr_data=True)
         temp[temp==0.]=np.ma.masked
         salt[salt==0.]=np.ma.masked
 
@@ -1456,7 +1499,7 @@ for tave_int in tave_ints:
     # -------------------------------------------------------------------------------- 
     # Sections
     # -------------------------------------------------------------------------------- 
-    fname = '%s%s_%s.nc' % (run, oce_def, tstep)
+    #fname = '%s%s_%s.nc' % (run, oce_def, tstep)
     #Ddict = dict(
     #  #xlim=[-180.,180.], ylim=[-90.,90.],
     #  sec_name='30W_100pts',
@@ -1466,7 +1509,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'temp30w'
     if fig_name in fig_names:
-      IaV = IcD.vars['to']
+      IaV = DIcD['to'].vars['to']
       IaV.lon_sec, IaV.lat_sec, IaV.dist_sec, IaV.data = pyic.interp_to_section(temp, fpath_ckdtree=IcD.sec_fpath_dict[sec_name_30w])
       pyic.vplot_base(IcD, IaV, 
                       clim=[-2., 30.], cincr=2.0, cmap='cmo.thermal',
@@ -1485,7 +1528,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'salt30w'
     if fig_name in fig_names:
-      IaV = IcD.vars['so']
+      IaV = DIcD['so'].vars['so']
       IaV.lon_sec, IaV.lat_sec, IaV.dist_sec, IaV.data = pyic.interp_to_section(salt, fpath_ckdtree=IcD.sec_fpath_dict[sec_name_30w])
       pyic.vplot_base(IcD, IaV, 
                       clim=[32., 37.], cincr=0.25, cmap='cmo.haline',
@@ -1501,7 +1544,7 @@ for tave_int in tave_ints:
       #                    path_ckdtree=path_ckdtree)
       #save_fig('Salinity at 30W', path_pics, fig_name, FigInf)
     
-    # ---
+    # XX---
     fig_name = 'dens30w'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_vplot(fpath=path_data+fname, var='rhopot', it=0,
@@ -1525,7 +1568,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'temp_gzave'
     if fig_name in fig_names:
-      IaV = IcD.vars['to']
+      IaV = DIcD['to'].vars['to']
       IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(temp, basin='global', 
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, 
@@ -1544,7 +1587,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'temp_azave'
     if fig_name in fig_names:
-      IaV = IcD.vars['to']
+      IaV = DIcD['to'].vars['to']
       IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(temp, basin='atl', 
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, 
@@ -1563,7 +1606,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'temp_ipzave'
     if fig_name in fig_names:
-      IaV = IcD.vars['to']
+      IaV = DIcD['to'].vars['to']
       IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(temp, basin='indopac', 
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, 
@@ -1582,7 +1625,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'salt_gzave'
     if fig_name in fig_names:
-      IaV = IcD.vars['so']
+      IaV = DIcD['so'].vars['so']
       IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(salt, basin='global', 
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, 
@@ -1601,7 +1644,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'salt_azave'
     if fig_name in fig_names:
-      IaV = IcD.vars['so']
+      IaV = DIcD['so'].vars['so']
       IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(salt, basin='atl', 
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, 
@@ -1620,7 +1663,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'salt_ipzave'
     if fig_name in fig_names:
-      IaV = IcD.vars['so']
+      IaV = DIcD['so'].vars['so']
       IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(salt, basin='indopac', 
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, 
@@ -1641,8 +1684,8 @@ for tave_int in tave_ints:
     # -------------------------------------------------------------------------------- 
     fig_name = 'ke_100m'
     if fig_name in fig_names:
-      u, it_ave   = pyic.time_average(IcD, 'u', t1=t1, t2=t2, iz=k100)
-      v, it_ave   = pyic.time_average(IcD, 'v', t1=t1, t2=t2, iz=k100)
+      u, it_ave   = pyic.time_average(DIcD['u'], 'u', t1=t1, t2=t2, iz=k100)
+      v, it_ave   = pyic.time_average(DIcD['v'], 'v', t1=t1, t2=t2, iz=k100)
       ke = 0.5*(u**2+v**2)
       IaV = pyic.IconVariable('ke', 'm^2/s^2', 'kinetic energy')
       IaV.data = ke
@@ -1657,8 +1700,8 @@ for tave_int in tave_ints:
   
     fig_name = 'ke_2000m'
     if fig_name in fig_names:
-      u, it_ave   = pyic.time_average(IcD, 'u', t1=t1, t2=t2, iz=k2000)
-      v, it_ave   = pyic.time_average(IcD, 'v', t1=t1, t2=t2, iz=k2000)
+      u, it_ave   = pyic.time_average(DIcD['u'], 'u', t1=t1, t2=t2, iz=k2000)
+      v, it_ave   = pyic.time_average(DIcD['v'], 'v', t1=t1, t2=t2, iz=k2000)
       ke = 0.5*(u**2+v**2)
       IaV = pyic.IconVariable('ke', 'm^2/s^2', 'kinetic energy')
       IaV.data = ke
@@ -1674,15 +1717,21 @@ for tave_int in tave_ints:
     if do_ocean_plots:
       tmp_plist = ['bstr', 'arctic_budgets', 'passage_transports']
       if np.any(np.in1d(fig_names, tmp_plist)):
-        print('Load 3D mass_flux...')
-        mass_flux, it_ave = pyic.time_average(IcD, 'mass_flux', t1, t2, iz='all')
-    
-    # ---
+        try:
+          print('Load 3D mass_flux...')
+          mass_flux, it_ave = pyic.time_average(DIcD['massflux'], 'mass_flux', t1, t2, iz='all')
+          mass_flux_vint = mass_flux.sum(axis=0)
+        except:
+          try:
+            mass_flux_vint, it_ave = pyic.time_average(DIcD['massflux'], 'verticallyTotal_mass_flux_e', t1, t2, iz='all')
+          except:
+            print("No mass flux found.")
+
+    # XX ---
     fig_name = 'bstr'
     if fig_name in fig_names:
       print('Execute calc_bstr_vgrid...')
-      fname = '%s%s_%s.nc' % (run, oce_def, tstep)
-      mass_flux_vint = mass_flux.sum(axis=0)
+#      mass_flux_vint = mass_flux.sum(axis=0)
     
       # --- derive and interp bstr
       bstr = pyic.calc_bstr_vgrid(IcD, mass_flux_vint, lon_start=0., lat_start=90.)
@@ -1702,7 +1751,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'passage_transports'
     if fig_name in fig_names and os.path.exists(path_grid+'section_mask_'+gname+'.nc'):
-      ax, cax, hm, Dstr = pyic.hplot_base(IcD, IaV, cmap='RdBu_r',
+      ax, cax, hm, Dstr = pyic.hplot_base(DIcD['massflux'], IaV, cmap='RdBu_r',
                       clim=200, clevs=[-200,-160,-120,-80,-40,-30,-25,-20,-15,-10,-5,5,10,15,20,25,30,40,80,120,160,200], 
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       do_write_data_range=True,
@@ -1714,7 +1763,7 @@ for tave_int in tave_ints:
       ax = hca[0]
       cax = hcb[0]
       pyic.plot_settings(ax, template='global')
-      mass_flux_vint = mass_flux.sum(axis=0)
+#      mass_flux_vint = mass_flux.sum(axis=0)
 
       f = Dataset(path_grid+'section_mask_'+gname+'.nc', 'r')
       snames = []
@@ -1737,11 +1786,11 @@ for tave_int in tave_ints:
           data = data[data.mask==False]
           Div[var] = data
           exec('iv_%s = data'%var)
-          Dtransp[var] = (mass_flux_vint*IcD.edge_length*Dmask[var]).sum()/1e6
+          Dtransp[var] = (mass_flux_vint*DIcD['massflux'].edge_length*Dmask[var]).sum()/1e6
       f.close()
       for var in snames:
-          ax.plot(IcD.vlon[Div[var]], IcD.vlat[Div[var]], color='r')
-          ax.text(IcD.vlon[Div[var]].mean()+3, IcD.vlat[Div[var]].mean(), 
+          ax.plot(DIcD['massflux'].vlon[Div[var]], DIcD['massflux'].vlat[Div[var]], color='r')
+          ax.text(DIcD['massflux'].vlon[Div[var]].mean()+3, DIcD['massflux'].vlat[Div[var]].mean(), 
                   '%.1f Sv'%np.abs(Dtransp[var]), 
                   color='r', fontsize=8,
                   bbox=dict(fc='w', ec='none', alpha=0.5))
@@ -1763,8 +1812,8 @@ for tave_int in tave_ints:
       tmp_plist = ['arctic_budgets']
       if np.any(np.in1d(fig_names, tmp_plist)):
         print('Load 3D uo and vo...')
-        uo, it_ave = pyic.time_average(IcD, 'u', t1, t2, iz='all', use_xr=load_xarray_dset, load_xr_data=True)
-        vo, it_ave = pyic.time_average(IcD, 'v', t1, t2, iz='all', use_xr=load_xarray_dset, load_xr_data=True)
+        uo, it_ave = pyic.time_average(DIcD['u'], 'u', t1, t2, iz='all', use_xr=load_xarray_dset, load_xr_data=True)
+        vo, it_ave = pyic.time_average(DIcD['v'], 'v', t1, t2, iz='all', use_xr=load_xarray_dset, load_xr_data=True)
         uo[uo==0.]=np.ma.masked
         vo[vo==0.]=np.ma.masked
 
@@ -1773,7 +1822,7 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       try:
         from qp_arctic_budgets import arctic_budgets
-        arctic_budgets(IcD, IcD_ice, IcD_monthly, t1, t2, temp, salt, mass_flux, uo, vo)
+        arctic_budgets(DIcD['massflux'], DIcD['ice'], DIcD['monthly'], t1, t2, temp, salt, mass_flux, uo, vo)
         save_fig('Arctic heat/water budgets', path_pics, fig_name)
       except:
         print(f'::: Warning: Could not make plot {fig_name}. :::')
@@ -1821,7 +1870,7 @@ for tave_int in tave_ints:
       save_fig('Global MOC', path_pics, fig_name, FigInf)
     
     # -------------------------------------------------------------------------------- 
-    # heat flux
+    # implied heat flux
     # -------------------------------------------------------------------------------- 
     fig_name = 'heat_flux'
     if fig_name in fig_names:
@@ -1841,6 +1890,35 @@ for tave_int in tave_ints:
       ax.plot(lat_hlf, global_hfl/1e15, label='global_hfl')
       ax.plot(lat_hlf, atlantic_hfl/1e15, label='atlantic_hfl')
       ax.plot(lat_hlf, pacific_hfl/1e15, label='pacific_hfl')
+      ax.grid(True)
+      ax.legend()
+      ax.set_title(f'implied heat transport [PW]')
+    
+      save_fig('Implied Heat transport', path_pics, fig_name)
+    
+      # -------------------------------------------------------------------------------- 
+
+    # -------------------------------------------------------------------------------- 
+    # heat flux
+    # -------------------------------------------------------------------------------- 
+    fig_name = 'heat_hfbasin'
+    if fig_name in fig_names:
+      global_hfbasin,   it_ave = pyic.time_average(IcD_moc, 'global_hfbasin',   t1, t2, iz='all')
+      atlantic_hfbasin, it_ave = pyic.time_average(IcD_moc, 'atlantic_hfbasin', t1, t2, iz='all')
+      pacific_hfbasin,  it_ave = pyic.time_average(IcD_moc, 'pacific_hfbasin',  t1, t2, iz='all')
+    
+      f = Dataset(IcD_moc.flist_ts[0], 'r')
+      lat_hlf = f.variables['lat'][:]
+      f.close()
+    
+      hca, hcb = pyic.arrange_axes(1,1, plot_cb=False, asp=0.5, fig_size_fac=2.,
+                   sharex=True, sharey=True, xlabel="latitude", ylabel="",)
+      ii=-1
+      
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      ax.plot(lat_hlf, global_hfbasin/1e15, label='global_hfbasin')
+      ax.plot(lat_hlf, atlantic_hfbasin/1e15, label='atlantic_hfbasin')
+      ax.plot(lat_hlf, pacific_hfbasin/1e15, label='pacific_hfbasin')
       ax.grid(True)
       ax.legend()
       ax.set_title(f'heat transport [PW]')
@@ -1885,6 +1963,8 @@ for tave_int in tave_ints:
     # time series
     # -------------------------------------------------------------------------------- 
     # --- ocean monitoring
+    fname_mon = '%s%s_%s.nc' % (run, D_variable_container['mon'], tstep)
+
     fig_name = 'ts_amoc'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon, ['amoc26n'], 
