@@ -1825,9 +1825,9 @@ for tave_int in tave_ints:
     # -------------------------------------------------------------------------------- 
     fig_name = 'heat_flux'
     if fig_name in fig_names:
-      global_hfl,   it_ave = pyic.time_average(IcD_moc, 'global_hfl',   t1, t2, iz='all')
-      atlantic_hfl, it_ave = pyic.time_average(IcD_moc, 'atlantic_hfl', t1, t2, iz='all')
-      pacific_hfl,  it_ave = pyic.time_average(IcD_moc, 'pacific_hfl',  t1, t2, iz='all')
+      global_hfbasin,   it_ave = pyic.time_average(IcD_moc, 'global_hfbasin',   t1, t2, iz='all')
+      atlantic_hfbasin, it_ave = pyic.time_average(IcD_moc, 'atlantic_hfbasin', t1, t2, iz='all')
+      pacific_hfbasin,  it_ave = pyic.time_average(IcD_moc, 'pacific_hfbasin',  t1, t2, iz='all')
     
       f = Dataset(IcD_moc.flist_ts[0], 'r')
       lat_hlf = f.variables['lat'][:]
@@ -1838,9 +1838,9 @@ for tave_int in tave_ints:
       ii=-1
       
       ii+=1; ax=hca[ii]; cax=hcb[ii]
-      ax.plot(lat_hlf, global_hfl/1e15, label='global_hfl')
-      ax.plot(lat_hlf, atlantic_hfl/1e15, label='atlantic_hfl')
-      ax.plot(lat_hlf, pacific_hfl/1e15, label='pacific_hfl')
+      ax.plot(lat_hlf, global_hfbasin/1e15, label='global_hfbasin')
+      ax.plot(lat_hlf, atlantic_hfbasin/1e15, label='atlantic_hfbasin')
+      ax.plot(lat_hlf, pacific_hfbasin/1e15, label='pacific_hfbasin')
       ax.grid(True)
       ax.legend()
       ax.set_title(f'heat transport [PW]')
