@@ -206,7 +206,7 @@ Set.plot_names += ['ke100m', 'ke2000m']
 Set.plot_names += ['tab_transport_sections']
 Set.plot_names += ['bstr']
 #Set.plot_names += ['sec:Surface fluxes']
-#Set.plot_names += ['hfl']
+#Set.plot_names += ['hfbasin']
 #Set.plot_names += ['ffl']
 #Set.plot_names += ['taux']
 #Set.plot_names += ['tauy']
@@ -226,7 +226,7 @@ Set.fig_names = Set.plot_names
 #Set.fig_names += ['temp_salt_hor_ave']
 #Set.fig_names += ['bstr']
 #Set.fig_names += ['ke100m', 'ke2000m']
-#Set.fig_names = ['hfl']
+#Set.fig_names = ['hfbasin']
 #Set.fig_names += ['moc_profile']
 #Set.fig_names = ['ice_concentration_nh']
 #Set.fig_names += ['kv_depths_intervals']
@@ -1506,20 +1506,20 @@ for do_twice in range(Set.ndo_twice):
     hca, hcb = pyic.arrange_axes(1, 3, asp=0.4, fig_size_fac=1.5, plot_cb=False, sharex=False)
     ax = hca[0]
     for nn, S in enumerate(Sims):
-      hfl = S.ds_moc.atlantic_hfl.sel(time=slice(S.t1, S.t2)).mean(dim='time')/1e15
-      hfl.plot(label=S.name, ax=ax)
+      hfbasin = S.ds_moc.atlantic_hfbasin.sel(time=slice(S.t1, S.t2)).mean(dim='time')/1e15
+      hfbasin.plot(label=S.name, ax=ax)
     ax.legend()
     ax.set_title('Atlantic heat transport [PW]')
     ax = hca[1]
     for nn, S in enumerate(Sims):
-      hfl = S.ds_moc.pacific_hfl.sel(time=slice(S.t1, S.t2)).mean(dim='time')/1e15
-      hfl.plot(label=S.name, ax=ax)
+      hfbasin = S.ds_moc.pacific_hfbasin.sel(time=slice(S.t1, S.t2)).mean(dim='time')/1e15
+      hfbasin.plot(label=S.name, ax=ax)
     ax.legend()
     ax.set_title('Pacific heat transport [PW]')
     ax = hca[2]
     for nn, S in enumerate(Sims):
-      hfl = S.ds_moc.global_hfl.sel(time=slice(S.t1, S.t2)).mean(dim='time')/1e15
-      hfl.plot(label=S.name, ax=ax)
+      hfbasin = S.ds_moc.global_hfbasin.sel(time=slice(S.t1, S.t2)).mean(dim='time')/1e15
+      hfbasin.plot(label=S.name, ax=ax)
     ax.legend()
     ax.set_title('Global heat transport [PW]')
     for ax in hca:
