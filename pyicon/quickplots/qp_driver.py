@@ -431,7 +431,7 @@ if iopts.debug:
   fig_names = []
   #fig_names += ['temp30w', 'salt30w', 'dens30w']
   #fig_names += ['atm_psi']
-  fig_names += ['ts_tas_gmean']
+  #fig_names += ['ts_tas_gmean']
   #fig_names += ['sst']
   #fig_names += ['ts_amoc']
   #fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
@@ -468,7 +468,7 @@ if iopts.debug:
   #fig_names += ['atm_u_zave', 'atm_u_zave_bias', 'atm_logv_u_zave', 'atm_logv_u_zave_bias']
   #fig_names += ['atm_v_zave', 'atm_v_zave_bias', 'atm_logv_v_zave', 'atm_logv_v_zave_bias']
   #fig_names += ['atm_geoh_500', 'atm_temp_850']
-  #fig_names += ['arctic_budgets']
+  fig_names += ['arctic_budgets']
   #fig_names += ['passage_transports', 'tab_passage_transports']
   #fig_names += ['tab_passage_transports']
   #fig_names += ['ts_amoc', 'tab_overview']
@@ -586,6 +586,9 @@ if do_ocean_plots and not iopts.no_plots:
     DIcD[var] = pyic.IconData(
       fname=fname, **IDsettings)
   DIcD['massflux'].load_tgrid()
+  DIcD['massflux'].dzw = IcD.dzw # needed for arctic budgets
+  DIcD['massflux'].wet_c = IcD.wet_c # needed for arctic budgets
+  DIcD['massflux'].wet_e = IcD.wet_e # needed for arctic budgets
   
   fname_moc = '%s%s_%s.nc' % (run, D_variable_container['moc'], tstep)
   print('Dataset %s' % (fname_moc))
@@ -1820,12 +1823,12 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'arctic_budgets'
     if fig_name in fig_names:
-      try:
+      #try:
         from qp_arctic_budgets import arctic_budgets
         arctic_budgets(DIcD['massflux'], DIcD['ice'], DIcD['monthly'], t1, t2, temp, salt, mass_flux, uo, vo)
         save_fig('Arctic heat/water budgets', path_pics, fig_name)
-      except:
-        print(f'::: Warning: Could not make plot {fig_name}. :::')
+      #except:
+      #  print(f'::: Warning: Could not make plot {fig_name}. :::')
     
     # --- 
     #Ddict = dict(

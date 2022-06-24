@@ -80,7 +80,7 @@ def arctic_budgets(IcD, IcD_ice, IcD_dbg, t1, t2, to, so, mass_flux, uo, vo):
 #  to, it_ave        = pyic.time_average(IcD, 'to', t1=t1, t2=t2, iz='all')
 #  so, it_ave        = pyic.time_average(IcD, 'so', t1=t1, t2=t2, iz='all')
   # ------ 2d fields
-  zo, it_ave        = pyic.time_average(IcD, 'zos', t1=t1, t2=t2, iz='all')
+  #zo, it_ave        = pyic.time_average(IcD, 'zos', t1=t1, t2=t2, iz='all')
   hi, it_ave        = pyic.time_average(IcD_ice, 'hi', t1=t1, t2=t2, iz='all')
   hs, it_ave        = pyic.time_average(IcD_ice, 'hs', t1=t1, t2=t2, iz='all')
   conc, it_ave      = pyic.time_average(IcD_ice, 'conc', t1=t1, t2=t2, iz='all')
@@ -101,7 +101,8 @@ def arctic_budgets(IcD, IcD_ice, IcD_dbg, t1, t2, to, so, mass_flux, uo, vo):
   FrshFlux_Runoff, it_ave = pyic.time_average(IcD_dbg, 'FrshFlux_Runoff', t1=t1, t2=t2, iz='all')
   FrshFlux_Evaporation, it_ave   = pyic.time_average(IcD_dbg, 'FrshFlux_Evaporation', t1=t1, t2=t2, iz='all')
   FrshFlux_Precipitation, it_ave = pyic.time_average(IcD_dbg, 'FrshFlux_Precipitation', t1=t1, t2=t2, iz='all')
-  FrshFlux_SnowFall, it_ave      = pyic.time_average(IcD_dbg, 'FrshFlux_SnowFall', t1=t1, t2=t2, iz='all')
+  #FrshFlux_SnowFall, it_ave      = pyic.time_average(IcD_dbg, 'FrshFlux_SnowFall', t1=t1, t2=t2, iz='all')
+  FrshFlux_SnowFall, it_ave      = pyic.time_average(IcD_dbg, 'totalsnowfall', t1=t1, t2=t2, iz='all')
   FrshFlux_TotalOcean            = FrshFlux_Runoff + FrshFlux_Precipitation + FrshFlux_Evaporation #+ FrshFlux_SnowFall
   
   HeatFlux_Total *= -1
@@ -116,7 +117,7 @@ def arctic_budgets(IcD, IcD_ice, IcD_dbg, t1, t2, to, so, mass_flux, uo, vo):
 
   draftave = ( (IcD.rhoi/IcD.rho0*hi + IcD.rhos/IcD.rho0*hs) * conc ).sum(axis=0)
   dz = 1.*IcD.dzw
-  dz[0,:] += zo
+  #dz[0,:] += zo
   dz[0,:] += -draftave
   
   # --- derive fluxes on cell center
