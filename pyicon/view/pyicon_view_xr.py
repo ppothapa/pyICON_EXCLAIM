@@ -81,7 +81,7 @@ class hplot_xr(object):
   def __init__(self, 
     ds, 
     #grid_type='igrid', 
-    path_grid='/mnt/lustre01/work/mh0033/m300602/icon/grids/',
+    path_grid='/work/mh0033/m300602/icon/grids/',
     logplot=False, 
     verbose=False, 
     lon_reg=None, lat_reg=None, 
