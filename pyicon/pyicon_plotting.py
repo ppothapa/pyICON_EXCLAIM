@@ -400,6 +400,7 @@ def shade(
               cbdrawedges='auto',
               #cborientation='vertical',
               cborientation='auto',
+              cbkwargs=None,
               adjust_axlims=True,
               bmp=None,
               transform=None,
@@ -651,8 +652,11 @@ def shade(
           cborientation = 'vertical'
         else:
           cborientation = 'horizontal'
+      if not cbkwargs:
+        cbkwargs = dict(orientation=cborientation, extend='both')
       # ------ make actual colorbar
-      cb = plt.colorbar(mappable=hm, cax=cax, orientation=cborientation, extend='both')
+      #cb = plt.colorbar(mappable=hm, cax=cax, orientation=cborientation, extend='both')
+      cb = plt.colorbar(mappable=hm, cax=cax, **cbkwargs)
       # ------ prevent white lines if fig is saved as pdf
       cb.solids.set_edgecolor("face")
       # ------ use exponential notation for large colorbar ticks
