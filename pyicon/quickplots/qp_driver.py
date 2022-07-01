@@ -2159,7 +2159,7 @@ for tave_int in tave_ints:
           toprow.append( tab_name )
 
       if do_atmosphere_plots:
-        varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean', 'ts_pme_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'fwfoce_gmean']
+        varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean', 'pme_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean']#, 'fwfoce_gmean']
         var_fac_list = [1]*len(varlist)
         var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0]
         var_units_list = ['deg C', '', '', '', '', '', '', '']
