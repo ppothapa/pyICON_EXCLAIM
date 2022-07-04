@@ -160,7 +160,7 @@ def apply_ckdtree(data, fpath_ckdtree, mask=None, coordinates='clat clon', radiu
   if fpath_ckdtree.endswith('nc'):
     distances = distances[:]
     inds = inds[:]
-    f.close()
+    ddnpz.close()
 
   if mask is not None:
     #if data.ndim==1:
