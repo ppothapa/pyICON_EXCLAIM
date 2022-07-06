@@ -15,7 +15,8 @@ rand=$(cat /dev/urandom | tr -dc 'A-Z' | fold -w 3 | head -n 1)
 
 path_pyicon=`(cd .. && pwd)`"/"
 config_file="./config_qp_${rand}.py"
-qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
+#qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
+qp_driver="${path_pyicon}pyicon/quickplots/old_qp_driver.py"
 
 cat > ${config_file} << %eof%
 # --- path to quickplots
@@ -50,13 +51,14 @@ fpath_ref_data_oce  = path_grid + 'ts_phc3.0_annual_icon_grid_0043_R02B04_G_L40.
 fpath_ref_data_atm  = path_grid_atm + 'pyicon_prepare_era.nc'
 fpath_fx            = path_grid + 'oce_fx.19600102T000000Z.nc'
 
-# --- nc file prefixes
+# --- nc file prefixes ocean
 oce_def     = '_oce_def'
 oce_moc     = '_oce_moc'
-oce_mon     = '_oce_MON'
+oce_mon     = '_oce_mon'
 oce_ice     = '_oce_ice'
 oce_monthly = '_oce_dbg'
 
+# --- nc file prefixes atmosphere
 atm_2d      = '_atm_2d_ml'
 atm_3d      = '_atm_3d_ml'
 atm_mon     = '_atm_mon'
@@ -70,21 +72,21 @@ tave_ints = [
 #['1630-02-01', '1640-01-01'],
 ['4450-02-01', '4500-01-01'],
 ]
-ave_freq = 1
+ave_freq = 12
 
 # --- what to plot and what not?
 # --- not to plot:
 #red_list = ['']
 # --- to plot:
-#green_list = ['temp_850_reg']
+#green_list = ['']
 %eof%
 
 # --- start qp_driver
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-run="sml2"
+run="sml7"
 path_data="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run}/output/icon/"
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1870-01-01,1889-12-31'
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1979-01-01,1999-12-31'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 

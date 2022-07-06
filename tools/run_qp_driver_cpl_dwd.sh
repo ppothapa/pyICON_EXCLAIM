@@ -15,7 +15,8 @@ rand=$(cat /dev/urandom | tr -dc 'A-Z' | fold -w 3 | head -n 1)
 
 path_pyicon=`(cd .. && pwd)`"/"
 config_file="./config_qp_${rand}.py"
-qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
+#qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
+qp_driver="${path_pyicon}pyicon/quickplots/old_qp_driver.py"
 
 cat > ${config_file} << %eof%
 # --- path to quickplots
@@ -50,13 +51,14 @@ fpath_ref_data_oce  = path_grid + 'ts_phc3.0_annual_icon_grid_0043_R02B04_G_L40.
 fpath_ref_data_atm  = path_grid_atm + 'pyicon_prepare_era.nc'
 fpath_fx            = path_grid + 'oce_fx.19600102T000000Z.nc'
 
-# --- nc file prefixes
+# --- nc file prefixes ocean
 oce_def     = '_oce_def'
 oce_moc     = '_oce_moc'
 oce_mon     = '_oce_mon'
 oce_ice     = '_oce_ice'
 oce_monthly = '_oce_dbg'
 
+# --- nc file prefixes atmosphere
 atm_2d      = '_atm_2d_ml'
 atm_3d      = '_atm_3d_ml'
 atm_mon     = '_atm_mon'
@@ -74,9 +76,9 @@ ave_freq = 12
 
 # --- what to plot and what not?
 # --- not to plot:
-#red_list = ['ts_pme_gmean']
+#red_list = ['']
 # --- to plot:
-#green_list = ['ts_tas_gmean']
+#green_list = ['']
 %eof%
 
 # --- start qp_driver
@@ -93,4 +95,3 @@ rm ${config_file}
 echo "--------------------------------------------------------------------------------"
 echo "Started at ${startdate}"
 echo "Ended at   ${enddate}"
-
