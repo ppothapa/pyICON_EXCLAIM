@@ -67,6 +67,8 @@ parser.add_argument('--res', type=float, default=0.3,
                     help='Resolution of the interpolated data which will be plotted. So far, 1.0, 0.3, 0.1 are supported.')
 parser.add_argument('--fpath_tgrid', type=str, default='auto',
                     help='Path to triangular grid file. If \'auto\' the path is guessed automatically. Only necessary if \'--use_tgrid\' is used.')
+parser.add_argument('--fpath_ckdtree', type=str, default='auto',
+                    help='Path to ckdtree interpolation file. If \'auto\' the path is guessed automatically.')
 parser.add_argument('--lon_reg', type=str, default=None,
                     help='Longitude range of the plot.')
 parser.add_argument('--lat_reg', type=str, default=None,
@@ -120,6 +122,7 @@ clim = iopts.clim
 fpath_fig = iopts.fpath_fig
 use_tgrid = iopts.use_tgrid
 fpath_tgrid = iopts.fpath_tgrid
+fpath_ckdtree = iopts.fpath_ckdtree
 
 print('start modules')
 import matplotlib
@@ -210,7 +213,8 @@ if fpath_tgrid=='auto':
   except:
     fpath_tgrid = 'from_file'
 #fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.npz'
-fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.nc'
+if fpath_ckdtree=='auto':
+  fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.nc'
 
 # --- open dataset
 mfdset_kwargs = dict(combine='nested', concat_dim='time', 
@@ -224,6 +228,10 @@ if 'depth' in data.dims:
   depth_name = 'depth'
 elif 'depth_2' in data.dims:
   depth_name = 'depth_2'
+elif 'lev' in data.dims:
+  depth_name = 'lev'
+elif 'lev_2' in data.dims:
+  depth_name = 'lev_2'
 else:
   depth_name = 'none'
 
