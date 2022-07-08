@@ -98,6 +98,8 @@ parser.add_argument('--xdim', type=str, default='auto',
                     help='Dimension of x-axes of the plot. Choose between \{\'auto\'\}, \'lon\', or \'lat\'.')
 parser.add_argument('--section', type=str, default='auto',
                     help='Section which is used for interpolation. At the moment, the following sections are supported: \'30W\', \'170W\'.')
+parser.add_argument('--fpath_fx', type=str, default='none',
+                    help='Path to an fx file fitting to the data.')
 
 iopts = parser.parse_args()
 
@@ -210,6 +212,10 @@ elif 'ncells_2' in data.dims:
   interp = True
 else:
   interp = False
+
+if 'zave' in iopts.section:
+  interp = False
+
 if interp:
   ds_ckdt = xr.open_dataset(fpath_ckdtree)
   if 'clat' in coordinates:
@@ -218,9 +224,29 @@ if interp:
     inds = ds_ckdt.ickdtree_v.data
   data = data.isel(ncells=inds)
 
+if 'zave' in iopts.section:
+  ds_fx = xr.open_dataset(iopts.fpath_fx)
+  clat = data.clat * 180./np.pi
+  lat_group = np.round(clat/0.3)*0.3
+  data = data.where(data!=0)
+  if iopts.section=='gzave':
+    data = data.groupby(lat_group).mean()
+    iopts.xlim = [-80, 90]
+  elif iopts.section=='azave':
+    data = data.where(ds_fx.basin_c==1.).groupby(lat_group).mean()
+    iopts.xlim = [-30, 90]
+  elif iopts.section=='ipzave':
+    data = data.where((ds_fx.basin_c==3.) | (ds_fx.basin_c==7.)).groupby(lat_group).mean()
+    iopts.xlim = [-30, 70]
+  data = data.compute()
+  xdim = data.clat
+  xdim = xdim.assign_attrs(long_name='latitude')
+  iopts.xdim = 'none' # do not need this information, avoid redefinition of xdim
+
 if iopts.factor:
   data *= iopts.factor
 data = data.squeeze()
+
 if iopts.xdim=='auto':
   xdim = data[data.dims[1]]
 elif 'lat' in iopts.xdim:
