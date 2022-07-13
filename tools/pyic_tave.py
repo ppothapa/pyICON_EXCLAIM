@@ -30,6 +30,7 @@ import sys
 from dask.distributed import Client, progress
 from distributed.scheduler import logger
 import socket
+#from ipdb import set_trace as mybreak
 
 
 # ## Preliminaries
@@ -76,6 +77,8 @@ def main():
                         help='Variables which are averaged')
     parser.add_argument('--dask', type=str, default=None,
                         help='Specify how das is going to be used.')
+    parser.add_argument('--groupby', type=str, default=None,
+                        help='Specify a groupby operation.')
     # -
     
     if debug_jupyter:
@@ -180,7 +183,7 @@ def main():
     
     # ## Loading the data
     
-    flist = glob.glob(fpath_data)
+    flist = iopts.fpath_data
     flist.sort()
     if iopts.verbose:
         print("\n".join(flist))
@@ -232,7 +235,12 @@ def main():
     
     # ## Time average
     
-    ds_ave = ds.mean(dim='time', keep_attrs=True)
+    if iopts.groupby is None:
+      ds_ave = ds.mean(dim='time', keep_attrs=True)
+    else:
+      print(f'Apply groupby with {iopts.groupby}')
+      #ds_ave = ds.groupby(iopts.groupby).mean(keep_attrs=True)
+      ds_ave = ds.groupby(iopts.groupby).mean()
     
     # ## Meta data
     
