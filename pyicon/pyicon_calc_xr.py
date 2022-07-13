@@ -116,7 +116,12 @@ ds_tg and ds_IcD are both lazy xarray data sets containing dask arrays.
 
     return ds_IcD
 
-def xr_crop_tgrid(ds_tg, ireg_c):
+def print_verbose(verbose=1, message="", verbose_stage=1):
+  if verbose>=verbose_stage:
+    print(message)
+  return
+
+def xr_crop_tgrid(ds_tg, ireg_c, verbose=1):
   """ Crop a grid file. 
 
   Input: 
@@ -143,12 +148,14 @@ def xr_crop_tgrid(ds_tg, ireg_c):
   ds_tg_cut = pyic.xr_crop_tgrid(ds_tg, ireg_c)
   """
   # --- find edges and vertices belonging to cells of cutted domain
+  print_verbose(verbose, "find edges")
   vertex_of_cell = ds_tg.vertex_of_cell[:,ireg_c].compute().data.transpose()-1
   edge_of_cell = ds_tg.edge_of_cell[:,ireg_c].compute().data.transpose()-1
   ireg_e, inde = np.unique(edge_of_cell, return_index=True)
   ireg_v, indv = np.unique(vertex_of_cell, return_index=True)
   
   # --- new dataset with cutted coordinates
+  print_verbose(verbose, "cut coordinates")
   ds_tg_cut = xr.Dataset(coords=dict(
       clon=ds_tg['clon'][ireg_c],
       clat=ds_tg['clat'][ireg_c],
@@ -161,6 +168,7 @@ def xr_crop_tgrid(ds_tg, ireg_c):
   ds_tg_cut['ireg_v'] = xr.DataArray(ireg_v, dims=['vertex'])
   
   # --- re-index
+  print_verbose(verbose, "reindex")
   reindex_c = np.zeros_like(ds_tg.clon, dtype='int32')-1
   reindex_c[ireg_c] = np.arange(ireg_c.size, dtype='int32')
   reindex_e = np.zeros_like(ds_tg.elon, dtype='int32')-1
@@ -199,11 +207,13 @@ def xr_crop_tgrid(ds_tg, ireg_c):
   ds_tg_cut[var] = xr.DataArray(data+1, dims=da.dims)
   
   # --- cut vertex variables
+  print_verbose(verbose, "cut vertex variables")
   cvars = ['dual_area', 'edge_orientation',
           'cartesian_x_vertices', 'cartesian_y_vertices', 'cartesian_z_vertices']
   for var in cvars:
       ds_tg_cut[var] = ds_tg[var].isel(vertex=ireg_v)
   # --- cut edge variables
+  print_verbose(verbose, "cut edge variables")
   cvars = ['edge_length', 'dual_edge_length', 'edge_sea_land_mask', 'edge_cell_distance',
           'edge_system_orientation',
           'edge_middle_cartesian_x', 'edge_middle_cartesian_y', 'edge_middle_cartesian_z',
@@ -212,6 +222,7 @@ def xr_crop_tgrid(ds_tg, ireg_c):
   for var in cvars:
       ds_tg_cut[var] = ds_tg[var].isel(edge=ireg_e)
   # --- cut cell variables
+  print_verbose(verbose, "cut cell variables")
   cvars = ['cell_area', 'cell_area_p', 'cell_sea_land_mask', 'orientation_of_normal', 
           'cell_circumcenter_cartesian_x', 'cell_circumcenter_cartesian_y', 'cell_circumcenter_cartesian_z']
   for var in cvars:
