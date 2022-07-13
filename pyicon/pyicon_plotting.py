@@ -1555,8 +1555,11 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', xl
     ax.set_xticks(xticks)
     ax.set_yticks(yticks)
   elif do_xyticks and use_cartopy:
-    ax.set_xticks(xticks, crs=ccrs.PlateCarree())
-    ax.set_yticks(yticks, crs=ccrs.PlateCarree())
+    try:
+      ax.set_xticks(xticks, crs=ccrs.PlateCarree())
+      ax.set_yticks(yticks, crs=ccrs.PlateCarree())
+    except:
+      pass
   
   if do_xyticks and ticks_position=='both':
     ax.xaxis.set_ticks_position('both')

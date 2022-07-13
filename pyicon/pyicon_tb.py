@@ -1143,7 +1143,7 @@ def identify_grid(path_grid, fpath_data):
       try:
         gsize = fpath_data.cells.size
       except:
-        raise ValueError('::: Error: Could not read numer ob cells from fpath_data! :::')
+        raise ValueError('::: Error: Could not read numer of cells from fpath_data! :::')
 
   for grid_name in Dgrid_list.keys():
     if gsize == Dgrid_list[grid_name]['size']:
