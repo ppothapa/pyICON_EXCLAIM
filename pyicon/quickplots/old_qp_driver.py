@@ -303,9 +303,9 @@ projection = 'PlateCarree'
 
 # --- structure of web page
 fig_names = []
-if do_ocean_plots and do_atmosphere_plots:
-  fig_names += ['sec:Overview']
-  fig_names += ['tab_overview']
+fig_names += ['sec:Overview']
+fig_names += ['tab_overview']
+if do_ocean_plots:
   fig_names += ['sec:Upper ocean']
   fig_names += ['ssh', 'ssh_variance', 'sst', 'sss', 'mld_mar', 'mld_sep'] 
   fig_names += ['sec:Ice']
@@ -327,58 +327,7 @@ if do_ocean_plots and do_atmosphere_plots:
   fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
   fig_names += ['sec:Time series']
   fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
-  fig_names += ['sec:Surface fluxes']
-  fig_names += ['atm_zonal_wind_stress', 'atm_meridional_wind_stress']
-  fig_names += ['atm_curl_tau', 'atm_wek']
-  fig_names += ['sec:Bias surface fluxes']
-  fig_names += ['atm_tauu_bias', 'atm_tauv_bias']
-  fig_names += ['sec:Atmosphere surface']
-  fig_names += ['atm_2m_temp','atm_surface_temp','atm_sea_level_pressure',]
-  fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover', 'atm_p_e', 'atm_10m_wind']
-  fig_names += ['sec:Bias atmosphere surface']
-  fig_names += ['atm_tas_bias']
-  fig_names += ['atm_prw_bias']
-  fig_names += ['atm_psl_bias']
-  fig_names += ['sec:Above surface']
-  fig_names += ['atm_geoh_500', 'atm_temp_850']
-  fig_names += ['sec:Atmosphere zonal averages']
-  fig_names += ['atm_temp_zave', 'atm_temp_zave_bias', 'atm_logv_temp_zave', 'atm_logv_temp_zave_bias']
-  fig_names += ['atm_u_zave', 'atm_u_zave_bias', 'atm_logv_u_zave', 'atm_logv_u_zave_bias']
-  fig_names += ['atm_v_zave', 'atm_v_zave_bias', 'atm_logv_v_zave', 'atm_logv_v_zave_bias']
-  fig_names += ['atm_rel_hum_zave']
-  fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave', 'atm_psi']
-  fig_names += ['sec:Time series']
-  fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
-  fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_pme_gmean', 'ts_fwfoce_gmean']
-#fig_names += ['sec:TKE and IDEMIX']
-#fig_names += ['tke30w', 'iwe30w', 'kv30w']
-if do_ocean_plots and not do_atmosphere_plots:
-  fig_names += ['sec:Overview']
-  fig_names += ['tab_overview']
-  fig_names += ['sec:Upper ocean']
-  fig_names += ['ssh', 'ssh_variance', 'sst', 'sss', 'mld_mar', 'mld_sep'] 
-  fig_names += ['sec:Ice']
-  fig_names += ['ice_concentration_nh', 'ice_thickness_nh', 'snow_thickness_nh',] 
-  fig_names += ['ice_concentration_sh', 'ice_thickness_sh', 'snow_thickness_sh',]
-  fig_names += ['sec:Sections']
-  fig_names += ['temp30w', 'salt30w', 'dens30w']
-  fig_names += ['sec:Zonal averages']
-  fig_names += ['temp_gzave', 'temp_azave', 'temp_ipzave']
-  fig_names += ['salt_gzave', 'salt_azave', 'salt_ipzave']
-  fig_names += ['sec:Transports']
-  fig_names += ['bstr', 'passage_transports', 'tab_passage_transports']
-  fig_names += ['arctic_budgets']
-  fig_names += ['amoc', 'pmoc', 'gmoc']
-  fig_names += ['ke_100m', 'ke_2000m']
-  fig_names += ['heat_flux', 'freshwater_flux']
-  fig_names += ['sec:Biases']
-  fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
-  fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
-  fig_names += ['sec:Time series']
-  fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
-if do_atmosphere_plots and not do_ocean_plots:
-  fig_names += ['sec:Overview']
-  fig_names += ['tab_overview']
+if do_atmosphere_plots:
   fig_names += ['sec:Surface fluxes']
   fig_names += ['atm_zonal_wind_stress', 'atm_meridional_wind_stress']
   fig_names += ['atm_curl_tau', 'atm_wek']
@@ -405,52 +354,52 @@ if do_atmosphere_plots and not do_ocean_plots:
 #fig_names += ['sec:TKE and IDEMIX']
 #fig_names += ['tke30w', 'iwe30w', 'kv30w']
   # --- variable names
-if not do_conf_dwd:
-   vpfull   = 'pfull'
-   vtas     = 'tas'
-   vts      = 'ts'
-   vprw     = 'prw'
-   vpsl     = 'psl'
-   vzg      = 'zg'
-   vta      = 'ta'
-   vtauu    = 'tauu'
-   vtauv    = 'tauv'
-   vcllvi   = 'cllvi'
-   vclivi   = 'clivi'
-   vpr      = 'pr'
-   vclt     = 'clt'
-   vevspsbl = 'evspsbl'
-   vsfcwind = 'sfcwind'
-   vua      = 'ua'
-   vva      = 'va'
-   vhus     = 'hus'
-   vhur     = 'hur'
-   vcl      = 'cl'
-   vclw     = 'clw'
-   vcli     = 'cli'
-else:
-   vpfull   = 'pres'
-   vtas     = 't_2m'
-   vts      = 't_s'
-   vprw     = 'tqv_dia'
-   vpsl     = 'pres_msl'
-   vzg      = 'geopot'
-   vta      = 'temp'
-   vtauu    = 'umfl_s'
-   vtauv    = 'vmfl_s'
-   vcllvi   = 'tqc_dia'
-   vclivi   = 'tqi_dia'
-   vpr      = 'tot_prec_rate'
-   vclt     = 'clct'
-   vevspsbl = 'qhfl_s'
-   vsfcwind = 'sp_10m'
-   vua      = 'u'
-   vva      = 'v'
-   vhus     = 'qv'
-   vhur     = 'rh'
-   vcl      = 'clc'
-   vclw     = 'tot_qc_dia'
-   vcli     = 'tot_qi_dia'
+  if not do_conf_dwd:
+     vpfull   = 'pfull'
+     vtas     = 'tas'
+     vts      = 'ts'
+     vprw     = 'prw'
+     vpsl     = 'psl'
+     vzg      = 'zg'
+     vta      = 'ta'
+     vtauu    = 'tauu'
+     vtauv    = 'tauv'
+     vcllvi   = 'cllvi'
+     vclivi   = 'clivi'
+     vpr      = 'pr'
+     vclt     = 'clt'
+     vevspsbl = 'evspsbl'
+     vsfcwind = 'sfcwind'
+     vua      = 'ua'
+     vva      = 'va'
+     vhus     = 'hus'
+     vhur     = 'hur'
+     vcl      = 'cl'
+     vclw     = 'clw'
+     vcli     = 'cli'
+  else:
+     vpfull   = 'pres'
+     vtas     = 't_2m'
+     vts      = 't_s'
+     vprw     = 'tqv_dia'
+     vpsl     = 'pres_msl'
+     vzg      = 'geopot'
+     vta      = 'temp'
+     vtauu    = 'umfl_s'
+     vtauv    = 'vmfl_s'
+     vcllvi   = 'tqc_dia'
+     vclivi   = 'tqi_dia'
+     vpr      = 'tot_prec_rate'
+     vclt     = 'clct'
+     vevspsbl = 'qhfl_s'
+     vsfcwind = 'sp_10m'
+     vua      = 'u'
+     vva      = 'v'
+     vhus     = 'qv'
+     vhur     = 'rh'
+     vcl      = 'clc'
+     vclw     = 'tot_qc_dia'
+     vcli     = 'tot_qi_dia'
 if do_hamocc_plots:
   fig_names += ['sec:Hamocc time series']
   fig_names += ['ts_global_npp', 'ts_global_nppcya', 'ts_global_zoograzing', 'ts_global_netco2flux']
@@ -993,362 +942,361 @@ for tave_int in tave_ints:
     # start with plotting
     # ================================================================================ 
 
+    # -------------------------------------------------------------------------------- 
+    # upper ocean
+    # -------------------------------------------------------------------------------- 
+    fname = '%s%s_%s.nc' % (run, oce_def, tstep)
     Ddict_global = dict(
       xlim=[-180.,180.], ylim=[-90.,90.],
       rgrid_name=rgrid_name,
       path_ckdtree=path_ckdtree,
       projection=projection,
                 )
+    
+    # ---
+    fig_name = 'mld_mar'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mld', depth=0,
+                               it_ave=it_ave_mar,
+                               title='mixed layer depth March [m]',
+                               #clim=[0,5000.], cincr=250., cmap=PyicCmaps().WhiteBlueGreenYellowRed,
+                               clim=[0,5000.], cincr=250., cmap='RdYlBu_r',
+                               do_mask=True,
+                               IcD=IcD_monthly,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('Mixed layer depth March', path_pics, fig_name, FigInf)
+    
+    # ---
+    fig_name = 'mld_sep'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mld', depth=0,
+                               it_ave=it_ave_sep,
+                               title='mixed layer depth September [m]',
+                               clim=[0,5000.], cincr=250., cmap='RdYlBu_r',
+                               do_mask=True,
+                               IcD=IcD_monthly,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('Mixed layer depth September', path_pics, fig_name, FigInf)
 
-    # -------------------------------------------------------------------------------- 
-    # upper ocean
-    # -------------------------------------------------------------------------------- 
-    if do_ocean_plots:
-      fname = '%s%s_%s.nc' % (run, oce_def, tstep)
-      
-      # ---
-      fig_name = 'mld_mar'
-      if fig_name in fig_names:
-        FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mld', depth=0,
-                                 it_ave=it_ave_mar,
-                                 title='mixed layer depth March [m]',
-                                 #clim=[0,5000.], cincr=250., cmap=PyicCmaps().WhiteBlueGreenYellowRed,
-                                 clim=[0,5000.], cincr=250., cmap='RdYlBu_r',
-                                 do_mask=True,
-                                 IcD=IcD_monthly,
-                                 save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                                 **Ddict_global)
-        save_fig('Mixed layer depth March', path_pics, fig_name, FigInf)
-      
-      # ---
-      fig_name = 'mld_sep'
-      if fig_name in fig_names:
-        FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='mld', depth=0,
-                                 it_ave=it_ave_sep,
-                                 title='mixed layer depth September [m]',
-                                 clim=[0,5000.], cincr=250., cmap='RdYlBu_r',
-                                 do_mask=True,
-                                 IcD=IcD_monthly,
-                                 save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                                 **Ddict_global)
-        save_fig('Mixed layer depth September', path_pics, fig_name, FigInf)
+    # ---
+    fig_name = 'sst'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='to', depth=0, it=0,
+                               t1=t1, t2=t2,
+                               clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
+                               IcD=IcD,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('SST', path_pics, fig_name, FigInf)
+    
+    # ---
+    fig_name = 'sss'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='so', depth=0, it=0,
+                               t1=t1, t2=t2,
+                               #clim=[32.,37], cincr=0.25, cmap='cmo.haline',
+                               clim=[25.,40.], clevs=[25, 28, 30, 32, 32.5, 33, 33.5, 34, 34.5, 35, 35.5, 36, 37, 38, 40], cmap='cmo.haline',
+                               IcD=IcD,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('SSS', path_pics, fig_name, FigInf)
+    
+    # ---
+    fig_name = 'ssh'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='zos', depth=0, it=0,
+                               t1=t1, t2=t2,
+                               clim=2, cincr=0.2, cmap='RdBu_r',
+                               IcD=IcD,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('SSH', path_pics, fig_name, FigInf)
 
-      # ---
-      fig_name = 'sst'
-      if fig_name in fig_names:
-        FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='to', depth=0, it=0,
-                                 t1=t1, t2=t2,
-                                 clim=[-2.,30.], cincr=2.0, cmap='cmo.thermal',
-                                 IcD=IcD,
-                                 save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                                 **Ddict_global)
-        save_fig('SST', path_pics, fig_name, FigInf)
-      
-      # ---
-      fig_name = 'sss'
-      if fig_name in fig_names:
-        FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='so', depth=0, it=0,
-                                 t1=t1, t2=t2,
-                                 #clim=[32.,37], cincr=0.25, cmap='cmo.haline',
-                                 clim=[25.,40.], clevs=[25, 28, 30, 32, 32.5, 33, 33.5, 34, 34.5, 35, 35.5, 36, 37, 38, 40], cmap='cmo.haline',
-                                 IcD=IcD,
-                                 save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                                 **Ddict_global)
-        save_fig('SSS', path_pics, fig_name, FigInf)
-      
-      # ---
-      fig_name = 'ssh'
-      if fig_name in fig_names:
-        FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var='zos', depth=0, it=0,
-                                 t1=t1, t2=t2,
-                                 clim=2, cincr=0.2, cmap='RdBu_r',
-                                 IcD=IcD,
-                                 save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                                 **Ddict_global)
-        save_fig('SSH', path_pics, fig_name, FigInf)
+    # ---
+    fig_name = 'ssh_variance'
+    if fig_name in fig_names:
+      zos, it_ave          = pyic.time_average(IcD, 'zos',        t1=t1, t2=t2)
+      zos_square, it_ave   = pyic.time_average(IcD, 'zos_square', t1=t1, t2=t2)
+      zos_var = np.sqrt(zos_square-zos**2)
+      IaV = pyic.IconVariable('zos_var', 'm', 'ssh variance')
+      IaV.data = zos_var
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD, IaV, clim=[-2,0], cincr=0.2, cmap='RdYlBu_r',
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
+                      logplot=True,
+                      title='log$_{10}$(ssh variance) [m]', do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                      )
+      save_fig('SSH variance', path_pics, fig_name)
+    
+    # ---
+    fig_name = 'ice_concentration_nh'
+    if fig_name in fig_names:
 
-      # ---
-      fig_name = 'ssh_variance'
-      if fig_name in fig_names:
-        zos, it_ave          = pyic.time_average(IcD, 'zos',        t1=t1, t2=t2)
-        zos_square, it_ave   = pyic.time_average(IcD, 'zos_square', t1=t1, t2=t2)
-        zos_var = np.sqrt(zos_square-zos**2)
-        IaV = pyic.IconVariable('zos_var', 'm', 'ssh variance')
-        IaV.data = zos_var
-        IaV.interp_to_rectgrid(fpath_ckdtree)
-        pyic.hplot_base(IcD, IaV, clim=[-2,0], cincr=0.2, cmap='RdYlBu_r',
-                        projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
-                        logplot=True,
-                        title='log$_{10}$(ssh variance) [m]', do_write_data_range=True,
-                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                        )
-        save_fig('SSH variance', path_pics, fig_name)
-      
-      # ---
-      fig_name = 'ice_concentration_nh'
-      if fig_name in fig_names:
+      conc_mar, it_ave = pyic.time_average(IcD_monthly, 'conc', it_ave=it_ave_mar, iz='all')
+      hi_mar, it_ave   = pyic.time_average(IcD_monthly, 'hi', it_ave=it_ave_mar, iz='all')
+      hs_mar, it_ave   = pyic.time_average(IcD_monthly, 'hs', it_ave=it_ave_mar, iz='all')
+      hiconc_mar = (hi_mar*conc_mar)[0,:]
+      hsconc_mar = (hs_mar*conc_mar)[0,:]
 
-        conc_mar, it_ave = pyic.time_average(IcD_monthly, 'conc', it_ave=it_ave_mar, iz='all')
-        hi_mar, it_ave   = pyic.time_average(IcD_monthly, 'hi', it_ave=it_ave_mar, iz='all')
-        hs_mar, it_ave   = pyic.time_average(IcD_monthly, 'hs', it_ave=it_ave_mar, iz='all')
-        hiconc_mar = (hi_mar*conc_mar)[0,:]
-        hsconc_mar = (hs_mar*conc_mar)[0,:]
+      conc_sep, it_ave = pyic.time_average(IcD_monthly, 'conc', it_ave=it_ave_sep, iz='all')
+      hi_sep, it_ave   = pyic.time_average(IcD_monthly, 'hi', it_ave=it_ave_sep, iz='all')
+      hs_sep, it_ave   = pyic.time_average(IcD_monthly, 'hs', it_ave=it_ave_sep, iz='all')
+      hiconc_sep = (hi_sep*conc_sep)[0,:]
+      hsconc_sep = (hs_sep*conc_sep)[0,:]
 
-        conc_sep, it_ave = pyic.time_average(IcD_monthly, 'conc', it_ave=it_ave_sep, iz='all')
-        hi_sep, it_ave   = pyic.time_average(IcD_monthly, 'hi', it_ave=it_ave_sep, iz='all')
-        hs_sep, it_ave   = pyic.time_average(IcD_monthly, 'hs', it_ave=it_ave_sep, iz='all')
-        hiconc_sep = (hi_sep*conc_sep)[0,:]
-        hsconc_sep = (hs_sep*conc_sep)[0,:]
+    # ---
+    fig_name = 'ice_concentration_nh'
+    if fig_name in fig_names:
+      hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=1., fig_size_fac=2.,
+                   sharex=True, sharey=True, xlabel="", ylabel="",
+                   projection=ccrs.NorthPolarStereo(),
+                                  )
+      ii=-1
 
-      # ---
-      fig_name = 'ice_concentration_nh'
-      if fig_name in fig_names:
-        hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=1., fig_size_fac=2.,
-                     sharex=True, sharey=True, xlabel="", ylabel="",
-                     projection=ccrs.NorthPolarStereo(),
-                                    )
-        ii=-1
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      IaV = pyic.IconVariable('conc_mar', '', 'sea ice concentration March')
+      IaV.data = conc_mar[0,:]
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
+                      clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
+                      projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
+                      ax=ax, cax=cax,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                      )
 
-        ii+=1; ax=hca[ii]; cax=hcb[ii]
-        IaV = pyic.IconVariable('conc_mar', '', 'sea ice concentration March')
-        IaV.data = conc_mar[0,:]
-        IaV.interp_to_rectgrid(fpath_ckdtree)
-        pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
-                        clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
-                        projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
-                        ax=ax, cax=cax,
-                        crs_features=False, do_plot_settings=False, do_write_data_range=True,
-                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                        )
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      IaV = pyic.IconVariable('conc_sep', 'm', 'sea ice concentration September')
+      IaV.data = conc_sep[0,:]
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
+                      clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
+                      projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
+                      ax=ax, cax=cax,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                      )
 
-        ii+=1; ax=hca[ii]; cax=hcb[ii]
-        IaV = pyic.IconVariable('conc_sep', 'm', 'sea ice concentration September')
-        IaV.data = conc_sep[0,:]
-        IaV.interp_to_rectgrid(fpath_ckdtree)
-        pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
-                        clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
-                        projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
-                        ax=ax, cax=cax,
-                        crs_features=False, do_plot_settings=False, do_write_data_range=True,
-                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                        )
+      for ax in hca:
+        ax.set_extent([-180, 180, 60, 90], ccrs.PlateCarree())
+        ax.gridlines()
+        ax.add_feature(cartopy.feature.LAND)
+        ax.coastlines()
 
-        for ax in hca:
-          ax.set_extent([-180, 180, 60, 90], ccrs.PlateCarree())
-          ax.gridlines()
-          ax.add_feature(cartopy.feature.LAND)
-          ax.coastlines()
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig('Sea ice concentration NH', path_pics, fig_name, FigInf)
 
-        FigInf = dict(long_name=IaV.long_name)
-        save_fig('Sea ice concentration NH', path_pics, fig_name, FigInf)
+    # ---
+    fig_name = 'ice_thickness_nh'
+    if fig_name in fig_names:
+      hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=1., fig_size_fac=2.,
+                   sharex=True, sharey=True, xlabel="", ylabel="",
+                   projection=ccrs.NorthPolarStereo(),
+                                  )
+      ii=-1
 
-      # ---
-      fig_name = 'ice_thickness_nh'
-      if fig_name in fig_names:
-        hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=1., fig_size_fac=2.,
-                     sharex=True, sharey=True, xlabel="", ylabel="",
-                     projection=ccrs.NorthPolarStereo(),
-                                    )
-        ii=-1
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      IaV = pyic.IconVariable('hiconc_mar', 'm', 'ice equiv. thickness March')
+      IaV.data = hiconc_mar
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD_monthly, IaV, 
+                      clim=[0,6], clevs=[0, 0.01, 0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
+                      projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
+                      ax=ax, cax=cax,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                      )
 
-        ii+=1; ax=hca[ii]; cax=hcb[ii]
-        IaV = pyic.IconVariable('hiconc_mar', 'm', 'ice equiv. thickness March')
-        IaV.data = hiconc_mar
-        IaV.interp_to_rectgrid(fpath_ckdtree)
-        pyic.hplot_base(IcD_monthly, IaV, 
-                        clim=[0,6], clevs=[0, 0.01, 0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
-                        projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
-                        ax=ax, cax=cax,
-                        crs_features=False, do_plot_settings=False, do_write_data_range=True,
-                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                        )
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      IaV = pyic.IconVariable('hiconc_sep', 'm', 'ice equiv. thickness September')
+      IaV.data = hiconc_sep
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD_monthly, IaV, 
+                      clim=[0,6], clevs=[0, 0.01, 0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
+                      projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
+                      ax=ax, cax=cax,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                      )
 
-        ii+=1; ax=hca[ii]; cax=hcb[ii]
-        IaV = pyic.IconVariable('hiconc_sep', 'm', 'ice equiv. thickness September')
-        IaV.data = hiconc_sep
-        IaV.interp_to_rectgrid(fpath_ckdtree)
-        pyic.hplot_base(IcD_monthly, IaV, 
-                        clim=[0,6], clevs=[0, 0.01, 0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
-                        projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
-                        ax=ax, cax=cax,
-                        crs_features=False, do_plot_settings=False, do_write_data_range=True,
-                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                        )
+      for ax in hca:
+        ax.set_extent([-180, 180, 60, 90], ccrs.PlateCarree())
+        ax.gridlines()
+        ax.add_feature(cartopy.feature.LAND)
+        ax.coastlines()
 
-        for ax in hca:
-          ax.set_extent([-180, 180, 60, 90], ccrs.PlateCarree())
-          ax.gridlines()
-          ax.add_feature(cartopy.feature.LAND)
-          ax.coastlines()
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig('Sea ice equiv. thickness NH', path_pics, fig_name, FigInf)
 
-        FigInf = dict(long_name=IaV.long_name)
-        save_fig('Sea ice equiv. thickness NH', path_pics, fig_name, FigInf)
+    # ---
+    fig_name = 'snow_thickness_nh'
+    if fig_name in fig_names:
+      hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=1., fig_size_fac=2.,
+                   sharex=True, sharey=True, xlabel="", ylabel="",
+                   projection=ccrs.NorthPolarStereo(),
+                                  )
+      ii=-1
 
-      # ---
-      fig_name = 'snow_thickness_nh'
-      if fig_name in fig_names:
-        hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=1., fig_size_fac=2.,
-                     sharex=True, sharey=True, xlabel="", ylabel="",
-                     projection=ccrs.NorthPolarStereo(),
-                                    )
-        ii=-1
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      IaV = pyic.IconVariable('hsconc_mar', 'm', 'snow equiv. thickness March')
+      IaV.data = hsconc_mar
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
+                      projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
+                      ax=ax, cax=cax,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                      )
 
-        ii+=1; ax=hca[ii]; cax=hcb[ii]
-        IaV = pyic.IconVariable('hsconc_mar', 'm', 'snow equiv. thickness March')
-        IaV.data = hsconc_mar
-        IaV.interp_to_rectgrid(fpath_ckdtree)
-        pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
-                        projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
-                        ax=ax, cax=cax,
-                        crs_features=False, do_plot_settings=False, do_write_data_range=True,
-                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                        )
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      IaV = pyic.IconVariable('hsconc_sep', 'm', 'snow equiv. thickness September')
+      IaV.data = hsconc_sep
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
+                      projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
+                      ax=ax, cax=cax,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                      )
 
-        ii+=1; ax=hca[ii]; cax=hcb[ii]
-        IaV = pyic.IconVariable('hsconc_sep', 'm', 'snow equiv. thickness September')
-        IaV.data = hsconc_sep
-        IaV.interp_to_rectgrid(fpath_ckdtree)
-        pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
-                        projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
-                        ax=ax, cax=cax,
-                        crs_features=False, do_plot_settings=False, do_write_data_range=True,
-                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                        )
+      for ax in hca:
+        ax.set_extent([-180, 180, 60, 90], ccrs.PlateCarree())
+        ax.gridlines()
+        ax.add_feature(cartopy.feature.LAND)
+        ax.coastlines()
 
-        for ax in hca:
-          ax.set_extent([-180, 180, 60, 90], ccrs.PlateCarree())
-          ax.gridlines()
-          ax.add_feature(cartopy.feature.LAND)
-          ax.coastlines()
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig('Snow equiv. thickness NH', path_pics, fig_name, FigInf)
 
-        FigInf = dict(long_name=IaV.long_name)
-        save_fig('Snow equiv. thickness NH', path_pics, fig_name, FigInf)
+    # ---
+    fig_name = 'ice_concentration_sh'
+    if fig_name in fig_names:
+      hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=1., fig_size_fac=2.,
+                   sharex=True, sharey=True, xlabel="", ylabel="",
+                   projection=ccrs.SouthPolarStereo(),
+                                  )
+      ii=-1
 
-      # ---
-      fig_name = 'ice_concentration_sh'
-      if fig_name in fig_names:
-        hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=1., fig_size_fac=2.,
-                     sharex=True, sharey=True, xlabel="", ylabel="",
-                     projection=ccrs.SouthPolarStereo(),
-                                    )
-        ii=-1
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      IaV = pyic.IconVariable('conc_mar', '', 'sea ice concentration March')
+      IaV.data = conc_mar[0,:]
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
+                      clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
+                      projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
+                      ax=ax, cax=cax,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                      )
 
-        ii+=1; ax=hca[ii]; cax=hcb[ii]
-        IaV = pyic.IconVariable('conc_mar', '', 'sea ice concentration March')
-        IaV.data = conc_mar[0,:]
-        IaV.interp_to_rectgrid(fpath_ckdtree)
-        pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
-                        clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
-                        projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
-                        ax=ax, cax=cax,
-                        crs_features=False, do_plot_settings=False, do_write_data_range=True,
-                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                        )
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      IaV = pyic.IconVariable('conc_sep', 'm', 'sea ice concentration September')
+      IaV.data = conc_sep[0,:]
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
+                      clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
+                      projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
+                      ax=ax, cax=cax,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                      )
 
-        ii+=1; ax=hca[ii]; cax=hcb[ii]
-        IaV = pyic.IconVariable('conc_sep', 'm', 'sea ice concentration September')
-        IaV.data = conc_sep[0,:]
-        IaV.interp_to_rectgrid(fpath_ckdtree)
-        pyic.hplot_base(IcD_monthly, IaV, cmap='RdYlBu_r',
-                        clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
-                        projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
-                        ax=ax, cax=cax,
-                        crs_features=False, do_plot_settings=False, do_write_data_range=True,
-                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                        )
+      for ax in hca:
+        ax.set_extent([-180, 180, -90., -50.], ccrs.PlateCarree())
+        ax.gridlines()
+        ax.add_feature(cartopy.feature.LAND)
+        ax.coastlines()
 
-        for ax in hca:
-          ax.set_extent([-180, 180, -90., -50.], ccrs.PlateCarree())
-          ax.gridlines()
-          ax.add_feature(cartopy.feature.LAND)
-          ax.coastlines()
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig('Sea ice concentration SH', path_pics, fig_name, FigInf)
 
-        FigInf = dict(long_name=IaV.long_name)
-        save_fig('Sea ice concentration SH', path_pics, fig_name, FigInf)
+    # ---
+    fig_name = 'ice_thickness_sh'
+    if fig_name in fig_names:
+      hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=1., fig_size_fac=2.,
+                   sharex=True, sharey=True, xlabel="", ylabel="",
+                   projection=ccrs.SouthPolarStereo(),
+                                  )
+      ii=-1
 
-      # ---
-      fig_name = 'ice_thickness_sh'
-      if fig_name in fig_names:
-        hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=1., fig_size_fac=2.,
-                     sharex=True, sharey=True, xlabel="", ylabel="",
-                     projection=ccrs.SouthPolarStereo(),
-                                    )
-        ii=-1
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      IaV = pyic.IconVariable('hiconc_mar', 'm', 'ice equiv. thickness March')
+      IaV.data = hiconc_mar
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], clevs=[0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
+                      projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
+                      ax=ax, cax=cax,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                      )
 
-        ii+=1; ax=hca[ii]; cax=hcb[ii]
-        IaV = pyic.IconVariable('hiconc_mar', 'm', 'ice equiv. thickness March')
-        IaV.data = hiconc_mar
-        IaV.interp_to_rectgrid(fpath_ckdtree)
-        pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], clevs=[0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
-                        projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
-                        ax=ax, cax=cax,
-                        crs_features=False, do_plot_settings=False, do_write_data_range=True,
-                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                        )
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      IaV = pyic.IconVariable('hiconc_sep', 'm', 'ice equiv. thickness September')
+      IaV.data = hiconc_sep
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], clevs=[0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
+                      projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
+                      ax=ax, cax=cax,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                      )
 
-        ii+=1; ax=hca[ii]; cax=hcb[ii]
-        IaV = pyic.IconVariable('hiconc_sep', 'm', 'ice equiv. thickness September')
-        IaV.data = hiconc_sep
-        IaV.interp_to_rectgrid(fpath_ckdtree)
-        pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], clevs=[0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
-                        projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
-                        ax=ax, cax=cax,
-                        crs_features=False, do_plot_settings=False, do_write_data_range=True,
-                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                        )
+      for ax in hca:
+        ax.set_extent([-180, 180, -90., -50.], ccrs.PlateCarree())
+        ax.gridlines()
+        ax.add_feature(cartopy.feature.LAND)
+        ax.coastlines()
 
-        for ax in hca:
-          ax.set_extent([-180, 180, -90., -50.], ccrs.PlateCarree())
-          ax.gridlines()
-          ax.add_feature(cartopy.feature.LAND)
-          ax.coastlines()
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig('Sea ice equiv. thickness SH', path_pics, fig_name, FigInf)
 
-        FigInf = dict(long_name=IaV.long_name)
-        save_fig('Sea ice equiv. thickness SH', path_pics, fig_name, FigInf)
+    # ---
+    fig_name = 'snow_thickness_sh'
+    if fig_name in fig_names:
+      hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=1., fig_size_fac=2.,
+                   sharex=True, sharey=True, xlabel="", ylabel="",
+                   projection=ccrs.SouthPolarStereo(),
+                                  )
+      ii=-1
 
-      # ---
-      fig_name = 'snow_thickness_sh'
-      if fig_name in fig_names:
-        hca, hcb = pyic.arrange_axes(2,1, plot_cb=True, asp=1., fig_size_fac=2.,
-                     sharex=True, sharey=True, xlabel="", ylabel="",
-                     projection=ccrs.SouthPolarStereo(),
-                                    )
-        ii=-1
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      IaV = pyic.IconVariable('hsconc_mar', 'm', 'snow equiv. thickness March')
+      IaV.data = hsconc_mar
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
+                      projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
+                      ax=ax, cax=cax,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                      )
 
-        ii+=1; ax=hca[ii]; cax=hcb[ii]
-        IaV = pyic.IconVariable('hsconc_mar', 'm', 'snow equiv. thickness March')
-        IaV.data = hsconc_mar
-        IaV.interp_to_rectgrid(fpath_ckdtree)
-        pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
-                        projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
-                        ax=ax, cax=cax,
-                        crs_features=False, do_plot_settings=False, do_write_data_range=True,
-                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                        )
+      ii+=1; ax=hca[ii]; cax=hcb[ii]
+      IaV = pyic.IconVariable('hsconc_sep', 'm', 'snow equiv. thickness September')
+      IaV.data = hsconc_sep
+      IaV.interp_to_rectgrid(fpath_ckdtree)
+      pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
+                      projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
+                      ax=ax, cax=cax,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                      )
 
-        ii+=1; ax=hca[ii]; cax=hcb[ii]
-        IaV = pyic.IconVariable('hsconc_sep', 'm', 'snow equiv. thickness September')
-        IaV.data = hsconc_sep
-        IaV.interp_to_rectgrid(fpath_ckdtree)
-        pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
-                        projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
-                        ax=ax, cax=cax,
-                        crs_features=False, do_plot_settings=False, do_write_data_range=True,
-                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                        )
+      for ax in hca:
+        ax.set_extent([-180, 180, -90., -50.], ccrs.PlateCarree())
+        ax.gridlines()
+        ax.add_feature(cartopy.feature.LAND)
+        ax.coastlines()
 
-        for ax in hca:
-          ax.set_extent([-180, 180, -90., -50.], ccrs.PlateCarree())
-          ax.gridlines()
-          ax.add_feature(cartopy.feature.LAND)
-          ax.coastlines()
-
-        FigInf = dict(long_name=IaV.long_name)
-        save_fig('Snow equiv. thickness SH', path_pics, fig_name, FigInf)
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig('Snow equiv. thickness SH', path_pics, fig_name, FigInf)
 
     # --------------------------------------------------------------------------------
     # Load 3D ocean data
     # --------------------------------------------------------------------------------
+    if do_ocean_plots:
       calc_bias = False
       for fig_name in fig_names:
         if '_bias' in fig_name: 
@@ -2129,7 +2077,7 @@ for tave_int in tave_ints:
           toprow.append( tab_name )
 
       if do_atmosphere_plots:
-        varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean', 'pme_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean']# 'fwfoce_gmean']
+        varlist = ['tas_gmean', 'radtop_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'prec_gmean', 'evap_gmean', 'pme_gmean'] # 'fwfoce_gmean']
         var_fac_list = [1]*len(varlist)
         var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0]
         var_units_list = ['deg C', '', '', '', '', '', '', '']
