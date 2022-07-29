@@ -6,7 +6,8 @@ t1=`date +%Y-%m-%d_%H-%M-%S`
 # script to working conda environment
 path_conda_bin="/home/m/m300602/miniconda3/bin/"
 # name of working conda environment
-conda_env="/home/m/m300602/miniconda3/envs/pyicon_py39"
+#conda_env="/home/m/m300602/miniconda3/envs/pyicon_py39"
+conda_env="/home/m/m300602/.conda/envs/pyicon_py39_cartopy19"
 
 # --- add pyicon to PYTHONPATH
 PYICON_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"  #problem: takes directory of source script as base
