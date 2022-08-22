@@ -303,9 +303,9 @@ projection = 'PlateCarree'
 
 # --- structure of web page
 fig_names = []
+fig_names += ['sec:Overview']
+fig_names += ['tab_overview']
 if do_ocean_plots:
-  fig_names += ['sec:Overview']
-  fig_names += ['tab_overview']
   fig_names += ['sec:Upper ocean']
   fig_names += ['ssh', 'ssh_variance', 'sst', 'sss', 'mld_mar', 'mld_sep'] 
   fig_names += ['sec:Ice']
@@ -328,8 +328,6 @@ if do_ocean_plots:
   fig_names += ['sec:Time series']
   fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
 if do_atmosphere_plots:
-  fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
-  fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_pme_gmean', 'ts_fwfoce_gmean']
   fig_names += ['sec:Surface fluxes']
   fig_names += ['atm_zonal_wind_stress', 'atm_meridional_wind_stress']
   fig_names += ['atm_curl_tau', 'atm_wek']
@@ -350,6 +348,9 @@ if do_atmosphere_plots:
   fig_names += ['atm_v_zave', 'atm_v_zave_bias', 'atm_logv_v_zave', 'atm_logv_v_zave_bias']
   fig_names += ['atm_rel_hum_zave']
   fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave', 'atm_psi']
+  fig_names += ['sec:Time series']
+  fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
+  fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_pme_gmean', 'ts_fwfoce_gmean']
 #fig_names += ['sec:TKE and IDEMIX']
 #fig_names += ['tke30w', 'iwe30w', 'kv30w']
   # --- variable names
@@ -2076,7 +2077,7 @@ for tave_int in tave_ints:
           toprow.append( tab_name )
 
       if do_atmosphere_plots:
-        varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean', 'ts_pme_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'fwfoce_gmean']
+        varlist = ['tas_gmean', 'radtop_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'prec_gmean', 'evap_gmean', 'pme_gmean'] # 'fwfoce_gmean']
         var_fac_list = [1]*len(varlist)
         var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0]
         var_units_list = ['deg C', '', '', '', '', '', '', '']

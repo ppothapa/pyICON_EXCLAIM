@@ -812,9 +812,9 @@ def load_hsnap(fpath, var, it=0, iz=0, iw=None, fpath_ckdtree='', verbose=True):
   return data
 
 def datetime64_to_float(dates):
-  years  = (dates.astype('datetime64[Y]').astype(int) + 1970).astype(int)
-  months = (dates.astype('datetime64[M]').astype(int) % 12 + 1).astype(int)
-  days   = (dates - dates.astype('datetime64[M]') + 1).astype(int)
+  years  = dates.astype('datetime64[Y]').astype(int) + 1970
+  months = int((str(dates.astype('datetime64[M]'))[5:7]))
+  days   = int((str(dates.astype('datetime64[D]'))[8:10]))
   return years, months, days
 
 def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use_loop=False, verbose=False, use_xr=False, load_xr_data=False, dimension_from_file='first'):

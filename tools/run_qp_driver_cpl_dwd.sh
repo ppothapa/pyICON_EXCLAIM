@@ -28,12 +28,12 @@ omit_last_file = False
 # --- do ocean and/or atmosphere plots
 do_atmosphere_plots = True
 do_conf_dwd         = True
-do_ocean_plots      = False
+do_ocean_plots      = True
 
 # --- grid information
 gname     = 'R2B4-R2B4'
 lev       = 'L40'
-gname_atm = 'r2b4_atm_r0012'
+gname_atm = 'r2b4_atm_r0013'
 lev_atm   = 'L90'
 
 # --- path to interpolation files
@@ -84,9 +84,9 @@ ave_freq = 12
 # --- start qp_driver
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-run="sml7"
-path_data="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run}/output/icon/"
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1979-01-01,1999-12-31'
+run="EXP1"
+path_data="/hpc/uwork/csgoff/gcfs3.0/dace_bacy_sml/feedback/pyICON"
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1959-01-01,1964-01-01'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 
@@ -95,4 +95,3 @@ rm ${config_file}
 echo "--------------------------------------------------------------------------------"
 echo "Started at ${startdate}"
 echo "Ended at   ${enddate}"
-

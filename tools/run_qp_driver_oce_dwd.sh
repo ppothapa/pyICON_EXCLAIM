@@ -15,7 +15,8 @@ rand=$(cat /dev/urandom | tr -dc 'A-Z' | fold -w 3 | head -n 1)
 
 path_pyicon=`(cd .. && pwd)`"/"
 config_file="./config_qp_${rand}.py"
-qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
+#qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
+qp_driver="${path_pyicon}pyicon/quickplots/old_qp_driver.py"
 
 cat > ${config_file} << %eof%
 # --- path to quickplots
@@ -49,13 +50,14 @@ fpath_ref_data_oce  = path_grid + 'ts_phc3.0_annual_icon_grid_0043_R02B04_G_L40.
 fpath_ref_data_atm  = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_era.nc'
 fpath_fx            = path_grid + 'oce_fx.19600102T000000Z.nc'
 
-# --- nc file prefixes
+# --- nc file prefixes ocean
 oce_def     = '_oce_def'
 oce_moc     = '_oce_moc'
-oce_mon     = '_oce_MON'
+oce_mon     = '_oce_mon'
 oce_ice     = '_oce_ice'
 oce_monthly = '_oce_dbg'
 
+# --- nc file prefixes atmosphere
 atm_2d      = '_atm_2d_ml'
 atm_3d      = '_atm_3d_ml'
 atm_mon     = '_atm_mon'
@@ -69,18 +71,21 @@ tave_ints = [
 #['1630-02-01', '1640-01-01'],
 ['4450-02-01', '4500-01-01'],
 ]
+ave_freq = 12
+
+# --- what to plot and what not?
+# --- not to plot:
+#red_list = ['']
+# --- to plot:
+#green_list = ['']
 %eof%
 
 # --- start qp_driver
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-run="P1V5_mean"
-path_data="/hpc/uwork/csgoff/gcfs3.0/experiments/Prototype1_V5/feedback/ensemble_mean/"
-#run="coupleR2B4"
-#path_data="/hpc/uwork/mkoehler/run-icon/experiments/coupleR2B4_022/"
-#python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1960-01-01,1979-12-31'
-#python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1960-02-01,1960-04-30'
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1979-01-01,1989-01-01'
+run="EXP1"
+path_data="/hpc/uwork/csgoff/gcfs3.0/dace_bacy_sml/feedback/pyICON"
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1959-01-01,1964-01-01'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 
