@@ -1,0 +1,36 @@
+name: pyicon_py39_cartopy19
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - numpy
+  - scipy
+  - netcdf4
+  - matplotlib
+  - cartopy=0.19
+  - ipdb
+  - conda-build
+  - ipympl      # interactive plots in jupyterlab
+  - nodejs      # interactive plots in jupyterlab
+  - ipython     
+  - jupyter     
+  - jupyterlab  # optional
+  - jupyter-resource-usage # for showing memory resources in upper right corner of notebook
+  - jupyter_contrib_nbextensions
+  - cmocean     # optional
+  - sphinx      # optional for documentation
+  - mpi4py      
+  - seawater    # optional
+  - pandas
+  - xarray      
+  - dask        
+  - dask-jobqueue
+  - dask-labextension
+  - dask-mpi
+  - python-graphviz
+  - f90nml
+  - dash
+  - papermill
+  - intake-esm
+  - jupytext
+

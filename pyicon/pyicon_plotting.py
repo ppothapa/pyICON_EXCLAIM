@@ -484,7 +484,10 @@ def shade(
     elif use_contf:
       contfs = calc_conts(contfs, clim, cincr, nclev)
       clevs = contfs
-      use_norm = True
+      if norm is not None:
+        use_norm = False # prevent that norm is overwritten later on
+      else:
+        use_norm = True
     else:
       use_norm = False
 
@@ -678,6 +681,7 @@ def shade(
           pass
         else:
           cb.locator = ticker.MaxNLocator(nbins=5)
+      cb.ax.yaxis.get_offset_text().set(horizontalalignment='center')
       cb.update_ticks()
       # ------ colorbar title
       cax.set_title(cbtitle)
@@ -1555,8 +1559,11 @@ def plot_settings(ax, xlim='none', ylim='none', xticks='auto', yticks='auto', xl
     ax.set_xticks(xticks)
     ax.set_yticks(yticks)
   elif do_xyticks and use_cartopy:
-    ax.set_xticks(xticks, crs=ccrs.PlateCarree())
-    ax.set_yticks(yticks, crs=ccrs.PlateCarree())
+    try:
+      ax.set_xticks(xticks, crs=ccrs.PlateCarree())
+      ax.set_yticks(yticks, crs=ccrs.PlateCarree())
+    except:
+      pass
   
   if do_xyticks and ticks_position=='both':
     ax.xaxis.set_ticks_position('both')
