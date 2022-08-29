@@ -32,6 +32,7 @@ from distributed.scheduler import logger
 import socket
 #from ipdb import set_trace as mybreak
 from time import sleep
+import sys
 
 
 # ## Preliminaries
@@ -234,16 +235,19 @@ def main():
     else:
         ave_vars = list(ds)
         
-    if time_isel:
+    if time_isel is not None:
         if iopts.verbose:
             print('apply time_isel')
         ds = ds.isel(time=slice(int(time_isel[0]), int(time_isel[1])))
-        time_sel = [ds.time.isel(time=time_isel[0]), ds.time.isel(time=time_isel[1])]
+        #time_bnds = np.array([ds.time.isel(time=time_isel[0]), ds.time.isel(time=time_isel[1])])
     
-    if time_sel:
+    if time_sel is not None:
         if iopts.verbose:
             print('apply time_sel')
         ds = ds.sel(time=slice(time_sel[0], time_sel[1]))
+        #time_bnds = np.array([ds.time.isel(time=0), ds.time.isel(time=-1)])
+    
+    time_bnds = ds.time.isel(time=[0,-1])
     # -
     
     print(f"--- Averaging variables:\n    {ave_vars}")
@@ -262,9 +266,9 @@ def main():
     
     # +
     ds_ave['time_records_ave'] = ds.time.rename(time='time_records_ave')
-    ds_ave['t1'] = time_sel[0]
-    ds_ave['t2'] = time_sel[1]
-    ds_ave['time_bnds'] = xr.DataArray(pd.to_datetime(time_sel), dims=['time_bnds'])
+    ds_ave['t1'] = time_bnds[0]
+    ds_ave['t2'] = time_bnds[1]
+    ds_ave["time_bnds"] = time_bnds.rename(time="time_bnds")
     
     ds_ave = ds_ave.assign_attrs({'pyicon': f'{command_line}'})
     # -
@@ -276,7 +280,8 @@ def main():
     
     # %%time
     fpath_out = iopts.fpath_out[0]
-    fpath_out = fpath_out.replace('<auto>',f'{time_sel[0]}_{time_sel[1]}') 
+    tstr = f"{str(time_bnds[0].data)[:10]}_{str(time_bnds[1].data)[:10]}".replace("-", "")
+    fpath_out = fpath_out.replace('<auto>', tstr) 
     print(f'Saving netcdf file {fpath_out}')
     write_job = ds_ave.to_netcdf(fpath_out, compute=False)
     if nodask:
@@ -288,6 +293,7 @@ def main():
     
     print('All done!')
     if iopts.dask=="slurm":
+    #if not nodask:
         client.shutdown()
     return
 
