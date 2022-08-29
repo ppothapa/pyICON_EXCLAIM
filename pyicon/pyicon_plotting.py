@@ -484,7 +484,10 @@ def shade(
     elif use_contf:
       contfs = calc_conts(contfs, clim, cincr, nclev)
       clevs = contfs
-      use_norm = True
+      if norm is not None:
+        use_norm = False # prevent that norm is overwritten later on
+      else:
+        use_norm = True
     else:
       use_norm = False
 
@@ -678,6 +681,7 @@ def shade(
           pass
         else:
           cb.locator = ticker.MaxNLocator(nbins=5)
+      cb.ax.yaxis.get_offset_text().set(horizontalalignment='center')
       cb.update_ticks()
       # ------ colorbar title
       cax.set_title(cbtitle)
