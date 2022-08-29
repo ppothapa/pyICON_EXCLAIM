@@ -924,10 +924,10 @@ class IconVariable(object):
     self.data[self.mask] = np.ma.masked
     return
 
-  def interp_to_rectgrid(self, fpath_ckdtree, mask_reg=None, indx='all', indy='all'):
+  def interp_to_rectgrid(self, fpath_ckdtree, mask_reg=None, lon_reg=None, lat_reg=None, indx='all', indy='all'):
     if self.isinterpolated:
       raise ValueError('::: Variable %s is already interpolated. :::'%self.name)
-    self.lon, self.lat, self.data = interp_to_rectgrid(self.data, fpath_ckdtree, mask_reg=mask_reg, indx=indx, indy=indy, coordinates=self.coordinates)
+    self.lon, self.lat, self.data = interp_to_rectgrid(self.data, fpath_ckdtree, mask_reg=mask_reg, lon_reg=lon_reg, lat_reg=lat_reg, indx=indx, indy=indy, coordinates=self.coordinates)
     return
 
   def interp_to_section(self, fpath_ckdtree):
