@@ -657,7 +657,7 @@ def calc_ckdtree(lon_i, lat_i, lon_o, lat_o, n_nearest_neighbours=1, n_jobs=1, u
     dckdtree, ickdtree = tree.query(lzip_o , k=n_nearest_neighbours, n_jobs=n_jobs)
   return dckdtree, ickdtree
 
-def calc_vertical_interp_weights(zdata, levs):
+def calc_vertical_interp_weights(zdata, levs, increases_along_axes=True):
   """ Calculate vertical interpolation weights and indices.
 
 Call example:
@@ -675,7 +675,10 @@ datai = data[ind_lev,icall]*fac+data[ind_lev+1,icall]*(1.-fac)
   for k, lev in enumerate(levs):
     #print(f'k = {k}')
     # --- find level below critical level
-    ind_lev[k,:] = (zdata<levs[k]).sum(axis=0)-1
+    if increases_along_axes:
+      ind_lev[k,:] = (zdata<levs[k]).sum(axis=0)-1
+    else:
+      ind_lev[k,:] = (zdata>levs[k]).sum(axis=0)-1
     ind_lev[k,ind_lev[k,:]==(nza-1)]=-1
     # --- zdata below and above lev 
     zd1 = zdata[ind_lev[k,:],icall]
