@@ -64,6 +64,8 @@ atm_2d      = ''
 atm_3d      = '' 
 atm_mon     = '' 
 
+time_mode_atm = 'num2date'  # 'num2date' is the new default previously, 'float2date' was regularly used
+
 # --- time average information (can be overwritten by qp_driver call)
 tave_ints = [['1950-02-01', '1952-01-01']]
 # --- decide which data files to take for time series plots
@@ -257,6 +259,8 @@ D_variable_container = \'{D_variable_container}\'
 atm_2d      = \'{atm_2d}\'
 atm_3d      = \'{atm_3d}\'
 atm_mon     = \'{atm_mon}\'
+
+time_mode_atm = \'{time_mode_atm}\'
 
 # --- time average information (can be overwritten by qp_driver call)
 tave_ints = {tave_ints}
@@ -573,16 +577,15 @@ if do_ocean_plots and not iopts.no_plots:
                  calc_coeff             = False,
                  load_xarray_dset       = load_xarray_dset,
                  xr_chunks              = xr_chunks,
-                 verbose                = verbose,
-
+                 verbose                = verbose, 
                 )
   fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
   [k100, k500, k800, k1000, k2000, k3000] = indfind(IcD.depthc, [100., 500., 800., 1000., 2000., 3000.])
 
   DIcD = dict()
-  for var in ['to', 'so', 'u', 'v', 'massflux', 'ice', 'monthly', 'mon']:
+  for var in ['to', 'so', 'u', 'v', 'massflux', 'ice', 'monthly', 'mon', 'sqr']:
     fname = '%s%s_%s.nc' % (run, D_variable_container[var], tstep)
-    print('Dataset %s' % (fname))
+    print(f'Data container for {var}: {fname}')
     DIcD[var] = pyic.IconData(
       fname=fname, **IDsettings)
   DIcD['massflux'].load_tgrid()
@@ -694,7 +697,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_rectangular_grid  = True,
                  calc_coeff             = True,
                  verbose                = verbose,
-                 time_mode    = 'float2date',
+                 time_mode    = time_mode_atm,
                  model_type   = 'atm',
                  do_conf_dwd   = do_conf_dwd,
                 )
@@ -717,7 +720,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_rectangular_grid  = True,
                  calc_coeff             = False,
                  verbose                = verbose,
-                 time_mode    = 'float2date',
+                 time_mode    = time_mode_atm,
                  model_type   = 'atm',
                  do_conf_dwd   = do_conf_dwd,
                 )
@@ -752,7 +755,7 @@ if do_atmosphere_plots and not iopts.no_plots:
 
 if do_hamocc_plots and not iopts.no_plots:
   if not do_ocean_plots:
-    fname = '%s%s_%s.nc' % (run, DIcD['default'], tstep)
+    fname = '%s%s_%s.nc' % (run, D_variable_container['default'], tstep)
     print('Dataset %s' % (fname))
     IcD = pyic.IconData(
                    fname        = fname,
@@ -775,7 +778,7 @@ if do_hamocc_plots and not iopts.no_plots:
     fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
     [k100, k500, k800, k1000, k2000, k3000] = indfind(IcD.depthc, [100., 500., 800., 1000., 2000., 3000.])
 
-    fname_monthly = '%s%s_%s.nc' % (run, oce_monthly, tstep)
+    fname_monthly = '%s%s_%s.nc' % (run, D_variable_container['monthly'], tstep)
     print('Dataset %s' % (fname_monthly))
     IcD_monthly = pyic.IconData(
                    fname        = fname_monthly,
@@ -986,7 +989,7 @@ for tave_int in tave_ints:
     # upper ocean
     # -------------------------------------------------------------------------------- 
     #fname = '%s%s_%s.nc' % (run, oce_def, tstep)
-    fname = '%s%s_%s.nc' % (run, DIcD['monthly'], tstep)
+    fname = '%s%s_%s.nc' % (run, D_variable_container['monthly'], tstep)
     Ddict_global = dict(
       xlim=[-180.,180.], ylim=[-90.,90.],
       rgrid_name=rgrid_name,
@@ -1061,7 +1064,7 @@ for tave_int in tave_ints:
       #zos, it_ave          = pyic.time_average(IcD, 'zos',        t1=t1, t2=t2)
       #zos_square, it_ave   = pyic.time_average(IcD, 'zos_square', t1=t1, t2=t2)
       zos, it_ave          = pyic.time_average(DIcD['monthly'], 'zos',        t1=t1, t2=t2)
-      zos_square, it_ave   = pyic.time_average(DIcD['monthly'], 'zos_square', t1=t1, t2=t2)
+      zos_square, it_ave   = pyic.time_average(DIcD['monthly'], 'zos', t1=t1, t2=t2)
       zos_var = np.sqrt(zos_square-zos**2)
       IaV = pyic.IconVariable('zos_var', 'm', 'ssh variance')
       IaV.data = zos_var
@@ -2161,8 +2164,8 @@ for tave_int in tave_ints:
       if do_atmosphere_plots:
         varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean', 'ts_pme_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'fwfoce_gmean']
         var_fac_list = [1]*len(varlist)
-        var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0]
-        var_units_list = ['deg C', '', '', '', '', '', '', '']
+        var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0, 0]
+        var_units_list = ['deg C', '', '', '', '', '', '', '', '']
         Dd = pyicqp.time_averages_monitoring(IcD_atm_mon, t1, t2, varlist, var_add_list=var_add_list, var_fac_list=var_fac_list, var_units_list=var_units_list)
         for var in varlist:
           val = Dd[var]['ave']*Dd[var]['fac']
