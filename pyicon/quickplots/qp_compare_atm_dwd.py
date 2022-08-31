@@ -4457,7 +4457,9 @@ for tave_int in tave_ints:
       # --- calculate difference
       data_zave_diff = data_zave_2-data_zave_1
       IaV = pyic.IconVariable('hur diff', '%', 'Relhum zon. ave. diff ('+run2+'-'+run1+')')
-      IaV.data = 100.*data_zave_diff
+      IaV.data = data_zave_diff
+      if not do_conf_dwd:
+        IaV.data = 100.*data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, contfs='auto',
                       cmap='RdYlBu_r',
@@ -4478,7 +4480,9 @@ for tave_int in tave_ints:
       # --- calculate difference
       data_zave_diff = data_zave_2-data_zave_1
       IaV = pyic.IconVariable('clc diff', '%', 'Cloud Cover zon. ave. diff ('+run2+'-'+run1+')')
-      IaV.data = 100.*data_zave_diff
+      IaV.data = data_zave_diff
+      if not do_conf_dwd:
+        IaV.data = 100.*data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, contfs='auto',
                       cmap='RdYlBu_r',
