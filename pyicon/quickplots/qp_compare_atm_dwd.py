@@ -2773,7 +2773,7 @@ for tave_int in tave_ints:
       # --- calculate bias
       data_bias = data2di-data_ref
       IaV = pyic.IconVariable('data_bias', 'hPa', 'Mean Sea Level Press. bias ('+run1+')')
-      IaV.data = data_bias
+      IaV.data = data_bias/100.
       pyic.hplot_base(IcD_atm2d_1, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
@@ -2799,7 +2799,7 @@ for tave_int in tave_ints:
       # --- calculate bias
       data_bias = data2di-data_ref
       IaV = pyic.IconVariable('data_bias', 'hPa', 'Mean Sea Level Press. bias ('+run2+')')
-      IaV.data = data_bias
+      IaV.data = data_bias/100.
       pyic.hplot_base(IcD_atm2d_2, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
@@ -2826,7 +2826,7 @@ for tave_int in tave_ints:
       # --- calculate rmse
       data_rmse_1 = np.sqrt(np.square(data2di-data_ref))
       IaV = pyic.IconVariable('data_bias', 'hPa', 'Mean Sea Level Press. rmse ('+run1+')')
-      IaV.data = data_rmse_1
+      IaV.data = data_rmse_1/100.
       pyic.hplot_base(IcD_atm2d_1, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
@@ -2853,7 +2853,7 @@ for tave_int in tave_ints:
       # --- calculate rmse
       data_rmse_2 = np.sqrt(np.square(data2di-data_ref))
       IaV = pyic.IconVariable('data_bias', 'hPa', 'Mean Sea Level Press. rmse ('+run2+')')
-      IaV.data = data_rmse_2
+      IaV.data = data_rmse_2/100.
       pyic.hplot_base(IcD_atm2d_2, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
