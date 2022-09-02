@@ -602,7 +602,7 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
     flist2 = flist2[:-1]
   times2, flist_ts2, its = pyic.get_timesteps(flist2)
   if np.shape(times2) != np.shape(times):
-     print ('Time intances in '+fname1+' and '+fname2+' do not match!')
+     print ('Time instances in '+fname1+' and '+fname2+' do not match!')
      sys.exit()
   # end: not needed if IcD.load_timeseries is used
 
