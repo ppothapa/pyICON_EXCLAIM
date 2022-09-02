@@ -153,6 +153,15 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     if isinstance(ylim, str) and (ylim=='auto'):
       ylim = [IcD.lat.min(), IcD.lat.max()]
 
+    # --- calculate area weighted mean
+    area = calc_grid_area(IcD.lon,IcD.lat)
+    area_v = np.reshape(area,IcD.lon.size*IcD.lat.size)
+    data_v = np.reshape(IaV.data,IcD.lon.size*IcD.lat.size)
+    data_awm = np.dot(area_v,data_v)
+    # --- calculate area weighted stdev
+    sqrtdiff_v = np.square(data_v-data_awm)
+    data_awstd = np.sqrt(np.dot(area_v,sqrtdiff_v))
+
   # --- plot refinement
   ax.set_title(title)
   ax.set_xlabel(xlabel)
@@ -168,7 +177,8 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     plot_settings(ax, template=template, land_facecolor=land_facecolor)
 
   if do_write_data_range:
-    info_str = 'min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (IaV.data.min(), IaV.data.mean(), IaV.data.std(), IaV.data.max())
+    #info_str = 'min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (IaV.data.min(), IaV.data.mean(), IaV.data.std(), IaV.data.max())
+    info_str = 'min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (IaV.data.min(), data_awm, data_awstd, IaV.data.max())
     ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
 
   # --- saving data to netcdf 
@@ -2276,3 +2286,20 @@ def plot_sec(data,
     ax.invert_yaxis()
 
   return
+
+def calc_grid_area(lon, lat):
+  radius = 6371000.
+  dlon = np.radians(lon[2] - lon[1])
+  area = np.zeros((lat.size,lon.size))
+  for j in np.arange(1,np.size(lat)-1):
+    lat1 = (lat[j-1] +  lat[j]  )*0.5
+    lat2 = (lat[j]   +  lat[j+1])*0.5
+    lat1 = np.radians(lat1)
+    lat2 = np.radians(lat2)
+    for i in np.arange(1,np.size(lon)-1):
+      # A = R^2 |sin(lat1)-sin(lat2)| |lon1-lon2| where R is earth radius (6378 kms)
+      area[j,i] = np.square(radius)*(np.sin(lat2)-np.sin(lat1))*dlon
+  # area fraction w.r.t. Earth's surface area
+  area_e = 4. * np.pi * np.square(radius)
+  area = area / area_e
+  return area

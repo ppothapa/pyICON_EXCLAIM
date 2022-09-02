@@ -1113,7 +1113,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD, IaV, clim=[-2,0], cincr=0.2, cmap='RdYlBu_r',
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       logplot=True,
-                      title='log$_{10}$(ssh variance) [m]', do_write_data_range=False,
+                      title='log$_{10}$(ssh variance) [m]', do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
       save_fig('SSH variance', path_pics, fig_name)
@@ -1151,7 +1151,7 @@ for tave_int in tave_ints:
                       clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                       ax=ax, cax=cax,
-                      crs_features=False, do_plot_settings=False, do_write_data_range=False,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
 
@@ -1163,7 +1163,7 @@ for tave_int in tave_ints:
                       clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                       ax=ax, cax=cax,
-                      crs_features=False, do_plot_settings=False, do_write_data_range=False,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
 
@@ -1193,7 +1193,7 @@ for tave_int in tave_ints:
                       clim=[0,6], clevs=[0, 0.01, 0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                       ax=ax, cax=cax,
-                      crs_features=False, do_plot_settings=False, do_write_data_range=False,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
 
@@ -1205,7 +1205,7 @@ for tave_int in tave_ints:
                       clim=[0,6], clevs=[0, 0.01, 0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                       ax=ax, cax=cax,
-                      crs_features=False, do_plot_settings=False, do_write_data_range=False,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
 
@@ -1234,7 +1234,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                       ax=ax, cax=cax,
-                      crs_features=False, do_plot_settings=False, do_write_data_range=False,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
 
@@ -1245,7 +1245,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[60.,90.],
                       ax=ax, cax=cax,
-                      crs_features=False, do_plot_settings=False, do_write_data_range=False,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
 
@@ -1275,7 +1275,7 @@ for tave_int in tave_ints:
                       clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                       ax=ax, cax=cax,
-                      crs_features=False, do_plot_settings=False, do_write_data_range=False,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
 
@@ -1287,7 +1287,7 @@ for tave_int in tave_ints:
                       clim=[0,1], clevs=np.array([0,1.,5,10,15,20,30,40,50,60,70,80,85,90,95,99,100])/100.,
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                       ax=ax, cax=cax,
-                      crs_features=False, do_plot_settings=False, do_write_data_range=False,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
 
@@ -1316,7 +1316,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], clevs=[0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                       ax=ax, cax=cax,
-                      crs_features=False, do_plot_settings=False, do_write_data_range=False,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
 
@@ -1327,7 +1327,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_monthly, IaV, clim=[0,6], clevs=[0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6], cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                       ax=ax, cax=cax,
-                      crs_features=False, do_plot_settings=False, do_write_data_range=False,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
 
@@ -1356,7 +1356,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                       ax=ax, cax=cax,
-                      crs_features=False, do_plot_settings=False, do_write_data_range=False,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
 
@@ -1367,7 +1367,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_monthly, IaV, clim=[0,1], cincr=0.05, cmap='RdYlBu_r',
                       projection='PlateCarree', xlim=[-180.,180.], ylim=[-90., -50.],
                       ax=ax, cax=cax,
-                      crs_features=False, do_plot_settings=False, do_write_data_range=False,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
 
@@ -1424,7 +1424,7 @@ for tave_int in tave_ints:
       IaV.data = tbias[0,:]
       IaV.interp_to_rectgrid(fpath_ckdtree)
       pyic.hplot_base(IcD, IaV, cmap='RdBu_r',
-                      clim=10, clevs=[-10,-7,-5,-3,-2,-1,-0.5,-0.1,0.1,0.5,1,2,3,5,7,10], do_write_data_range=False,
+                      clim=10, clevs=[-10,-7,-5,-3,-2,-1,-0.5,-0.1,0.1,0.5,1,2,3,5,7,10], do_write_data_range=True,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -1439,7 +1439,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, cmap='RdBu_r',
                       clim=10, contfs=[-10,-7,-5,-3,-2,-1,-0.5,-0.1,0.1,0.5,1,2,3,5,7,10],
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -1453,7 +1453,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, cmap='RdBu_r',
                       clim=10, contfs=[-10,-7,-5,-3,-2,-1,-0.5,-0.1,0.1,0.5,1,2,3,5,7,10],
-                      asp=0.5, xlim=[-30,90], do_write_data_range=False,
+                      asp=0.5, xlim=[-30,90], do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -1467,7 +1467,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, cmap='RdBu_r',
                       clim=10, contfs=[-10,-7,-5,-3,-2,-1,-0.5,-0.1,0.1,0.5,1,2,3,5,7,10],
-                      asp=0.5, xlim=[-30,65], do_write_data_range=False,
+                      asp=0.5, xlim=[-30,65], do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -1479,7 +1479,7 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('salt_bias', 'g/kg', 'salinity bias')
       IaV.data = sbias[0,:]
       IaV.interp_to_rectgrid(fpath_ckdtree)
-      pyic.hplot_base(IcD, IaV, clim=3., cmap='RdBu_r', cincr=0.1, do_write_data_range=False,
+      pyic.hplot_base(IcD, IaV, clim=3., cmap='RdBu_r', cincr=0.1, do_write_data_range=True,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -1493,7 +1493,7 @@ for tave_int in tave_ints:
       IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(sbias, basin='global', 
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.1, contfs='auto',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -1506,7 +1506,7 @@ for tave_int in tave_ints:
       IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(sbias, basin='atl', 
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.1, contfs='auto',
-                      asp=0.5, xlim=[-30,90], do_write_data_range=False,
+                      asp=0.5, xlim=[-30,90], do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -1519,7 +1519,7 @@ for tave_int in tave_ints:
       IaV.lat_sec, IaV.data = pyic.zonal_average_3d_data(sbias, basin='indopac', 
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, clim=1., cmap='RdBu_r', cincr=0.1, contfs='auto',
-                      asp=0.5, xlim=[-30,65], do_write_data_range=False,
+                      asp=0.5, xlim=[-30,65], do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -1558,7 +1558,7 @@ for tave_int in tave_ints:
       IaV.lon_sec, IaV.lat_sec, IaV.dist_sec, IaV.data = pyic.interp_to_section(temp, fpath_ckdtree=IcD.sec_fpath_dict[sec_name_30w])
       pyic.vplot_base(IcD, IaV, 
                       clim=[-2., 30.], cincr=2.0, cmap='cmo.thermal',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('Temperature at 30W', path_pics, fig_name)
@@ -1577,7 +1577,7 @@ for tave_int in tave_ints:
       IaV.lon_sec, IaV.lat_sec, IaV.dist_sec, IaV.data = pyic.interp_to_section(salt, fpath_ckdtree=IcD.sec_fpath_dict[sec_name_30w])
       pyic.vplot_base(IcD, IaV, 
                       clim=[32., 37.], cincr=0.25, cmap='cmo.haline',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('Salinity at 30W', path_pics, fig_name)
@@ -1618,7 +1618,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, 
                       clim=[-2., 30.], cincr=2.0, cmap='cmo.thermal',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('Temperature global zon. ave.', path_pics, fig_name)
@@ -1637,7 +1637,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, 
                       clim=[-2., 30.], cincr=2.0, cmap='cmo.thermal',
-                      asp=0.5, xlim=[-30,90], do_write_data_range=False,
+                      asp=0.5, xlim=[-30,90], do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('Temperature Atlantic zon. ave.', path_pics, fig_name)
@@ -1656,7 +1656,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, 
                       clim=[-2., 30.], cincr=2.0, cmap='cmo.thermal',
-                      asp=0.5, xlim=[-30,65], do_write_data_range=False,
+                      asp=0.5, xlim=[-30,65], do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('Temperature Indo-Pac. zon. ave.', path_pics, fig_name)
@@ -1675,7 +1675,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, 
                       clim=[32., 37.], cincr=0.25, cmap='cmo.haline',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('Salinity global zon. ave.', path_pics, fig_name)
@@ -1694,7 +1694,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, 
                       clim=[32., 37.], cincr=0.25, cmap='cmo.haline',
-                      asp=0.5, xlim=[-30,90], do_write_data_range=False,
+                      asp=0.5, xlim=[-30,90], do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('Salinity Atlantic zon. ave.', path_pics, fig_name)
@@ -1713,7 +1713,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD, IaV, 
                       clim=[32., 37.], cincr=0.25, cmap='cmo.haline',
-                      asp=0.5, xlim=[-30,65], do_write_data_range=False,
+                      asp=0.5, xlim=[-30,65], do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('Salinity Indo-Pac. zon. ave.', path_pics, fig_name)
@@ -1737,7 +1737,7 @@ for tave_int in tave_ints:
       IaV.interp_to_rectgrid(fpath_ckdtree)
       pyic.hplot_base(IcD, IaV, clim=[-7,0], cincr=0.5, cmap='RdYlBu_r',
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
-                      logplot=True, do_write_data_range=False,
+                      logplot=True, do_write_data_range=True,
                       title='log$_{10}$(kinetic energy) at %dm [m$^2$/s$^2$]'%(IcD.depthc[k100]),
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
@@ -1753,7 +1753,7 @@ for tave_int in tave_ints:
       IaV.interp_to_rectgrid(fpath_ckdtree)
       pyic.hplot_base(IcD, IaV, clim=[-7,0], cincr=0.5, cmap='RdYlBu_r',
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
-                      logplot=True, do_write_data_range=False,
+                      logplot=True, do_write_data_range=True,
                       title='log$_{10}$(kinetic energy) at %dm [m$^2$/s$^2$]'%(IcD.depthc[k2000]),
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
@@ -1782,7 +1782,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD, IaV, cmap='RdBu_r',
                       clim=200, clevs=[-200,-160,-120,-80,-40,-30,-25,-20,-15,-10,-5,5,10,15,20,25,30,40,80,120,160,200], 
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('Barotropic streamfunction', path_pics, fig_name)
@@ -1793,7 +1793,7 @@ for tave_int in tave_ints:
       ax, cax, hm, Dstr = pyic.hplot_base(IcD, IaV, cmap='RdBu_r',
                       clim=200, clevs=[-200,-160,-120,-80,-40,-30,-25,-20,-15,-10,-5,5,10,15,20,25,30,40,80,120,160,200], 
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       hca, hcb = pyic.arrange_axes(1,1, plot_cb=True, asp=0.5, fig_size_fac=2,
@@ -2346,7 +2346,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='0.7', do_write_data_range=False,
+                      land_facecolor='0.7', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2370,7 +2370,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='0.7', do_write_data_range=False,
+                      land_facecolor='0.7', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2423,7 +2423,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2450,7 +2450,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2476,7 +2476,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2503,7 +2503,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2530,7 +2530,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2548,7 +2548,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2572,7 +2572,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2596,7 +2596,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2623,7 +2623,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2649,7 +2649,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2676,7 +2676,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2703,7 +2703,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2721,7 +2721,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2745,7 +2745,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2772,7 +2772,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2798,7 +2798,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2825,7 +2825,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2852,7 +2852,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2870,7 +2870,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2905,7 +2905,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2929,7 +2929,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2952,7 +2952,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2980,7 +2980,7 @@ for tave_int in tave_ints:
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       #land_facecolor='none', 
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3007,7 +3007,7 @@ for tave_int in tave_ints:
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       #land_facecolor='none', 
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3035,7 +3035,7 @@ for tave_int in tave_ints:
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       #land_facecolor='none', 
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3063,7 +3063,7 @@ for tave_int in tave_ints:
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       #land_facecolor='none', 
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3081,7 +3081,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3106,7 +3106,7 @@ for tave_int in tave_ints:
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       #land_facecolor='none', 
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3134,7 +3134,7 @@ for tave_int in tave_ints:
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       #land_facecolor='none', 
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3161,7 +3161,7 @@ for tave_int in tave_ints:
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       #land_facecolor='none', 
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3189,7 +3189,7 @@ for tave_int in tave_ints:
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       #land_facecolor='none', 
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3217,7 +3217,7 @@ for tave_int in tave_ints:
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       #land_facecolor='none', 
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3235,7 +3235,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3251,7 +3251,7 @@ for tave_int in tave_ints:
       IaV.data = (cllvi+clivi)*1e3
       pyic.hplot_base(IcD_atm2d, IaV, clim=[10,300], clevs=[10,50,100,200,300], cmap='RdYlBu_r', 
                       use_tgrid=False,
-                      projection=projection, do_write_data_range=False,
+                      projection=projection, do_write_data_range=True,
                       land_facecolor='none',
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
@@ -3276,7 +3276,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3302,7 +3302,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3319,7 +3319,7 @@ for tave_int in tave_ints:
       IaV.interp_to_rectgrid(fpath_ckdtree_atm)
       pyic.hplot_base(IcD_atm2d, IaV, clim=5, cincr=1, cmap='RdBu', 
                       use_tgrid=False,
-                      projection=projection, do_write_data_range=False,
+                      projection=projection, do_write_data_range=True,
                       land_facecolor='none',
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
@@ -3350,7 +3350,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3386,7 +3386,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3413,7 +3413,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3439,7 +3439,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3466,7 +3466,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_1, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3493,7 +3493,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3511,7 +3511,7 @@ for tave_int in tave_ints:
       pyic.hplot_base(IcD_atm2d_2, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=False,
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3534,7 +3534,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, clim='sym', contfs='auto',
                       cmap='RdYlBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3552,7 +3552,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3570,7 +3570,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3589,7 +3589,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3608,7 +3608,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3622,7 +3622,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3641,7 +3641,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdYlBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3660,7 +3660,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3679,7 +3679,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3699,7 +3699,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3719,7 +3719,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3734,7 +3734,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3755,7 +3755,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdYlBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3773,7 +3773,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=20, contfs=[-20,-10,-5,-2,-1,1,2,5,10,20], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3791,7 +3791,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=20, contfs=[-20,-10,-5,-2,-1,1,2,5,10,20], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3810,7 +3810,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=20, contfs=[-20,-10,-5,-2,-1,1,2,5,10,20], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3829,7 +3829,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=20, contfs=[-20,-10,-5,-2,-1,1,2,5,10,20], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3843,7 +3843,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3861,7 +3861,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdYlBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3880,7 +3880,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3899,7 +3899,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3919,7 +3919,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3939,7 +3939,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3954,7 +3954,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3975,7 +3975,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdYlBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -3993,7 +3993,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=1, contfs=[-1.0,-0.5,-0.2,-0.1,-0.05,0.05,0.1,0.2,0.5,1.0], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4011,7 +4011,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=1, contfs=[-1.0,-0.5,-0.2,-0.1,-0.05,0.05,0.1,0.2,0.5,1.0], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4030,7 +4030,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=1, contfs=[-1.0,-0.5,-0.2,-0.1,-0.05,0.05,0.1,0.2,0.5,1.0], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4049,7 +4049,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=1, contfs=[-1.0,-0.5,-0.2,-0.1,-0.05,0.05,0.1,0.2,0.5,1.0], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4063,7 +4063,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4082,7 +4082,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdYlBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4101,7 +4101,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=1, contfs=[-1.0,-0.5,-0.2,-0.1,-0.05,0.05,0.1,0.2,0.5,1.0], cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4120,7 +4120,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=1, contfs=[-1.0,-0.5,-0.2,-0.1,-0.05,0.05,0.1,0.2,0.5,1.0], cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4140,7 +4140,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=1, contfs=[-1.0,-0.5,-0.2,-0.1,-0.05,0.05,0.1,0.2,0.5,1.0], cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4160,7 +4160,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=1, contfs=[-1.0,-0.5,-0.2,-0.1,-0.05,0.05,0.1,0.2,0.5,1.0], cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4175,7 +4175,7 @@ for tave_int in tave_ints:
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdBu_r',
                       vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4189,7 +4189,7 @@ for tave_int in tave_ints:
       IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
       IaV.data *= 1000.
       pyic.vplot_base(IcD_atm3d, IaV, clim=0.5, contfs=[0.005,0.01,0.03,0.05,0.1,0.3,0.5,1.,2.,5.,8.],
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('specific humidity', path_pics, fig_name)
@@ -4211,7 +4211,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdYlBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4229,7 +4229,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=0.5, contfs=[0.005,0.01,0.03,0.05,0.1,0.3,0.5,1.,2.,5.,8.], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4247,7 +4247,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=0.5, contfs=[0.005,0.01,0.03,0.05,0.1,0.3,0.5,1.,2.,5.,8.], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4266,7 +4266,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=0.5, contfs=[0.005,0.01,0.03,0.05,0.1,0.3,0.5,1.,2.,5.,8.], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4285,7 +4285,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim=0.5, contfs=[0.005,0.01,0.03,0.05,0.1,0.3,0.5,1.,2.,5.,8.], cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4299,7 +4299,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4321,7 +4321,7 @@ for tave_int in tave_ints:
     #  pyic.vplot_base(IcD_atm3d_1, IaV, 
     #                  clim='sym', contfs='auto', cmap='RdYlBu_r',
     #                  vertaxtype='log10', daxl=2.1,
-    #                  asp=0.5, do_write_data_range=False,
+    #                  asp=0.5, do_write_data_range=True,
     #                  save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
     #                 )
     #  FigInf = dict(long_name=IaV.long_name)
@@ -4340,7 +4340,7 @@ for tave_int in tave_ints:
     #  pyic.vplot_base(IcD_atm3d_1, IaV, 
     #                  clim=0.5, contfs=[0.005,0.01,0.03,0.05,0.1,0.3,0.5,1.,2.,5.,8.], cmap='RdBu_r',
     #                  vertaxtype='log10', daxl=2.1,
-    #                  asp=0.5, do_write_data_range=False,
+    #                  asp=0.5, do_write_data_range=True,
     #                  save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
     #                 )
     #  FigInf = dict(long_name=IaV.long_name)
@@ -4359,7 +4359,7 @@ for tave_int in tave_ints:
     #  pyic.vplot_base(IcD_atm3d_1, IaV, 
     #                  clim=0.5, contfs=[0.005,0.01,0.03,0.05,0.1,0.3,0.5,1.,2.,5.,8.], cmap='RdBu_r',
     #                  vertaxtype='log10', daxl=2.1,
-    #                  asp=0.5, do_write_data_range=False,
+    #                  asp=0.5, do_write_data_range=True,
     #                  save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
     #                 )
     #  FigInf = dict(long_name=IaV.long_name)
@@ -4379,7 +4379,7 @@ for tave_int in tave_ints:
     #  pyic.vplot_base(IcD_atm3d_1, IaV, 
     #                  clim=0.5, contfs=[0.005,0.01,0.03,0.05,0.1,0.3,0.5,1.,2.,5.,8.], cmap='RdBu_r',
     #                  vertaxtype='log10', daxl=2.1,
-    #                  asp=0.5, do_write_data_range=False,
+    #                  asp=0.5, do_write_data_range=True,
     #                  save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
     #                 )
     #  FigInf = dict(long_name=IaV.long_name)
@@ -4399,7 +4399,7 @@ for tave_int in tave_ints:
     #  pyic.vplot_base(IcD_atm3d_1, IaV, 
     #                  clim=0.5, contfs=[0.005,0.01,0.03,0.05,0.1,0.3,0.5,1.,2.,5.,8.], cmap='RdBu_r',
     #                  vertaxtype='log10', daxl=2.1,
-    #                  asp=0.5, do_write_data_range=False,
+    #                  asp=0.5, do_write_data_range=True,
     #                  save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
     #                 )
     #  FigInf = dict(long_name=IaV.long_name)
@@ -4414,7 +4414,7 @@ for tave_int in tave_ints:
     #  pyic.vplot_base(IcD_atm3d_1, IaV, 
     #                  clim='sym', contfs='auto', cmap='RdYlBu_r',
     #                  vertaxtype='log10', daxl=2.1,
-    #                  asp=0.5, do_write_data_range=False,
+    #                  asp=0.5, do_write_data_range=True,
     #                  save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
     #                 )
     #  FigInf = dict(long_name=IaV.long_name)
@@ -4437,7 +4437,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdYlBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4460,7 +4460,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdYlBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4483,7 +4483,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdYlBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4506,7 +4506,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
                       clim='sym', contfs='auto', cmap='RdYlBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4521,7 +4521,7 @@ for tave_int in tave_ints:
       IaV.lat_sec = lat_sec 
       pyic.vplot_base(IcD_atm3d_1, IaV,
                       clim='sym', contfs='auto', cmap='RdYlBu_r',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
@@ -4538,7 +4538,7 @@ for tave_int in tave_ints:
       IaV.interp_to_rectgrid(fpath_ckdtree_atm)
       ax, cax, hm, Dstr = pyic.hplot_base(IcD_atm2d, IaV, clim=200, cincr=25, cmap='RdYlBu_r',
                       projection='NorthPolarStereo', xlim=[-180.,180.], ylim=[60.,90.],
-                      crs_features=False, do_plot_settings=False, do_write_data_range=False,
+                      crs_features=False, do_plot_settings=False, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
       pyic.plot_settings(ax=ax, xlim=[-180,180], ylim=[60,90], do_xyticks=False, do_xyminorticks=False, do_gridlines=True, land_facecolor='none')
@@ -4720,7 +4720,7 @@ for tave_int in tave_ints:
       IaV.interp_to_rectgrid(fpath_ckdtree)
       pyic.hplot_base(IcD_ham_inv, IaV, clim=[7.8,8.4], cincr=0.025, cmap='plasma_r',
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
-                      do_write_data_range=False,
+                      do_write_data_range=True,
                       title='surface pH',
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                       )
@@ -4786,7 +4786,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD_ham_inv, IaV, 
                       clim=[2000,2450], cincr=25.0, cmap='cmo.haline',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('DIC global zon. ave.', path_pics, fig_name)
@@ -4800,7 +4800,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD_ham_inv, IaV, 
                       clim=[2000,2450], cincr=25.0, cmap='cmo.haline',
-                      asp=0.5, xlim=[-30,90], do_write_data_range=False,
+                      asp=0.5, xlim=[-30,90], do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('DIC Atlantic zon. ave.', path_pics, fig_name)
@@ -4814,7 +4814,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD_ham_inv, IaV, 
                       clim=[2000,2450], cincr=25.0, cmap='cmo.haline',
-                      asp=0.5, xlim=[-30,65], do_write_data_range=False,
+                      asp=0.5, xlim=[-30,65], do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('DIC Indo-Pac. zon. ave.', path_pics, fig_name)
@@ -4828,7 +4828,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD_ham_inv, IaV, 
                       clim=[0,450], cincr=15, cmap='RdYlBu',
-                      asp=0.5, do_write_data_range=False,
+                      asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('O2 global zon. ave.', path_pics, fig_name)
@@ -4842,7 +4842,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD_ham_inv, IaV, 
                       clim=[0,450], cincr=15, cmap='RdYlBu',
-                      asp=0.5, xlim=[-30,90], do_write_data_range=False,
+                      asp=0.5, xlim=[-30,90], do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('O2 Atlantic zon. ave.', path_pics, fig_name)  
@@ -4856,7 +4856,7 @@ for tave_int in tave_ints:
                                  fpath_fx=IcD.fpath_fx, fpath_ckdtree=fpath_ckdtree)
       pyic.vplot_base(IcD_ham_inv, IaV, 
                       clim=[0,450], cincr=15, cmap='RdYlBu',
-                      asp=0.5, xlim=[-30,65], do_write_data_range=False,
+                      asp=0.5, xlim=[-30,65], do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('O2 Indo-Pac. zon. ave.', path_pics, fig_name)
