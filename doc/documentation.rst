@@ -137,7 +137,7 @@ Normal ``xarray`` syntax can be used to load the data, e.g. by::
 
   ds = xr.open_dataset(IcD.flist_ts[it])
 
-If data set containing multiple files should be loaded, on can use (note that we only use ``IcD.flist`` here and not ``IcD.flist_ts`` since the later usually contain one file as often as there are time steps within the file)::
+If data set containing multiple files should be loaded, one can use (note that we only use ``IcD.flist`` here and not ``IcD.flist_ts`` since the later usually contain one file as often as there are time steps within the file)::
 
   ds = xr.open_mfdataset(IcD.flist, concat_dim='time', data_vars='minimal',
                          coords='minimal', compat='override', join='override')
