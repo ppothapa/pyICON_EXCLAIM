@@ -5,6 +5,7 @@ import sys
 import pyicon as pyic
 import cartopy
 import cartopy.crs as ccrs 
+#from ipdb import set_trace as mybreak
 
 #class MyObject(object):
 #  def __init__(self):
@@ -227,16 +228,22 @@ def arctic_budgets(IcD, IcD_ice, IcD_dbg, t1, t2, to, so, mass_flux, uo, vo):
   ii=-1
 
   fpath_ckdtree = IcD.rgrid_fpath
-  lon, lat, iregi = pyic.interp_to_rectgrid(ireg, fpath_ckdtree=fpath_ckdtree)
+  lon, lat, iregi = pyic.interp_to_rectgrid(ireg, fpath_ckdtree=fpath_ckdtree,
+    lon_reg=[-180,180], lat_reg=[54,90])
   
   for kk in range(len(hca)):
       ii+=1; ax=hca[ii]; cax=hcb[ii]
-      pyic.shade(lon, lat, iregi, ax=ax, cax=cax, clim=[0,2], projection=ccrs.PlateCarree())
-      pyic.plot_settings(ax=ax, xlim=[-180,180], ylim=[54,90], 
-                         do_xyticks=False, do_xyminorticks=False, do_gridlines=True, 
-                         land_facecolor='0.7',
-                        )
-      ax.scatter(IcD.elon[iedge_out], IcD.elat[iedge_out], s=2, c='r', transform=ccrs.PlateCarree())
+      pyic.shade(lon, lat, iregi, ax=ax, cax=cax, clim=[0,2], projection=ccrs.PlateCarree(), adjust_axlims=False)
+      #pyic.plot_settings(ax=ax, xlim=[-180,180], ylim=[54,90], 
+      #                   do_xyticks=False, do_xyminorticks=False, do_gridlines=True,
+      #                   land_facecolor='0.7',
+      #                  )
+      #ax.scatter(IcD.elon[iedge_out], IcD.elat[iedge_out], s=2, c='r', transform=ccrs.PlateCarree())
+
+      ax.set_extent([-180, 180, 54, 90], ccrs.PlateCarree())
+      ax.gridlines()
+      ax.add_feature(cartopy.feature.LAND, zorder=2)
+      ax.coastlines()
   
       for nn, name in enumerate(DTmass.keys()):
           if kk==0:
@@ -259,7 +266,7 @@ def arctic_budgets(IcD, IcD_ice, IcD_dbg, t1, t2, to, so, mass_flux, uo, vo):
               else:
                   text = f'{-val:{prec}}'
                   arrowstyle = "->"
-              ax.scatter(IcD.elon[Diedge_out[name]], IcD.elat[Diedge_out[name]], s=2, c=Dcol[name], transform=ccrs.PlateCarree())
+              ax.scatter(IcD.elon[Diedge_out[name]], IcD.elat[Diedge_out[name]], s=2, c=Dcol[name], transform=ccrs.PlateCarree(), zorder=4)
               ax.annotate(text, 
                           xy=(Dvec[name][1]), xytext=(Dvec[name][0]),
                           ha='center', va='center',
@@ -299,29 +306,35 @@ if __name__ == "__main__":
   #import cartopy
   #import cartopy.crs as ccrs 
 
-  runname   = ''
-  run       = 'hel20134-STR'
-  gname     = 'r2b6'
-  lev       = 'L64'
-  
-  # t1 = '1880-02-01'
-  # t2 = '1890-01-01'
-  t1 = '1501-01-01'
-  t2 = '1502-01-01'
-  
-  path_data     = '/work/mh0033/m211054/projects/icon/ruby/icon-oes_fluxadjust/experiments/'+run+'/'
-  path_grid     = f'/mnt/lustre01/work/mh0033/m300602/icon/grids/{gname}/'
+#  run       = 'hel20134-STR'
+#  gname     = 'r2b6'
+#  lev       = 'L64'
+#  t1 = '1501-01-01'
+#  t2 = '1502-01-01'
+#  path_data     = '/work/mh0033/m211054/projects/icon/ruby/icon-oes_fluxadjust/experiments/'+run+'/'
+
+  run = "sfx0080"
+  gname     = 'r2b4_oce_r0004'
+  lev       = 'L40'
+  t1 = '2901-01-01'
+  t2 = '2902-01-01'
+  path_data = f"/work/mh0287/m300879/icon-les/experiments/{run}/outdata/"
+
+  path_grid     = f'/work/mh0033/m300602/icon/grids/{gname}/'
   path_ckdtree  = f'{path_grid}ckdtree/'
   fpath_ckdtree = f'{path_grid}ckdtree/rectgrids/{gname}_res0.30_180W-180E_90S-90N.npz'
-  # fpath_fx      = '/mnt/lustre01/work/mh0033/m211054/projects/icon/ruby/icon-oes_fluxadjust/experiments/exp.ocean_omip_long_tke_r2b6_20133-CIQ/exp.ocean_omip_long_tke_r2b6_20133-CIQ_fx.nc'
-  # fpath_tgrid   = '/work/mh0033/m211054/projects/icon/topo/OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_srtm30_1min/OceanOnly_Global_IcosSymmetric_0039km_rotatedZ37d_BlackSea_Greenland_modified_sills_srtm30_1min.nc'
+
   fpath_tgrid   = 'auto'
   fpath_fx      = 'auto'
   
-  fname_def = run+'_oce_def_????????????????.nc'
-  fname_moc = run+'_oce_moc_????????????????.nc'
-  fname_dbg = run+'_oce_dbg_????????????????.nc'
-  fname_ice = run+'_oce_ice_????????????????.nc' 
+  #fname_def = run+'_oce_P1M_3d_????????????????.nc'
+  #fname_moc = run+'_oce_P1M_moc_????????????????.nc'
+  #fname_dbg = run+'_oce_P1M_monthly_????????????????.nc'
+  #fname_ice = run+'_oce_P1M_ice_????????????????.nc' 
+  fname_def = run+'_oce_P1M_3d_290?????.nc'
+  fname_moc = run+'_oce_P1M_moc_290?????.nc'
+  fname_dbg = run+'_oce_P1M_2d_290?????.nc'
+  fname_ice = run+'_oce_P1M_2d_290?????.nc' 
   
   IcD = pyic.IconData(
                  fname        = fname_def,
