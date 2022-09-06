@@ -4,6 +4,7 @@ import json
 import numpy as np
 from scipy import interpolate
 from scipy.spatial import cKDTree
+import xarray as xr
 # --- reading data 
 from netCDF4 import Dataset, num2date
 import datetime
@@ -21,8 +22,11 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import cmocean
 # --- debugging
 #from ipdb import set_trace as mybreak  
-from importlib import reload
+#from importlib import reload
 from .pyicon_tb import write_dataarray_to_nc
+from .pyicon_tb import identify_grid
+from .pyicon_tb import interp_to_rectgrid_xr
+from .pyicon_tb import triangulation
 
 def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                clevs=None,
@@ -1788,3 +1792,259 @@ def tbox(text, loc, ax, facecolor='w', alpha=1.0):
     ha='right'; va='bottom'
   ht = ax.text(x, y, text, ha=ha, va=va, bbox=bbox, transform=ax.transAxes)
   return ht
+
+def plot(data, 
+         # --- axes settings
+         ax=None, cax=None, 
+         asp=None,
+         # --- data manipulations
+         mask_data=True,
+         logplot=False,
+         # --- plot settings
+         lon_reg=None, lat_reg=None,
+         clim='auto', cmap='auto',
+         xlabel='', ylabel='',
+         cbar_str='auto',
+         cbar_pos='bottom',
+         title_right='auto',
+         title_left='auto',
+         title_center='auto',
+         # --- cartopy
+         projection='pc',
+         coastlines_color='k',
+         land_facecolor='0.7',
+         # --- grid files
+         gname='auto',
+         fpath_tgrid='auto',
+         # --- plot method
+         plot_method='nn', # nn: nearest neighbour; tgrid: on original tripolar grid
+         # --- ckdtree interpolation
+         res=0.3, fpath_ckdtree='auto',
+         coordinates='clat clon',
+         fpath_ckdgree='auto',
+         # --- original grid
+         lonlat_for_mask=False,
+         ):
+
+####  # --- limits
+####  if clim!='auto':
+####    clim = clim.replace(' ', '')
+####    clim = np.array(clim.split(','), dtype=float)
+####  if lon_reg:
+####    lon_reg = lon_reg.replace(' ', '')
+####    lon_reg = np.array(lon_reg.split(','), dtype=float)
+####  if lat_reg:
+####    lat_reg = lat_reg.replace(' ', '')
+####    lat_reg = np.array(lat_reg.split(','), dtype=float)
+  
+  # --- projections
+  do_xyticks = True
+  if isinstance(projection, str) and projection=='pc':
+    ccrs_proj = ccrs.PlateCarree()
+    shade_proj = ccrs.PlateCarree()
+  elif isinstance(projection, str) and projection=='np':
+    ccrs_proj = ccrs.NorthPolarStereo()
+    shade_proj = ccrs.PlateCarree()
+    do_xyticks = False
+    if lon_reg==None:
+      lon_reg = [-180, 180]
+    if lat_reg==None:
+      lat_reg = [60, 90]
+    extent = [lon_reg[0], lon_reg[1], lat_reg[0], lat_reg[1]]
+    lat_reg[0] += -15 # increase data range to avoid white corners
+  elif isinstance(projection, str) and projection=='sp':
+    ccrs_proj = ccrs.SouthPolarStereo()
+    shade_proj = ccrs.PlateCarree()
+    do_xyticks = False
+    if lon_reg==None:
+      lon_reg = [-180, 180]
+    if lat_reg==None:
+      lat_reg = [-90, -50]
+    extent = [lon_reg[0], lon_reg[1], lat_reg[0], lat_reg[1]]
+    lat_reg[1] += 15 # increase data range to avoid white corners
+  else:
+    ccrs_proj = None
+    shade_proj = None
+  
+  # --- grid files and interpolation
+  path_grid = '/work/mh0033/m300602/icon/grids/'
+  #path_grid = '/home/m/m300602/icon/grids/'
+####  if isinstance(fpath_data, list):
+####    fpath = fpath_data[0]
+####  else:
+####    fpath = fpath_data
+  if gname=='auto':
+    try:
+      Dgrid = identify_grid(path_grid, data)
+      gname = Dgrid['name']
+    except:
+      gname = 'none'
+  if fpath_tgrid=='auto':
+    try:
+      Dgrid = identify_grid(path_grid, data)
+      fpath_tgrid = Dgrid['fpath_grid']
+    except:
+      fpath_tgrid = 'from_file'
+  #fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.npz'
+  if fpath_ckdtree=='auto':
+    fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.nc'
+  
+####  # --- open dataset
+####  mfdset_kwargs = dict(combine='nested', concat_dim='time', 
+####                       data_vars='minimal', coords='minimal', 
+####                       compat='override', join='override',)
+####  ds = xr.open_mfdataset(fpath_data, **mfdset_kwargs)
+  
+  # --- reduce time and depth dimension
+  if 'depth' in data.coords:
+    depth_name = 'depth'
+  elif 'depth_2' in data.coords:
+    depth_name = 'depth_2'
+  elif 'lev' in data.coords:
+    depth_name = 'lev'
+  elif 'lev_2' in data.coords:
+    depth_name = 'lev_2'
+  else:
+    depth_name = 'none'
+  
+####  if depth_name!='none':
+####    if depth!=-1:
+####      data = data.sel({depth_name: depth}, method='nearest')
+####    else:
+####      data = data.isel({depth_name: iz})
+####  if 'time' in data.dims:
+####    if time=='none':
+####      data = data.isel(time=it)
+####    else:
+####      data = data.sel(time=time, method='nearest')
+####  
+####  if var in ['mld', 'mlotst']:
+####    data = data.where(data!=data.min())
+  
+  if mask_data:
+    data = data.where(data!=0.)
+
+  # --- aspect ratio of the plot
+  if asp is None:
+    if (lon_reg is None) or (lat_reg is None):
+      asp = 0.5
+    else:
+      asp = (lat_reg[1]-lat_reg[0])/(lon_reg[1]-lon_reg[0])
+    if projection in ['np', 'sp']:
+      asp = 1.
+  
+  # --- interpolate and cut to region
+  if plot_method=='nn':
+    try:
+      datai = interp_to_rectgrid_xr(data.compute(), fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg, coordinates=coordinates)
+      lon = datai.lon
+      lat = datai.lat
+    except:
+      lon, lat, datai = interp_to_rectgrid(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
+  else:
+    print('Deriving triangulation object, this can take a while...')
+      
+    if fpath_tgrid != 'from_file':
+      ds_tgrid = xr.open_dataset(fpath_tgrid)
+    else:
+      ds_tgrid = xr.Dataset()
+      ntr = ds.clon.size
+      vlon = ds.clon_bnds.data.reshape(ntr*3)
+      vlat = ds.clat_bnds.data.reshape(ntr*3)
+      vertex_of_cell = np.arange(ntr*3).reshape(ntr,3)
+      vertex_of_cell = vertex_of_cell.transpose()+1
+      ds_tgrid['clon'] = xr.DataArray(ds.clon.data, dims=['cell'])
+      ds_tgrid['clat'] = xr.DataArray(ds.clat.data, dims=['cell'])
+      ds_tgrid['vlon'] = xr.DataArray(vlon, dims=['vertex'])
+      ds_tgrid['vlat'] = xr.DataArray(vlat, dims=['vertex'])
+      ds_tgrid['vertex_of_cell'] = xr.DataArray(vertex_of_cell, dims=['nv', 'cell'])
+  
+    if lonlat_for_mask:
+      only_lon = False
+    else:
+      only_lon = True
+    ind_reg, Tri = triangulation(ds_tgrid, lon_reg, lat_reg, only_lon=only_lon)
+  
+    if lon_reg is not None and lat_reg is not None:
+      data = data[ind_reg]
+    data = data.compute()
+    print('Done deriving triangulation object.')
+  
+  # --- title, colorbar, and x/y label  strings
+  if cbar_str=='auto':
+    try:
+      units = data.units
+    except:
+      units = 'NA'
+    if logplot:
+      cbar_str = f'log_10({data.long_name}) [{units}]'
+    else:
+      cbar_str = f'{data.long_name} [{units}]'
+  if (title_right=='auto') and ('time' in data.coords):
+    tstr = str(data.time.data)
+    #tstr = tstr.split('T')[0].replace('-', '')+'T'+tstr.split('T')[1].split('.')[0].replace(':','')+'Z'
+    tstr = tstr.split('.')[0]
+    title_right = tstr
+  if (title_center=='auto'):
+    title_center = ''
+  if (title_left=='auto') and (depth_name!='none'):
+    title_left = f'depth = {data[depth_name].data:.1f}m'
+  elif title_left=='auto':
+    title_left = ''
+  
+  # -- start plotting
+  if ax is None:
+    hca, hcb = arrange_axes(1,1, plot_cb=cbar_pos, asp=asp, fig_size_fac=2,
+                                 sharex=True, sharey=True, xlabel="", ylabel="",
+                                 projection=ccrs_proj, axlab_kw=None, dfigr=0.5,
+                                )
+    ii=-1
+    ii+=1; ax=hca[ii]; cax=hcb[ii]
+  shade_kwargs = dict(ax=ax, cax=cax, clim=clim, projection=shade_proj, cmap=cmap, logplot=logplot)
+  if plot_method!='tgrid':
+    hm = shade(lon, lat, datai.data, **shade_kwargs)
+  else:
+    hm = shade(Tri, data.data, **shade_kwargs)
+  
+  if cbar_pos=='bottom':
+    cax.set_xlabel(cbar_str)
+  else:
+    cax.set_ylabel(cbar_str)
+  ht = ax.set_title(title_right, loc='right')
+  ht = ax.set_title(title_center, loc='center')
+  ht = ax.set_title(title_left, loc='left')
+  
+  ax.set_xlabel(xlabel)
+  ax.set_ylabel(ylabel)
+  
+  if not projection:
+    ax.set_facecolor('0.7')
+  
+  if lon_reg is None:
+    xlim = 'none'
+  else:
+    xlim = lon_reg
+  if lat_reg is None:
+    ylim = 'none'
+  else:
+    ylim = lat_reg
+  
+  if projection in ['np', 'sp']: 
+     ax.set_extent(extent, ccrs.PlateCarree())
+     ax.gridlines()
+     ax.add_feature(cartopy.feature.LAND)
+     ax.coastlines()
+  else:
+    if (lon_reg is None) and (lat_reg is None):
+      plot_settings(ax, template='global', 
+                    do_xyticks=do_xyticks, 
+                    land_facecolor=land_facecolor, 
+                    coastlines_color=coastlines_color,
+      )
+    else:
+      plot_settings(ax, xlim=xlim, ylim=ylim, 
+                    do_xyticks=do_xyticks,
+                    land_facecolor=land_facecolor, 
+                    coastlines_color=coastlines_color,
+      )
+  return
