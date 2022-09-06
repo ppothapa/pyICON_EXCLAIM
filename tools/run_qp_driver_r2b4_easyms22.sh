@@ -100,8 +100,8 @@ tave_ints = [
 #['2017-02-01', '2018-01-01'],
 #['2018-02-01', '2019-01-01'],
 #['2019-02-01', '2020-01-01'],
-['2900-01-01', '2909-12-31'],
-#['2900-01-01', '2949-12-31'],
+#['2900-01-01', '2909-12-31'],
+['2900-01-01', '2949-12-31'],
 ]
 
 red_list = []
@@ -117,7 +117,6 @@ red_list += ['ts_pme_gmean']
 # uncomment this to omit plots which require loading 3D density
 #red_list += ['dens30w']
 
-green_list = ['ts_amoc']
 %eof%
 
 # --- start qp_driver
