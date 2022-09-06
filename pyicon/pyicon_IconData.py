@@ -52,6 +52,7 @@ class IconData(object):
                model_type            = 'oce',
                do_conf_dwd           = False,
                output_freq           = 'auto',
+               time_at_end_of_interval = True,
                verbose               = False,
                dtype                 = 'float32',
               ):
@@ -285,6 +286,7 @@ class IconData(object):
         self.output_freq = 'unknown'
     else:
       self.output_freq = output_freq
+    self.time_at_end_of_interval = time_at_end_of_interval
 
     if load_variable_info:
       self.diag_out('load_variable_info')
