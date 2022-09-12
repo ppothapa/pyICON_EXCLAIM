@@ -4,8 +4,8 @@ pyicon-core
 ===========
 
 In this section, the most important features of ``pyicon`` should be documented. 
-However, we would like to mention that this documentation is not yet (and maybe will never) be exhaustive. 
-Instead we would like to refer to the many example notebooks where the most important use cases are introduced.
+However, we would like to mention that this documentation is not yet (and maybe will never be) exhaustive. 
+Instead, we would like to refer to the many example notebooks where the most important use cases are introduced.
 
 Common workflow using ``pyicon``
 --------------------------------
