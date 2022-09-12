@@ -37,13 +37,13 @@ gname_atm = 'r2b4_atm_r0012'
 lev_atm   = 'L90'
 
 # --- path to interpolation files
-path_grid        = '/hpc/uwork/gboeloen/pyICON/grids/'+gname+'/'
-path_grid_atm    = '/hpc/uwork/gboeloen/pyICON/grids/'+gname_atm+'/'
+path_grid        = '/hpc/uwork/icon-sml/pyICON/grids/'+gname+'/'
+path_grid_atm    = '/hpc/uwork/icon-sml/pyICON/grids/'+gname_atm+'/'
 path_ckdtree     = path_grid+'/ckdtree/'
 path_ckdtree_atm = path_grid_atm+'/ckdtree/'
 
 # --- grid files and reference data
-path_pool_oce       = '/hpc/uwork/gboeloen/pyICON/grids/'
+path_pool_oce       = '/hpc/uwork/icon-sml/pyICON/grids/'
 gnameu = gname.split('_')[0].upper()
 fpath_tgrid         = path_grid + gname+'_tgrid.nc'
 fpath_tgrid_atm     = path_grid_atm + gname_atm+'_tgrid.nc'
