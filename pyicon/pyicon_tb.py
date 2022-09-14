@@ -654,7 +654,8 @@ def calc_ckdtree(lon_i, lat_i, lon_o, lat_o, n_nearest_neighbours=1, n_jobs=1, u
       lzip_i = np.concatenate((xi[:,np.newaxis],yi[:,np.newaxis],zi[:,np.newaxis]), axis=1)
       lzip_o = np.concatenate((xo[:,np.newaxis],yo[:,np.newaxis],zo[:,np.newaxis]), axis=1) 
     tree = cKDTree(lzip_i)
-    dckdtree, ickdtree = tree.query(lzip_o , k=n_nearest_neighbours, n_jobs=n_jobs)
+    #dckdtree, ickdtree = tree.query(lzip_o , k=n_nearest_neighbours, n_jobs=n_jobs)
+    dckdtree, ickdtree = tree.query(lzip_o , k=n_nearest_neighbours)
   return dckdtree, ickdtree
 
 def calc_vertical_interp_weights(zdata, levs, increases_along_axes=True):
@@ -1176,6 +1177,14 @@ def identify_grid(path_grid, fpath_data):
   Dgrid_list[grid_name]['res'] = '500m-11km'
   Dgrid_list[grid_name]['long_name'] = 'SMT WAVE grid'
   Dgrid_list[grid_name]['size'] = 66859144
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
+
+  grid_name = 'smtwv_oce_2022'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '500m-11km'
+  Dgrid_list[grid_name]['long_name'] = 'SMT WAVE grid'
+  Dgrid_list[grid_name]['size'] = 66877252
   #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '.nc'
   Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
 
