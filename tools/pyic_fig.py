@@ -136,7 +136,8 @@ import xarray as xr
 import glob
 import os
 import sys
-sys.path.append('/home/mpim/m300602/pyicon/')
+from pathlib import Path
+sys.path.append(f'{Path.home()}/pyicon/')
 import pyicon as pyic  
 from pathlib import Path
 from netCDF4 import Dataset
@@ -301,10 +302,14 @@ if iopts.cbar_str=='auto':
     units = data.units
   except:
     units = 'NA'
+  try:
+    long_name = data.long_name
+  except:
+    long_name = var
   if iopts.logplot:
-    iopts.cbar_str = f'log_10({data.long_name}) [{units}]'
+    iopts.cbar_str = f'log_10({long_name}) [{units}]'
   else:
-    iopts.cbar_str = f'{data.long_name} [{units}]'
+    iopts.cbar_str = f'{long_name} [{units}]'
 if (iopts.title_right=='auto') and ('time' in ds[var].dims):
   tstr = str(data.time.data)
   #tstr = tstr.split('T')[0].replace('-', '')+'T'+tstr.split('T')[1].split('.')[0].replace(':','')+'Z'
