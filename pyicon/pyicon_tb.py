@@ -223,6 +223,11 @@ def interp_to_rectgrid_xr(arr, fpath_ckdtree,
                           mask_out_of_range_before=False,
                          ):
 
+  # --- rename dimensions if necessary
+  for dim in ['cell', 'edge', 'vertex', 'ncells_2', 'ncells_3']:
+    if dim in arr.dims:
+      arr = arr.rename({dim: 'ncells'})
+
   # --- load interpolation indices
   ds_ckdt = xr.open_dataset(fpath_ckdtree)
   if ('clon' in coordinates) or (coordinates==''):
@@ -231,7 +236,6 @@ def interp_to_rectgrid_xr(arr, fpath_ckdtree,
   elif 'elon' in coordinates:
     inds = ds_ckdt.ickdtree_e
     dist = ds_ckdt.dckdtree_e
-    arr = arr.rename(ncells_2='ncells')
   elif 'vlon' in coordinates:
     inds = ds_ckdt.ickdtree_v
     dist = ds_ckdt.dckdtree_v
