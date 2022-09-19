@@ -16,6 +16,8 @@ print('-----IconData')
 from .pyicon_IconData import *
 print('-----plotting')
 from .pyicon_plotting import *
+print('-----accessor')
+from .pyicon_accessor import *
 
 # --- import pyicon.view
 print('-----view')
