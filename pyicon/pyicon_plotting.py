@@ -443,6 +443,7 @@ def shade(
     # --- mask 0 and negative values in case of log plot
     #data = 1.*datai
     data = datai.copy()
+    data = np.ma.masked_invalid(data)
     if logplot and isinstance(data, np.ma.MaskedArray):
       data[data<=0.0] = np.ma.masked
       data = np.ma.log10(data) 
@@ -462,7 +463,6 @@ def shade(
       clim[0] = data.min()
     if clim[1] is None:
       clim[1] = data.max()
-  
     # --- cmap
     if (clim[0]==-clim[1]) and cmap=='auto':
       cmap = 'RdBu_r'
@@ -1746,7 +1746,7 @@ def patch_plot_shade(patches, datai, clim='auto', cmap='auto', ax='auto', cax='a
   elif logplot and not isinstance(data, np.ma.MaskedArray):
     data[data<=0.0] = np.nan
     data = np.log10(data)
-  
+
   # --- clim
   if isinstance(clim, str) and clim=='auto':
     clim = [None, None]
@@ -1803,6 +1803,7 @@ def plot(data,
          # --- plot settings
          lon_reg=None, lat_reg=None,
          clim='auto', cmap='auto',
+         conts=None, contfs=None,
          xlabel='', ylabel='',
          cbar_str='auto',
          cbar_pos='bottom',
@@ -1923,6 +1924,10 @@ def plot(data,
   
   if mask_data:
     data = data.where(data!=0.)
+  
+  # ---
+  if data.ndim!=1:
+    raise ValueError(f'::: Error: Wrong dimension of data: {data.dims}.')
 
   # --- aspect ratio of the plot
   if asp is None:
@@ -1932,6 +1937,192 @@ def plot(data,
       asp = (lat_reg[1]-lat_reg[0])/(lon_reg[1]-lon_reg[0])
     if projection in ['np', 'sp']:
       asp = 1.
+  
+  # --- interpolate and cut to region
+  if plot_method=='nn':
+    try:
+      datai = interp_to_rectgrid_xr(data.compute(), fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg, coordinates=coordinates)
+      lon = datai.lon
+      lat = datai.lat
+    except:
+      lon, lat, datai = interp_to_rectgrid(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
+  else:
+    print('Deriving triangulation object, this can take a while...')
+      
+    if fpath_tgrid != 'from_file':
+      ds_tgrid = xr.open_dataset(fpath_tgrid)
+    else:
+      ds_tgrid = xr.Dataset()
+      ntr = ds.clon.size
+      vlon = ds.clon_bnds.data.reshape(ntr*3)
+      vlat = ds.clat_bnds.data.reshape(ntr*3)
+      vertex_of_cell = np.arange(ntr*3).reshape(ntr,3)
+      vertex_of_cell = vertex_of_cell.transpose()+1
+      ds_tgrid['clon'] = xr.DataArray(ds.clon.data, dims=['cell'])
+      ds_tgrid['clat'] = xr.DataArray(ds.clat.data, dims=['cell'])
+      ds_tgrid['vlon'] = xr.DataArray(vlon, dims=['vertex'])
+      ds_tgrid['vlat'] = xr.DataArray(vlat, dims=['vertex'])
+      ds_tgrid['vertex_of_cell'] = xr.DataArray(vertex_of_cell, dims=['nv', 'cell'])
+  
+    if lonlat_for_mask:
+      only_lon = False
+    else:
+      only_lon = True
+    ind_reg, Tri = triangulation(ds_tgrid, lon_reg, lat_reg, only_lon=only_lon)
+  
+    if lon_reg is not None and lat_reg is not None:
+      data = data[ind_reg]
+    data = data.compute()
+    print('Done deriving triangulation object.')
+  
+  # --- title, colorbar, and x/y label  strings
+  if cbar_str=='auto':
+    try:
+      units = data.units
+    except:
+      units = 'NA'
+    if logplot:
+      cbar_str = f'log_10({data.long_name}) [{units}]'
+    else:
+      cbar_str = f'{data.long_name} [{units}]'
+  if (title_right=='auto') and ('time' in data.coords):
+    tstr = str(data.time.data)
+    #tstr = tstr.split('T')[0].replace('-', '')+'T'+tstr.split('T')[1].split('.')[0].replace(':','')+'Z'
+    tstr = tstr.split('.')[0]
+    title_right = tstr
+  if (title_center=='auto'):
+    title_center = ''
+  if (title_left=='auto') and (depth_name!='none'):
+    title_left = f'depth = {data[depth_name].data:.1f}m'
+  elif title_left=='auto':
+    title_left = ''
+  
+  # -- start plotting
+  if ax is None:
+    hca, hcb = arrange_axes(1,1, plot_cb=cbar_pos, asp=asp, fig_size_fac=2,
+                                 sharex=True, sharey=True, xlabel="", ylabel="",
+                                 projection=ccrs_proj, axlab_kw=None, dfigr=0.5,
+                                )
+    ii=-1
+    ii+=1; ax=hca[ii]; cax=hcb[ii]
+  shade_kwargs = dict(ax=ax, cax=cax, clim=clim, projection=shade_proj, cmap=cmap, logplot=logplot, conts=conts, contfs=contfs)
+  if plot_method!='tgrid':
+    hm = shade(lon, lat, datai.data, **shade_kwargs)
+  else:
+    hm = shade(Tri, data.data, **shade_kwargs)
+  
+  if cbar_pos=='bottom':
+    cax.set_xlabel(cbar_str)
+  else:
+    cax.set_ylabel(cbar_str)
+  ht = ax.set_title(title_right, loc='right')
+  ht = ax.set_title(title_center, loc='center')
+  ht = ax.set_title(title_left, loc='left')
+  
+  ax.set_xlabel(xlabel)
+  ax.set_ylabel(ylabel)
+  
+  if not projection:
+    ax.set_facecolor('0.7')
+  
+  if lon_reg is None:
+    xlim = 'none'
+  else:
+    xlim = lon_reg
+  if lat_reg is None:
+    ylim = 'none'
+  else:
+    ylim = lat_reg
+  
+  if projection in ['np', 'sp']: 
+     ax.set_extent(extent, ccrs.PlateCarree())
+     ax.gridlines()
+     ax.add_feature(cartopy.feature.LAND)
+     ax.coastlines()
+  else:
+    if (lon_reg is None) and (lat_reg is None):
+      plot_settings(ax, template='global', 
+                    do_xyticks=do_xyticks, 
+                    land_facecolor=land_facecolor, 
+                    coastlines_color=coastlines_color,
+      )
+    else:
+      plot_settings(ax, xlim=xlim, ylim=ylim, 
+                    do_xyticks=do_xyticks,
+                    land_facecolor=land_facecolor, 
+                    coastlines_color=coastlines_color,
+      )
+  return
+
+def plot_sec(data, 
+         # --- axes settings
+         ax=None, cax=None, 
+         asp=None,
+         # --- data manipulations
+         mask_data=True,
+         logplot=False,
+         # --- plot settings
+         lon_reg=None, lat_reg=None,
+         clim='auto', cmap='auto',
+         xlabel='', ylabel='',
+         cbar_str='auto',
+         cbar_pos='bottom',
+         title_right='auto',
+         title_left='auto',
+         title_center='auto',
+         # --- land_color
+         coastlines_color='k',
+         land_facecolor='0.7',
+         # --- grid files
+         gname='auto',
+         fpath_tgrid='auto',
+         # --- plot method
+         plot_method='nn', # nn: nearest neighbour; tgrid: on original tripolar grid
+         # --- ckdtree interpolation
+         res=0.3, fpath_ckdtree='auto',
+         coordinates='clat clon',
+         fpath_ckdgree='auto',
+         # --- original grid
+         lonlat_for_mask=False,
+         ):
+
+  # --- grid files and interpolation
+  path_grid = '/work/mh0033/m300602/icon/grids/'
+  if gname=='auto':
+    try:
+      Dgrid = identify_grid(path_grid, data)
+      gname = Dgrid['name']
+    except:
+      gname = 'none'
+  if fpath_tgrid=='auto':
+    try:
+      Dgrid = identify_grid(path_grid, data)
+      fpath_tgrid = Dgrid['fpath_grid']
+    except:
+      fpath_tgrid = 'from_file'
+  #fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.npz'
+  if fpath_ckdtree=='auto':
+    fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.nc'
+  
+  # --- reduce time and depth dimension
+  if 'depth' in data.coords:
+    depth_name = 'depth'
+  elif 'depth_2' in data.coords:
+    depth_name = 'depth_2'
+  elif 'lev' in data.coords:
+    depth_name = 'lev'
+  elif 'lev_2' in data.coords:
+    depth_name = 'lev_2'
+  else:
+    depth_name = 'none'
+  
+  # --- mask data
+  if mask_data:
+    data = data.where(data!=0.)
+
+  # --- aspect ratio of the plot
+  if asp is None:
+    asp = 0.5
   
   # --- interpolate and cut to region
   if plot_method=='nn':
