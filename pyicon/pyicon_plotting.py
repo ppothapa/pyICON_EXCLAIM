@@ -2084,11 +2084,39 @@ def plot_sec(data,
          fpath_ckdgree='auto',
          # --- original grid
          lonlat_for_mask=False,
+
+         section='auto',
+         xlim=None, ylim=None,
+         xdim='auto', ydim='auto',
+         conts=None, contfs=None, clevs=None,
+         cincr=-1.0,
+         clabel=False,
+         facecolor='0.7',
+         invert_yaxis=True,
+         fpath_fx='auto',
          ):
 
+  # --- limits
+  if clim!='auto':
+    clim = str_to_array(clim)
+  if xlim:
+    xlim = str_to_array(xlim)
+  if ylim:
+    ylim = str_to_array(ylim)
+  
+  # --- contour values
+  if conts and conts!='auto':
+    conts = str_to_array(conts)
+  if contfs and contfs!='auto':
+    contfs = str_to_array(contfs)
+  if clevs:
+    clevs = str_to_array(clevs)
+  
   # --- grid files and interpolation
   path_grid = '/work/mh0033/m300602/icon/grids/'
+  #path_grid = '/home/m/m300602/icon/grids/'
   if gname=='auto':
+    Dgrid = identify_grid(path_grid, data)
     try:
       Dgrid = identify_grid(path_grid, data)
       gname = Dgrid['name']
@@ -2096,70 +2124,78 @@ def plot_sec(data,
       gname = 'none'
   if fpath_tgrid=='auto':
     try:
-      Dgrid = identify_grid(path_grid, data)
+      Dgrid = identify_grid(path_grid, data) 
       fpath_tgrid = Dgrid['fpath_grid']
     except:
       fpath_tgrid = 'from_file'
-  #fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.npz'
-  if fpath_ckdtree=='auto':
-    fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.nc'
+  fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/sections/{gname}_nps300_{section}80S_{section}80N.nc'
   
   # --- reduce time and depth dimension
-  if 'depth' in data.coords:
+  if 'depth' in data.dims:
     depth_name = 'depth'
-  elif 'depth_2' in data.coords:
+  elif 'depth_2' in data.dims:
     depth_name = 'depth_2'
-  elif 'lev' in data.coords:
-    depth_name = 'lev'
-  elif 'lev_2' in data.coords:
-    depth_name = 'lev_2'
   else:
     depth_name = 'none'
   
-  # --- mask data
-  if mask_data:
-    data = data.where(data!=0.)
-
-  # --- aspect ratio of the plot
-  if asp is None:
-    asp = 0.5
-  
-  # --- interpolate and cut to region
-  if plot_method=='nn':
-    try:
-      datai = interp_to_rectgrid_xr(data.compute(), fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg, coordinates=coordinates)
-      lon = datai.lon
-      lat = datai.lat
-    except:
-      lon, lat, datai = interp_to_rectgrid(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
+  if 'ncells' in data.dims:
+    coordinates = 'clat clon'
+    interp = True
+  elif 'ncells_2' in data.dims:
+    data = data.rename(ncells_2='ncells') 
+    coordinates = 'vlat vlon'
+    interp = True
   else:
-    print('Deriving triangulation object, this can take a while...')
-      
-    if fpath_tgrid != 'from_file':
-      ds_tgrid = xr.open_dataset(fpath_tgrid)
-    else:
-      ds_tgrid = xr.Dataset()
-      ntr = ds.clon.size
-      vlon = ds.clon_bnds.data.reshape(ntr*3)
-      vlat = ds.clat_bnds.data.reshape(ntr*3)
-      vertex_of_cell = np.arange(ntr*3).reshape(ntr,3)
-      vertex_of_cell = vertex_of_cell.transpose()+1
-      ds_tgrid['clon'] = xr.DataArray(ds.clon.data, dims=['cell'])
-      ds_tgrid['clat'] = xr.DataArray(ds.clat.data, dims=['cell'])
-      ds_tgrid['vlon'] = xr.DataArray(vlon, dims=['vertex'])
-      ds_tgrid['vlat'] = xr.DataArray(vlat, dims=['vertex'])
-      ds_tgrid['vertex_of_cell'] = xr.DataArray(vertex_of_cell, dims=['nv', 'cell'])
+    interp = False
   
-    if lonlat_for_mask:
-      only_lon = False
-    else:
-      only_lon = True
-    ind_reg, Tri = triangulation(ds_tgrid, lon_reg, lat_reg, only_lon=only_lon)
+  if 'zave' in section:
+    interp = False
   
-    if lon_reg is not None and lat_reg is not None:
-      data = data[ind_reg]
+  if interp:
+    ds_ckdt = xr.open_dataset(fpath_ckdtree)
+    if 'clat' in coordinates:
+      inds = ds_ckdt.ickdtree_c.data
+    elif 'vlat' in coordinates:
+      inds = ds_ckdt.ickdtree_v.data
+    data = data.isel(ncells=inds)
+  
+  if 'zave' in section:
+    #if fpath_fx=='auto':
+      #fpath_fx = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.nc'
+    ds_fx = xr.open_dataset(fpath_fx)
+    clat = data.clat * 180./np.pi
+    lat_group = np.round(clat/res)*res
+    data = data.where(data!=0)
+    if section=='gzave':
+      data = data.groupby(lat_group).mean()
+      xlim = [-80, 90]
+    elif section=='azave':
+      data = data.where(ds_fx.basin_c==1.).groupby(lat_group).mean()
+      xlim = [-30, 90]
+    elif section=='ipzave':
+      data = data.where((ds_fx.basin_c==3.) | (ds_fx.basin_c==7.)).groupby(lat_group).mean()
+      xlim = [-30, 70]
     data = data.compute()
-    print('Done deriving triangulation object.')
+    xdim = data.clat
+    xdim = xdim.assign_attrs(long_name='latitude')
+    xdim = 'auto' # do not need this information, avoid redefinition of xdim
+  
+  data = data.squeeze()
+  
+  if xdim=='auto':
+    xdim = data[data.dims[1]]
+  elif 'lat' in xdim:
+    xdim = ds_ckdt.lat_sec
+    xdim = xdim.assign_attrs(long_name='latitude')
+  elif 'lon' in xdim:
+    xdim = 'longitude'
+    xdim = xdim.assign_attrs(long_name='longitude')
+  ydim = data[data.dims[0]]
+  
+  data = data.where(data!=0)
+  
+  # --- aspect ratio of the plot
+  asp = 0.5
   
   # --- title, colorbar, and x/y label  strings
   if cbar_str=='auto':
@@ -2167,35 +2203,56 @@ def plot_sec(data,
       units = data.units
     except:
       units = 'NA'
+    try:
+      long_name = data.long_name
+    except:
+      long_name = data.name
     if logplot:
-      cbar_str = f'log_10({data.long_name}) [{units}]'
+      cbar_str = f'log_10({long_name}) [{units}]'
     else:
-      cbar_str = f'{data.long_name} [{units}]'
-  if (title_right=='auto') and ('time' in data.coords):
+      cbar_str = f'{long_name} [{units}]'
+  if (title_right=='auto') and ('time' in data.dims):
     tstr = str(data.time.data)
     #tstr = tstr.split('T')[0].replace('-', '')+'T'+tstr.split('T')[1].split('.')[0].replace(':','')+'Z'
     tstr = tstr.split('.')[0]
     title_right = tstr
   if (title_center=='auto'):
     title_center = ''
-  if (title_left=='auto') and (depth_name!='none'):
-    title_left = f'depth = {data[depth_name].data:.1f}m'
-  elif title_left=='auto':
-    title_left = ''
+  if (xlabel=='auto'):
+    try:
+      xlabel = xdim.long_name
+    except:
+      xlabel = 'xlabel'
+  if (title_left=='auto') and (section!='auto'):
+    title_left = section
+  #  iopts.title_left = f'depth = {data[depth_name].data:.1f}m'
+  #elif iopts.title_left=='auto':
+  #  iopts.title_left = ''
   
   # -- start plotting
-  if ax is None:
-    hca, hcb = arrange_axes(1,1, plot_cb=cbar_pos, asp=asp, fig_size_fac=2,
-                                 sharex=True, sharey=True, xlabel="", ylabel="",
-                                 projection=ccrs_proj, axlab_kw=None, dfigr=0.5,
-                                )
-    ii=-1
-    ii+=1; ax=hca[ii]; cax=hcb[ii]
-  shade_kwargs = dict(ax=ax, cax=cax, clim=clim, projection=shade_proj, cmap=cmap, logplot=logplot)
-  if plot_method!='tgrid':
-    hm = shade(lon, lat, datai.data, **shade_kwargs)
-  else:
-    hm = shade(Tri, data.data, **shade_kwargs)
+  plt.close('all')
+  hca, hcb = arrange_axes(1,1, plot_cb=cbar_pos, asp=asp, fig_size_fac=2,
+                               sharex=True, sharey=True, xlabel="", ylabel="",
+                               axlab_kw=None, dfigr=0.5,
+                              )
+  ii=-1
+  
+  ii+=1; ax=hca[ii]; cax=hcb[ii]
+  shade_kwargs = dict(ax=ax, cax=cax, 
+                      logplot=logplot, 
+                      clim=clim, 
+                      cmap=cmap, 
+                      cincr=cincr,
+                      clevs=clevs,
+                      conts=conts,
+                      contfs=contfs,
+                     )
+  hm = shade(xdim, ydim, data.data, **shade_kwargs)
+  
+  if clabel:
+    Cl = ax.clabel(hm[1], colors='k', fontsize=6, fmt='%.1f', inline=False)
+    for txt in Cl:
+      txt.set_bbox(dict(facecolor='white', edgecolor='none', pad=0))
   
   if cbar_pos=='bottom':
     cax.set_xlabel(cbar_str)
@@ -2208,34 +2265,14 @@ def plot_sec(data,
   ax.set_xlabel(xlabel)
   ax.set_ylabel(ylabel)
   
-  if not projection:
-    ax.set_facecolor('0.7')
+  ax.set_facecolor(facecolor)
   
-  if lon_reg is None:
-    xlim = 'none'
-  else:
-    xlim = lon_reg
-  if lat_reg is None:
-    ylim = 'none'
-  else:
-    ylim = lat_reg
+  if not xlim is None:
+    ax.set_xlim(xlim)
+  if not ylim is None:
+    ax.set_ylim(ylim)
   
-  if projection in ['np', 'sp']: 
-     ax.set_extent(extent, ccrs.PlateCarree())
-     ax.gridlines()
-     ax.add_feature(cartopy.feature.LAND)
-     ax.coastlines()
-  else:
-    if (lon_reg is None) and (lat_reg is None):
-      plot_settings(ax, template='global', 
-                    do_xyticks=do_xyticks, 
-                    land_facecolor=land_facecolor, 
-                    coastlines_color=coastlines_color,
-      )
-    else:
-      plot_settings(ax, xlim=xlim, ylim=ylim, 
-                    do_xyticks=do_xyticks,
-                    land_facecolor=land_facecolor, 
-                    coastlines_color=coastlines_color,
-      )
+  if invert_yaxis:
+    ax.invert_yaxis()
+
   return
