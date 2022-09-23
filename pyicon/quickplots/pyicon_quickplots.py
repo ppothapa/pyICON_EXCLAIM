@@ -405,6 +405,17 @@ def qp_timeseries(IcD, fname, vars_plot,
   times, flist_ts, its = pyic.get_timesteps(flist)
   # end: not needed if IcD.load_timeseries is used
 
+  # if lend is not defined or if it is too large, 
+  # define it in a way that it matches t2
+  is_lend_updated = 0
+  if lend==None or lend > len(times):
+    tend = np.datetime64(str(t2)+'T00:00:00')
+    for i in np.arange(len(times)):
+       if times[i]>tend:
+         lend = i
+         is_lend_updated = 1
+         break
+
   # --- prepare time averaging
   times_plot = np.copy(times)
   if ave_freq>0:
@@ -430,6 +441,9 @@ def qp_timeseries(IcD, fname, vars_plot,
     # finally define times_plot as center or averaging time intervall
     #times_ave = times.mean(axis=0)
     times_plot = times[int(ave_freq/2),:] # get middle of ave_freq
+    # update lend
+    if is_lend_updated != 0:
+      lend = int(lend/ave_freq)
 
   # --- make axes if they are not given as arguement
   if isinstance(ax, str) and ax=='none':
@@ -602,9 +616,20 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
     flist2 = flist2[:-1]
   times2, flist_ts2, its = pyic.get_timesteps(flist2)
   if np.shape(times2) != np.shape(times):
-     print ('Time instances in '+fname1+' and '+fname2+' do not match!')
+     print ('Exit: time instances in '+fname1+' and '+fname2+' do not match!')
      sys.exit()
   # end: not needed if IcD.load_timeseries is used
+
+  # if lend is not defined or if it is too large, 
+  # define it in a way that it matches t2
+  is_lend_updated = 0
+  if lend==None or lend > len(times):
+    tend = np.datetime64(str(t2)+'T00:00:00')
+    for i in np.arange(len(times)):
+       if times[i]>tend:
+         lend = i
+         is_lend_updated = 1
+         break
 
   # --- prepare time averaging
   times_plot = np.copy(times)
@@ -630,6 +655,9 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
     # finally define times_plot as center or averaging time intervall
     #times_ave = times.mean(axis=0)
     times_plot = times[int(ave_freq/2),:] # get middle of ave_freq
+    # update lend
+    if is_lend_updated != 0:
+      lend = int(lend/ave_freq)
 
   # --- make axes if they are not given as arguement
   if isinstance(ax, str) and ax=='none':
@@ -783,8 +811,10 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
     #print(f'old: {data[ind].mean()}') 
     #print(f'new: {(data[ind]*dtsum[ind]).sum()/dtsum[ind].sum()}') 
     try:
-      info_str = 'in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data[ind].min(), data_mean1, data1[ind].std(), data1[ind].max())
-      ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
+      info_str1 = 'for '+run1+' in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data1[ind].min(), data1_mean, data1[ind].std(), data1[ind].max())
+      info_str2 = 'for '+run2+' in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data2[ind].min(), data2_mean, data2[ind].std(), data2[ind].max())
+      ax.text(0.5, -0.14, info_str1, ha='center', va='top', transform=ax.transAxes, fontsize=8)
+      ax.text(0.5, -0.24, info_str2, ha='center', va='bottom', transform=ax.transAxes, fontsize=8)
     except:
       pass
 
