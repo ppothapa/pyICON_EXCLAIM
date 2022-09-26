@@ -360,7 +360,10 @@ if do_atmosphere_plots:
   fig_names += ['atm_prw_rmse1', 'atm_prw_rmse2', 'atm_prw_rmse_diff']
   fig_names += ['atm_psl_diff', 'atm_psl_bias1', 'atm_psl_bias2']
   fig_names += ['atm_psl_rmse1', 'atm_psl_rmse2', 'atm_psl_rmse_diff']
-  fig_names += ['atm_ts_diff', 'atm_totclc_diff', 'atm_totprec_diff', 'atm_pme_diff']
+  fig_names += ['atm_ts_diff', 'sea_ts_diff', 'seaice_fraction_diff']
+  fig_names += ['atm_totclc_diff', 'atm_totprec_diff', 'atm_pme_diff']
+  fig_names += ['atm_surf_shfl_diff', 'atm_surf_lhfl_diff']
+  fig_names += ['atm_toa_sob_diff', 'atm_toa_thb_diff']
   #fig_names += ['atm_cllvi_clivi']
   fig_names += ['sec:Above surface']
   fig_names += ['atm_geoh_500_diff', 'atm_temp_850_diff']
@@ -407,6 +410,8 @@ if do_atmosphere_plots:
      vpfull   = 'pres'
      vtas     = 't_2m'
      vts      = 't_s'
+     vsst     = 't_seasfc'
+     vsifr    = 'fr_seaice'
      vprw     = 'tqv_dia'
      vpsl     = 'pres_msl'
      vzg      = 'geopot'
@@ -417,6 +422,10 @@ if do_atmosphere_plots:
      vclivi   = 'tqi_dia'
      vpr      = 'tot_prec_rate'
      vclt     = 'clct'
+     vshfl_s  = 'shfl_s'
+     vlhfl_s  = 'lhfl_s'
+     vsob_t   = 'sob_t'
+     vthb_t   = 'thb_t'
      vevspsbl = 'qhfl_s'
      vsfcwind = 'sp_10m'
      vua      = 'u'
@@ -2580,6 +2589,54 @@ for tave_int in tave_ints:
       save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
+    fig_name = 'sea_ts_diff'
+    if fig_name in fig_names and do_conf_dwd:
+      var = vsst
+      # --- time averaging
+      data2d_1, it_ave = pyic.time_average(IcD_atm2d_1, var, t1, t2, iz=0)
+      data2d_2, it_ave = pyic.time_average(IcD_atm2d_2, var, t1, t2, iz=0)
+      # --- interpolate
+      lon, lat, data2di_1 = pyic.interp_to_rectgrid(data2d_1, fpath_ckdtree_atm, coordinates='clat clon')
+      lon, lat, data2di_2 = pyic.interp_to_rectgrid(data2d_2, fpath_ckdtree_atm, coordinates='clat clon')
+      # --- calculate diff
+      data_diff = data2di_2-data2di_1
+      IaV = pyic.IconVariable('data_diff', 'deg $^o$C', 'SST diff ('+run2+'-'+run1+')')
+      IaV.data = data_diff
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'seaice_fraction_diff'
+    if fig_name in fig_names and do_conf_dwd:
+      var = vsifr
+      # --- time averaging
+      data2d_1, it_ave = pyic.time_average(IcD_atm2d_1, var, t1, t2, iz=0)
+      data2d_2, it_ave = pyic.time_average(IcD_atm2d_2, var, t1, t2, iz=0)
+      # --- interpolate
+      lon, lat, data2di_1 = pyic.interp_to_rectgrid(data2d_1, fpath_ckdtree_atm, coordinates='clat clon')
+      lon, lat, data2di_2 = pyic.interp_to_rectgrid(data2d_2, fpath_ckdtree_atm, coordinates='clat clon')
+      # --- calculate diff
+      data_diff = data2di_2-data2di_1
+      IaV = pyic.IconVariable('data_diff', 'unitless', 'Sea-ice fraction diff ('+run2+'-'+run1+')')
+      IaV.data = data_diff
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim=[-1.,1.], cincr=0.1, cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='0.7', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
     fig_name = 'atm_prw_diff'
     if fig_name in fig_names:
       var = vprw
@@ -3308,25 +3365,103 @@ for tave_int in tave_ints:
                      )
       FigInf = dict(long_name=IaV.long_name)
       save_fig(IaV.long_name, path_pics, fig_name, FigInf)
-  
+
     # ---
-    fig_name = 'atm_p_e'
+    fig_name = 'atm_surf_shfl_diff'
     if fig_name in fig_names:
-      pr, it_ave = pyic.time_average(IcD_atm2d, vpr, t1, t2, iz='all')
-      evspsbl, it_ave = pyic.time_average(IcD_atm2d, vevspsbl, t1, t2, iz='all')
-      IaV = pyic.IconVariable('p_e', 'mm/day', 'P-E')
-      IaV.data = (pr+evspsbl)*86400
-      IaV.interp_to_rectgrid(fpath_ckdtree_atm)
-      pyic.hplot_base(IcD_atm2d, IaV, clim=5, cincr=1, cmap='RdBu', 
+      var = vshfl_s
+      # --- time averaging
+      data2d_1, it_ave = pyic.time_average(IcD_atm2d_1, var, t1, t2, iz=0)
+      data2d_2, it_ave = pyic.time_average(IcD_atm2d_2, var, t1, t2, iz=0)
+      # --- interpolate
+      lon, lat, data2di_1 = pyic.interp_to_rectgrid(data2d_1, fpath_ckdtree_atm, coordinates='clat clon')
+      lon, lat, data2di_2 = pyic.interp_to_rectgrid(data2d_2, fpath_ckdtree_atm, coordinates='clat clon')
+      # --- calculate diff
+      data_diff = data2di_2-data2di_1
+      IaV = pyic.IconVariable('data_diff', 'W m-2', 'Surface sensible heat flux diff ('+run2+'-'+run1+')')
+      IaV.data = data_diff
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
                       use_tgrid=False,
-                      projection=projection, do_write_data_range=True,
-                      land_facecolor='none',
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
                       asp=0.5,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       FigInf = dict(long_name=IaV.long_name)
       save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
+    # ---
+    fig_name = 'atm_surf_lhfl_diff'
+    if fig_name in fig_names:
+      var = vlhfl_s
+      # --- time averaging
+      data2d_1, it_ave = pyic.time_average(IcD_atm2d_1, var, t1, t2, iz=0)
+      data2d_2, it_ave = pyic.time_average(IcD_atm2d_2, var, t1, t2, iz=0)
+      # --- interpolate
+      lon, lat, data2di_1 = pyic.interp_to_rectgrid(data2d_1, fpath_ckdtree_atm, coordinates='clat clon')
+      lon, lat, data2di_2 = pyic.interp_to_rectgrid(data2d_2, fpath_ckdtree_atm, coordinates='clat clon')
+      # --- calculate diff
+      data_diff = data2di_2-data2di_1
+      IaV = pyic.IconVariable('data_diff', 'W m-2', 'Surface latent heat flux diff ('+run2+'-'+run1+')')
+      IaV.data = data_diff
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_toa_sob_diff'
+    if fig_name in fig_names:
+      var = vsob_t
+      # --- time averaging
+      data2d_1, it_ave = pyic.time_average(IcD_atm2d_1, var, t1, t2, iz=0)
+      data2d_2, it_ave = pyic.time_average(IcD_atm2d_2, var, t1, t2, iz=0)
+      # --- interpolate
+      lon, lat, data2di_1 = pyic.interp_to_rectgrid(data2d_1, fpath_ckdtree_atm, coordinates='clat clon')
+      lon, lat, data2di_2 = pyic.interp_to_rectgrid(data2d_2, fpath_ckdtree_atm, coordinates='clat clon')
+      # --- calculate diff
+      data_diff = data2di_2-data2di_1
+      IaV = pyic.IconVariable('data_diff', 'W m-2', 'TOA short wave net flux diff ('+run2+'-'+run1+')')
+      IaV.data = data_diff
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_toa_thb_diff'
+    if fig_name in fig_names:
+      var = vthb_t
+      # --- time averaging
+      data2d_1, it_ave = pyic.time_average(IcD_atm2d_1, var, t1, t2, iz=0)
+      data2d_2, it_ave = pyic.time_average(IcD_atm2d_2, var, t1, t2, iz=0)
+      # --- interpolate
+      lon, lat, data2di_1 = pyic.interp_to_rectgrid(data2d_1, fpath_ckdtree_atm, coordinates='clat clon')
+      lon, lat, data2di_2 = pyic.interp_to_rectgrid(data2d_2, fpath_ckdtree_atm, coordinates='clat clon')
+      # --- calculate diff
+      data_diff = data2di_2-data2di_1
+      IaV = pyic.IconVariable('data_diff', 'W m-2', 'TOA long wave net flux diff ('+run2+'-'+run1+')')
+      IaV.data = data_diff
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+  
     # ---
     fig_name = 'atm_pme_diff'
     if fig_name in fig_names:
