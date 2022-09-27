@@ -2307,7 +2307,6 @@ for tave_int in tave_ints:
                                var_add=-273.15,
                                units = '$^o$C',
                                clim=[0.,24.], cincr=2.0, cmap='cmo.thermal',
-                               do_mask=True,
                                IcD=IcD_atm2d,
                                save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                                **Ddict_global)
