@@ -1112,7 +1112,7 @@ qp.write_to_file()
 
 # ================================================================================ 
 # ================================================================================ 
-def link_all(path_quickplots='../../all_qps/', path_search='path_quickplots'):
+def link_all(path_quickplots='../../all_qps/', path_search='path_quickplots', do_conf_dwd=False):
   """ 
 Link all sub pages
   * either to qp_index.html if sub pages for time averages are linked
@@ -1167,6 +1167,11 @@ To link sub pages for time averages for a specific simulation:
   # --- copy css file
   #print('la: copy css')
   shutil.copyfile(path_qp_driver+'qp_css.css', path_search+'qp_css.css')
+
+  # --- copy pyicon documentation to the path below (if DWD)
+  if do_conf_dwd:
+    os.system('mkdir -p $PWD/../all_qps/pyicon_doc/html')
+    os.system('cp -Rp $PWD/../doc/doc_dwd/html/index.html $PWD/../all_qps/pyicon_doc/html/index.html')
   
   #print('la: do content')
   # --- start with content
@@ -1232,6 +1237,9 @@ def add_info(run, path_data, path_qp_sim, verbose=True):
   namelist = glob.glob(f'{path_data}/NAMELIST*')
   namelist.sort()
   flist += namelist
+  nml = glob.glob(f'{path_data}/nml.*')
+  nml.sort()
+  flist += nml
   #flist += [f'{path_data}/NAMELIST_ICON_output_atm']
   #flist += [f'{path_data}/NAMELIST_{run}_atm']
   #flist += [f'{path_data}/NAMELIST_{run}_lnd']
@@ -1249,4 +1257,49 @@ def add_info(run, path_data, path_qp_sim, verbose=True):
 
   qp.main = text
   qp.write_to_file()
+  return
+
+def add_info_comp(run1, run2, path_data1, path_data2, path_qp_sim, verbose=True):
+  path_add_info = path_qp_sim+'add_info/'
+  if not os.path.exists(path_add_info):
+    os.makedirs(path_add_info)
+
+  # --- make header
+  qp = QuickPlotWebsite(
+    title='Additional information',
+    author=os.environ.get('USER'),
+    date=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    #path_data=path_quickplots,
+    info='ICON data plotted by pyicon.quickplots',
+    fpath_css='../qp_css.css',
+    fpath_html=path_add_info+'add_info.html'
+    )
+
+  text = " "
+  path_data_list = [path_data1, path_data2]
+  run_list = [run1, run2]
+  for i in range(len(path_data_list)):
+    path_data = path_data_list[i]
+    run = run_list[i]
+  
+    flist = [] 
+    flist += [f'{path_data}/README']
+    flist += glob.glob(f'{path_data}/../../run/*{run}*.run')
+    namelist = glob.glob(f'{path_data}/NAMELIST*')
+    namelist.sort()
+    flist += namelist
+    nml = glob.glob(f'{path_data}/nml.*')
+    nml.sort()
+    flist += nml
+    for fpath in flist:
+      try:
+        shutil.copy(fpath, f'{path_add_info}')
+        fname = fpath.split('/')[-1]
+        text += f'<p><li><a href="{fname}">{fname}_{run}</a></>'
+      except:
+        if verbose:
+          print(f'::: Warning: Cannot find {fpath}! :::')
+
+    qp.main = text
+    qp.write_to_file()
   return

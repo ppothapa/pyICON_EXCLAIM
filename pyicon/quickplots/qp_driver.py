@@ -3378,13 +3378,13 @@ for tave_int in tave_ints:
   # --- execute qp_link_all to add link of this time average
   print("Executing qp_link_all.py")
   #os.system(f"python {path_qp_driver}qp_link_all.py {path_qp_sim}")
-  pyicqp.link_all(path_quickplots=path_quickplots, path_search=path_qp_sim)
+  pyicqp.link_all(path_quickplots=path_quickplots, path_search=path_qp_sim, do_conf_dwd=do_conf_dwd)
 
 
 # --- add link for this simulation
 print("Executing qp_link_all.py")
 #os.system(f"python {path_qp_driver}qp_link_all.py")
-pyicqp.link_all(path_quickplots=path_quickplots)
+pyicqp.link_all(path_quickplots=path_quickplots, do_conf_dwd=do_conf_dwd)
 
 # --- add page for additional information
 pyicqp.add_info(run=run, path_data=path_data, path_qp_sim=path_qp_sim)
