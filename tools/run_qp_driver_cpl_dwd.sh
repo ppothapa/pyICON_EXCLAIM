@@ -84,9 +84,9 @@ ave_freq = 12
 # --- start qp_driver
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-run="EXP1"
-path_data="/hpc/uwork/csgoff/gcfs3.0/dace_bacy_sml/feedback/pyICON"
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1959-01-01,1964-01-01'
+run="atmoce01"
+path_data="/hpc/uwork/tvpham/ICON-CLM_SP_uwork/chain/scratch/atmoce01/output/icon/"
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1979-01-01,1999-12-31'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 
