@@ -15,8 +15,7 @@ rand=$(cat /dev/urandom | tr -dc 'A-Z' | fold -w 3 | head -n 1)
 
 path_pyicon=`(cd .. && pwd)`"/"
 config_file="./config_qp_${rand}.py"
-#qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
-qp_driver="${path_pyicon}pyicon/quickplots/old_qp_driver.py"
+qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
 
 cat > ${config_file} << %eof%
 # --- path to quickplots

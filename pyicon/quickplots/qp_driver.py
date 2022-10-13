@@ -64,7 +64,8 @@ atm_2d      = ''
 atm_3d      = '' 
 atm_mon     = '' 
 
-time_mode_atm = 'num2date'  # 'num2date' is the new default previously, 'float2date' was regularly used
+#time_mode_atm = 'num2date'  # 'num2date' is the new default previously, 'float2date' was regularly used
+time_mode_atm = 'float2date'  # 'num2date' is the new default previously, 'float2date' was regularly used
 
 # --- time average information (can be overwritten by qp_driver call)
 tave_ints = [['1950-02-01', '1952-01-01']]
@@ -316,9 +317,9 @@ projection = 'PlateCarree'
 
 # --- structure of web page
 fig_names = []
+fig_names += ['sec:Overview']
+fig_names += ['tab_overview']
 if do_ocean_plots:
-  fig_names += ['sec:Overview']
-  fig_names += ['tab_overview']
   fig_names += ['sec:Upper ocean']
   fig_names += ['ssh', 'ssh_variance', 'sst', 'sss', 'mlotst_mar', 'mlotst_sep'] 
   fig_names += ['sec:Ice']
@@ -341,16 +342,15 @@ if do_ocean_plots:
   fig_names += ['sec:Time series']
   fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
 if do_atmosphere_plots:
-  fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
-  fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_pme_gmean', 'ts_fwfoce_gmean']
   fig_names += ['sec:Surface fluxes']
   fig_names += ['atm_zonal_wind_stress', 'atm_meridional_wind_stress']
   fig_names += ['atm_curl_tau', 'atm_wek']
   fig_names += ['sec:Bias surface fluxes']
   fig_names += ['atm_tauu_bias', 'atm_tauv_bias']
   fig_names += ['sec:Atmosphere surface']
-  fig_names += ['atm_2m_temp','atm_surface_temp','atm_sea_level_pressure',]
-  fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover', 'atm_p_e', 'atm_10m_wind']
+  fig_names += ['atm_2m_temp','atm_surface_temp', 'atm_sea_level_pressure', 'sea_surface_temp', 'seaice_fraction']
+  fig_names += ['atm_10m_wind', 'atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover', 'atm_p_e']
+  fig_names += ['atm_surface_shfl', 'atm_surface_lhfl', 'atm_toa_sob', 'atm_toa_thb']
   fig_names += ['sec:Bias atmosphere surface']
   fig_names += ['atm_tas_bias']
   fig_names += ['atm_prw_bias']
@@ -363,6 +363,9 @@ if do_atmosphere_plots:
   fig_names += ['atm_v_zave', 'atm_v_zave_bias', 'atm_logv_v_zave', 'atm_logv_v_zave_bias']
   fig_names += ['atm_rel_hum_zave']
   fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave', 'atm_psi']
+  fig_names += ['sec:Time series']
+  fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
+  fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_pme_gmean', 'ts_fwfoce_gmean']
 #fig_names += ['sec:TKE and IDEMIX']
 #fig_names += ['tke30w', 'iwe30w', 'kv30w']
   # --- variable names
@@ -393,6 +396,8 @@ if do_atmosphere_plots:
      vpfull   = 'pres'
      vtas     = 't_2m'
      vts      = 't_s'
+     vsst     = 't_seasfc'
+     vfrsi    = 'fr_seaice'
      vprw     = 'tqv_dia'
      vpsl     = 'pres_msl'
      vzg      = 'geopot'
@@ -403,6 +408,10 @@ if do_atmosphere_plots:
      vclivi   = 'tqi_dia'
      vpr      = 'tot_prec_rate'
      vclt     = 'clct'
+     vshfl_s  = 'shfl_s'
+     vlhfl_s  = 'lhfl_s'
+     vsob_t   = 'sob_t'
+     vthb_t   = 'thb_t'
      vevspsbl = 'qhfl_s'
      vsfcwind = 'sp_10m'
      vua      = 'u'
@@ -2187,11 +2196,11 @@ for tave_int in tave_ints:
 
       if do_atmosphere_plots:
         if do_conf_dwd:
-          varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean', 'ts_pme_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'fwfoce_gmean']
-          var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0, 0]
-          var_units_list = ['deg C', '', '', '', '', '', '', '', '']
+          varlist = ['tas_gmean', 'radtop_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'prec_gmean', 'evap_gmean', 'pme_gmean'] # 'fwfoce_gmean']
+          var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0]
+          var_units_list = ['deg C', '', '', '', '', '', '', '']
         else:
-          varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'fwfoce_gmean']
+          varlist = ['tas_gmean', 'radtop_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'prec_gmean', 'evap_gmean', 'fwfoce_gmean']
           var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0]
           var_units_list = ['deg C', '', '', '', '', '', '', '']
         var_fac_list = [1]*len(varlist)
@@ -2402,6 +2411,32 @@ for tave_int in tave_ints:
                                save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                                **Ddict_global)
       save_fig('surface temperature', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'sea_surface_temp'
+    if fig_name in fig_names and do_conf_dwd:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vsst, it=0,
+                               t1=t1, t2=t2,
+                               var_add=-273.15,
+                               units = '$^o$C',
+                               clim=[0.,24.], cincr=2.0, cmap='cmo.thermal',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('Sea surface temperature', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'seaice_fraction'
+    if fig_name in fig_names and do_conf_dwd:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vfrsi, it=0,
+                               t1=t1, t2=t2,
+                               var_add=0.,
+                               units = '',
+                               clim=[0.,1.], cincr=0.1, cmap='RdBu',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('Seaice fraction', path_pics, fig_name, FigInf)
   
     # ---
     fig_name = 'atm_tas_bias'
@@ -2692,6 +2727,62 @@ for tave_int in tave_ints:
                      )
       FigInf = dict(long_name=IaV.long_name)
       save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_surface_shfl'
+    if fig_name in fig_names and do_conf_dwd:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vshfl_s, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1.,
+                               units='W m-2',
+                               clim=[-150.,50.], cincr=25.0, cmap='RdYlBu_r',
+                               land_facecolor='none',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('Surface sensible heat flux', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_surface_lhfl'
+    if fig_name in fig_names and do_conf_dwd:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vlhfl_s, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1.,
+                               units='W m-2',
+                               clim=[-250.,50.], cincr=25.0, cmap='RdYlBu_r',
+                               land_facecolor='none',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('Surface latent heat flux', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_toa_sob'
+    if fig_name in fig_names and do_conf_dwd:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vsob_t, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1.,
+                               units='W m-2',
+                               clim=[0.,350.], cincr=25.0, cmap='RdYlBu',
+                               land_facecolor='none',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('TOA short wave net flux', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_toa_thb'
+    if fig_name in fig_names and do_conf_dwd:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vthb_t, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1.,
+                               units='W m-2',
+                               clim=[-300.,0.], cincr=25.0, cmap='RdYlBu_r',
+                               land_facecolor='none',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('TOA long wave net flux', path_pics, fig_name, FigInf)
   
     # ---
     fig_name = 'atm_10m_wind'
