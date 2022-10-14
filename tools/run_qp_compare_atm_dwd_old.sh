@@ -15,7 +15,7 @@ rand=$(cat /dev/urandom | tr -dc 'A-Z' | fold -w 3 | head -n 1)
 
 path_pyicon=`(cd .. && pwd)`"/"
 config_file="./config_qp_${rand}.py"
-qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
+qp_compare="${path_pyicon}pyicon/quickplots/old_qp_compare_atm_dwd.py"
 
 cat > ${config_file} << %eof%
 # --- path to quickplots
@@ -66,12 +66,12 @@ atm_mon     = '_atm_mon'
 save_data = False
 path_nc = '/scratch/m/m300602/tmp/test_pyicon_output/'
 
-# --- time average information (can be overwritten by qp_driver call)
+# --- time average information (can be overwritten by qp_compare call)
 tave_ints = [
 #['1630-02-01', '1640-01-01'],
 ['4450-02-01', '4500-01-01'],
 ]
-ave_freq = 12
+ave_freq = 1
 
 # --- what to plot and what not?
 # --- not to plot:
@@ -80,12 +80,14 @@ ave_freq = 12
 #green_list = ['']
 %eof%
 
-# --- start qp_driver
+# --- start qp_compare
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-run="cpl02"
-path_data="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run}/output/icon/"
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='2000-01-01,2000-10-01'
+run1="sml39"
+run2="sml42"
+path_data1="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run1}/output/icon/"
+path_data2="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run2}/output/icon/"
+python -u ${qp_compare} --batch=True ${config_file} --path_data1=$path_data1 --path_data2=$path_data2 --run1=$run1 --run2=$run2 --tave_int='1979-01-01,1999-12-31'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 

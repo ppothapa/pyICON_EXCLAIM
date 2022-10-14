@@ -83,11 +83,11 @@ ave_freq = 12
 # --- start qp_compare
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-run1="sml39"
-run2="sml42"
+run1="test11"
+run2="test12"
 path_data1="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run1}/output/icon/"
 path_data2="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run2}/output/icon/"
-python -u ${qp_compare} --batch=True ${config_file} --path_data1=$path_data1 --path_data2=$path_data2 --run1=$run1 --run2=$run2 --tave_int='1979-01-01,1999-12-31'
+python -u ${qp_compare} --batch=True ${config_file} --path_data1=$path_data1 --path_data2=$path_data2 --run1=$run1 --run2=$run2 --tave_int='1979-01-01,1980-01-01'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 

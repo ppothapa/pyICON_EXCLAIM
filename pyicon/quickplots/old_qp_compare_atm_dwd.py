@@ -58,16 +58,12 @@ atm_2d      = ''
 atm_3d      = '' 
 atm_mon     = '' 
 
-time_mode_atm = 'num2date'  # 'num2date' is the new default previously, 'float2date' was regularly used
-
 # --- time average information (can be overwritten by qp_driver call)
 tave_ints = [['1950-02-01', '1952-01-01']]
 # --- decide which data files to take for time series plots
 tstep     = '????????????????'
 # --- set this to 12 for yearly averages in timeseries plots, set to 0 for no averaging
 ave_freq = 12
-
-time_at_end_of_interval = True
 
 # --- xarray usage
 xr_chunks = None
@@ -273,16 +269,12 @@ atm_2d      = \'{atm_2d}\'
 atm_3d      = \'{atm_3d}\'
 atm_mon     = \'{atm_mon}\'
 
-time_mode_atm = \'{time_mode_atm}\'
-
 # --- time average information (can be overwritten by qp_driver call)
 tave_ints = {tave_ints}
 # --- decide which data files to take for time series plots
 tstep     = \'{tstep}\'
 # --- set this to 12 for yearly averages in timeseries plots, set to 0 for no averaging
 ave_freq = {ave_freq}
-
-time_at_end_of_interval = {time_at_end_of_interval}
 
 # --- xarray usage
 xr_chunks = {xr_chunks}
@@ -683,10 +675,9 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_rectangular_grid  = True,
                  calc_coeff             = True,
                  verbose                = verbose,
-                 time_mode    = time_mode_atm,
+                 time_mode    = 'float2date',
                  model_type   = 'atm',
                  do_conf_dwd   = do_conf_dwd,
-                 time_at_end_of_interval= time_at_end_of_interval,
                 )
 
   fname_atm_2d_2 = '%s%s_%s.nc' % (run2, atm_2d, tstep)
@@ -707,10 +698,9 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_rectangular_grid  = True,
                  calc_coeff             = True,
                  verbose                = verbose,
-                 time_mode    = time_mode_atm,
+                 time_mode    = 'float2date',
                  model_type   = 'atm',
                  do_conf_dwd   = do_conf_dwd,
-                 time_at_end_of_interval= time_at_end_of_interval,
                 )
 
   fname_atm_3d_1 = '%s%s_%s.nc' % (run1, atm_3d, tstep)
@@ -731,10 +721,9 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_rectangular_grid  = True,
                  calc_coeff             = False,
                  verbose                = verbose,
-                 time_mode    = time_mode_atm,
+                 time_mode    = 'float2date',
                  model_type   = 'atm',
                  do_conf_dwd   = do_conf_dwd,
-                 time_at_end_of_interval= time_at_end_of_interval,
                 )
 
   fname_atm_3d_2 = '%s%s_%s.nc' % (run2, atm_3d, tstep)
@@ -755,10 +744,9 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_rectangular_grid  = True,
                  calc_coeff             = False,
                  verbose                = verbose,
-                 time_mode    = time_mode_atm,
+                 time_mode    = 'float2date',
                  model_type   = 'atm',
                  do_conf_dwd   = do_conf_dwd,
-                 time_at_end_of_interval= time_at_end_of_interval,
                 )
 
   fpath_ckdtree_atm = IcD_atm3d_1.rgrid_fpath_dict[rgrid_name_atm]
@@ -781,10 +769,9 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_rectangular_grid  = False,
                  calc_coeff             = False,
                  verbose                = verbose,
-                 time_mode    = time_mode_atm,
+                 #time_mode    = 'float2date',
                  model_type   = 'atm',
                  do_conf_dwd   = do_conf_dwd,
-                 time_at_end_of_interval= time_at_end_of_interval,
                 )
 
   fname_atm_mon_2 = '%s%s_%s.nc' % (run2, atm_mon, tstep)
@@ -805,10 +792,9 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_rectangular_grid  = False,
                  calc_coeff             = False,
                  verbose                = verbose,
-                 time_mode    = time_mode_atm,
+                 #time_mode    = 'float2date',
                  model_type   = 'atm',
                  do_conf_dwd   = do_conf_dwd,
-                 time_at_end_of_interval= time_at_end_of_interval,
                 )
   
   if do_ocean_plots==False:

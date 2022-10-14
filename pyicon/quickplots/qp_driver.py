@@ -64,8 +64,7 @@ atm_2d      = ''
 atm_3d      = '' 
 atm_mon     = '' 
 
-#time_mode_atm = 'num2date'  # 'num2date' is the new default previously, 'float2date' was regularly used
-time_mode_atm = 'float2date'  # 'num2date' is the new default previously, 'float2date' was regularly used
+time_mode_atm = 'num2date'  # 'num2date' is the new default previously, 'float2date' was regularly used
 
 # --- time average information (can be overwritten by qp_driver call)
 tave_ints = [['1950-02-01', '1952-01-01']]
@@ -767,7 +766,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_rectangular_grid  = False,
                  calc_coeff             = False,
                  verbose                = verbose,
-                 #time_mode    = 'float2date',
+                 time_mode    = time_mode_atm,
                  model_type   = 'atm',
                  do_conf_dwd   = do_conf_dwd,
                  time_at_end_of_interval= time_at_end_of_interval,
