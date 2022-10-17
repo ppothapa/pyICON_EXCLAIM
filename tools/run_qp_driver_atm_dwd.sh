@@ -85,7 +85,7 @@ startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
 run="cpl02"
 path_data="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run}/output/icon/"
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='2000-01-01,2000-10-01'
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='2000-01-01,2011-01-01'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 
