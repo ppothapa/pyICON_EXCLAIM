@@ -1046,7 +1046,7 @@ for tave_int in tave_ints:
     print('tpoints for Sep avarage:                    ', IcD_monthly.times[it_ave_sep])
 
     if mask_int.sum()==0:
-      raise ValueError(f'::: Error: Cannot find any data in {path_data} for time period from {t1} unitl {t2}! :::')
+      raise ValueError(f'::: Error: Cannot find any data in {path_data1} for time period from {t1} unitl {t2}! :::')
 
     # ================================================================================ 
     # start with plotting
