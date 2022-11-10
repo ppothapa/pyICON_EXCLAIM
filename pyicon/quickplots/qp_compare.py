@@ -52,6 +52,13 @@ def do_clabels(mappable, ax):
     txt.set_bbox(dict(facecolor='white', edgecolor='none', pad=0))
   return
 
+def time_ave(da, S, Set):
+  if Set.do_timeave:
+    da_tave = da.sel(time=slice(S.t1, S.t2)).mean(dim='time')
+  else:
+    da_tave = da
+  return da_tave
+
 # Settings default
 # ----------------
 Set = Settings()
@@ -62,8 +69,10 @@ Set.path_pics = Set.path_base+'pics/'
 Set.do_diff = True
 Set.compare_with_reference = False
 Set.omit_last_file = False
+Set.do_timeave = True
 
 Set.tstr = '????????????????'
+Set.tstr_ts = '????????????????'
 Set.prfx_3d      = '_P1Y_3d'
 Set.prfx_2d      = '_P1M_2d'
 Set.prfx_monitor = '_P1M_mon'
@@ -253,7 +262,7 @@ if True:
   for nn, S in enumerate(Sims):
     print(f'Loading {S.run}')
 
-    flist = get_flist(f'{S.path_data}{S.run}{Set.prfx_monitor}_{Set.tstr}.nc')
+    flist = get_flist(f'{S.path_data}{S.run}{Set.prfx_monitor}_{Set.tstr_ts}.nc')
     S.ds_ts = xr.open_mfdataset(flist,
       **Set.mfdset_kwargs
       )
@@ -325,10 +334,11 @@ if True:
     # --- interpolating/integrating 3D data 
     print('--- loading to')
     to = S.ds_3d.to.sel(time=slice(S.t1, S.t2)).mean(dim='time') 
+    to = time_ave(S.ds_3d.to, S, Set)
     to = to.where(S.fx.wet_c==1.)
 
     print('--- loading so')
-    so = S.ds_3d.so.sel(time=slice(S.t1, S.t2)).mean(dim='time') 
+    so = time_ave(S.ds_3d.so, S, Set)
     so = so.where(S.fx.wet_c==1.)
 
     _, _, soi = pyic.interp_to_rectgrid(so.copy(), fpath_ckdtree=S.fpath_ckdtree)
@@ -360,19 +370,22 @@ if True:
     S.dsi['soi'] = xr.DataArray(S.soi, dims=['depth', 'lat', 'lon'], coords=dict(depth=S.depth, lat=lat, lon=lon))
 
     print('--- loading kv')
-    kv = S.ds_3d.A_tracer_v_to.sel(time=slice(S.t1, S.t2)).mean(dim='time') 
+    kv = time_ave(S.ds_3d.A_tracer_v_to, S, Set)
     kv = kv.where(kv!=0.)
     _, _, S.kvi = pyic.interp_to_rectgrid(kv, fpath_ckdtree=S.fpath_ckdtree)
     S.dsi['kvi'] = xr.DataArray(S.kvi, dims=['depthi', 'lat', 'lon'], coords=dict(depth=S.depthi, lat=lat, lon=lon))
 
     print('--- loading tke')
-    tke = S.ds_cvmix.tke.sel(time=slice(S.t1, S.t2)).mean(dim='time') 
+    try:
+      tke = time_ave(S.ds_3d.tke, S, Set)
+    except:
+      tke = time_ave(S.ds_cvmix.tke, S, Set)
     tke = tke.where(tke!=0.)
     _, _, S.tkei = pyic.interp_to_rectgrid(tke, fpath_ckdtree=S.fpath_ckdtree)
     S.dsi['tkei'] = xr.DataArray(S.tkei, dims=['depthi', 'lat', 'lon'], coords=dict(depth=S.depthi, lat=lat, lon=lon))
     
     print('--- mass_flux_vint')
-    mass_flux = S.ds_3d.mass_flux.sel(time=slice(S.t1, S.t2)).mean(dim='time')
+    mass_flux = time_ave(S.ds_3d.mass_flux, S, Set)
     mass_flux = mass_flux.rename(dict(ncells_2='edge'))
     S.mass_flux_vint = mass_flux.sum(axis=0).compute()
 
@@ -435,7 +448,7 @@ for do_twice in range(Set.ndo_twice):
                                 )
     for nn, S in enumerate(Sims):
       ax=hca[nn]; cax=hcb[nn]
-      data = S.ds_2d.zos.sel(time=slice(S.t1, S.t2)).mean(dim='time') 
+      data = time_ave(S.ds_2d.zos, S, Set)
       _, _, data = pyic.interp_to_rectgrid(data, fpath_ckdtree=S.fpath_ckdtree)
       if nn==0 or Set.do_diff==False:
         data_ref = data
@@ -445,8 +458,8 @@ for do_twice in range(Set.ndo_twice):
         ax.set_title(f'  SSH [m]', loc='left')
       else:
         data += -data_ref
-        clim = 0.5
-        cincr = 0.05
+        clim = 0.2
+        cincr = clim/10.
         ax.set_title(f'{S.name} - ref', loc='right')
       pyic.shade(lon, lat, data, ax=ax, cax=cax, clim=clim, cincr=cincr)
     for ax in hca:
@@ -473,7 +486,7 @@ for do_twice in range(Set.ndo_twice):
         ax.set_title(f'  MLD in Mar [m]', loc='left')
       else:
         data += - data_ref
-        clim = 500.
+        clim = 200.
         clevs = np.linspace(-clim, clim, 21)
         ax.set_title(f'{S.name} - ref', loc='right')
       pyic.shade(lon, lat, data, ax=ax, cax=cax, clim=clim, clevs=clevs, projection=ccrs.PlateCarree())
@@ -501,7 +514,7 @@ for do_twice in range(Set.ndo_twice):
         ax.set_title(f'  MLD in Sep [m]', loc='left')
       else:
         data += - data_ref
-        clim = 500.
+        clim = 200.
         clevs = np.linspace(-clim, clim, 21)
         ax.set_title(f'{S.name} - ref', loc='right')
       pyic.shade(lon, lat, data, ax=ax, cax=cax, clim=clim, clevs=clevs, projection=ccrs.PlateCarree())
@@ -607,7 +620,7 @@ for do_twice in range(Set.ndo_twice):
         ax.set_title(f'ref: {S.name}', loc='right')
       else:
         data = data - data_ref
-        clim=3
+        clim=1
         clevs=np.linspace(-clim, clim, 21)
         ax.set_title(f'{S.name} - ref', loc='right')
       pyic.shade(lon, lat, data, ax=ax, cax=cax, clim=clim, clevs=clevs,
@@ -646,7 +659,7 @@ for do_twice in range(Set.ndo_twice):
         ax.set_title(f'ref: {S.name}', loc='right')
       else:
         data = data - data_ref
-        clim=3
+        clim=1.
         clevs=np.linspace(-clim, clim, 21)
         ax.set_title(f'{S.name} - ref', loc='right')
       pyic.shade(lon, lat, data, ax=ax, cax=cax, clim=clim, clevs=clevs,
@@ -1114,7 +1127,7 @@ for do_twice in range(Set.ndo_twice):
                                 )
     ii=-1
     clims_a = [[-6,1]]*5
-    clims_d = [10, 1, 0.1, 0.01, 0.001]
+    clims_d = [1, 0.1, 0.01, 0.001, 0.0001]
     for kk in range(dlevs.size-1):
       for nn, S in enumerate(Sims):
         ind = (S.depthi>=dlevs[kk]) & (S.depthi<dlevs[kk+1])
@@ -1162,7 +1175,7 @@ for do_twice in range(Set.ndo_twice):
         ax.set_title(f'ref: {S.name}', loc='right')
       else:
         data += - data_ref
-        clim = 1e-2
+        clim = 1e-4
         cincr = clim/10.
         logplot = False
         ax.set_title(f'{S.name} - ref', loc='right')
@@ -1194,7 +1207,7 @@ for do_twice in range(Set.ndo_twice):
         ax.set_title(f'ref: {S.name}', loc='right')
       else:
         data += - data_ref
-        clim = 1e-2
+        clim = 1e-4
         cincr = clim/10.
         logplot = False
         ax.set_title(f'{S.name} - ref', loc='right')
@@ -1305,8 +1318,8 @@ for do_twice in range(Set.ndo_twice):
         ax.set_title(f'  Atlantic MOC [Sv]', loc='left')
       else:
         data = data-data_ref
-        clim = 10
-        cincr = 1.
+        clim = 4
+        cincr = clim/10.
         ax.set_title(f'{S.name} - ref', loc='right')
       hm = pyic.shade(moc.lat, moc.depth, data, ax=ax, cax=cax,
                  clim=clim, cincr=cincr, conts='auto')
@@ -1339,8 +1352,8 @@ for do_twice in range(Set.ndo_twice):
         ax.set_title(f'  Pacific MOC [Sv]', loc='left')
       else:
         data = data-data_ref
-        clim = 10
-        cincr = 1.
+        clim = 4
+        cincr = clim/10.
         ax.set_title(f'{S.name} - ref', loc='right')
       hm = pyic.shade(moc.lat, moc.depth, data, ax=ax, cax=cax,
                  clim=clim, cincr=cincr, conts='auto')
@@ -1373,8 +1386,8 @@ for do_twice in range(Set.ndo_twice):
         ax.set_title(f'  Global MOC [Sv]', loc='left')
       else:
         data = data-data_ref
-        clim = 10
-        cincr = 1.
+        clim = 4
+        cincr = clim/10.
         ax.set_title(f'{S.name} - ref', loc='right')
       hm = pyic.shade(moc.lat, moc.depth, data, ax=ax, cax=cax,
                  clim=clim, cincr=cincr, conts='auto')
@@ -1555,8 +1568,8 @@ for do_twice in range(Set.ndo_twice):
         ax.set_title(f'  kin. energy 100m [m$^2$/s$^2$]', loc='left')
       else:
         data += -data_ref
-        clim = 0.5
-        cincr = 0.05
+        clim = 0.1
+        cincr = clim/10.
         logplot = False
         ax.set_title(f'{S.name} - ref', loc='right')
       pyic.shade(lon, lat, data, ax=ax, cax=cax, clim=clim, cincr=cincr, logplot=logplot)
@@ -1589,8 +1602,8 @@ for do_twice in range(Set.ndo_twice):
         ax.set_title(f'  kin. energy 2000m [m$^2$/s$^2$]', loc='left')
       else:
         data += -data_ref
-        clim = 0.5
-        cincr = 0.05
+        clim = 0.1
+        cincr = clim/10.
         logplot = False
         ax.set_title(f'{S.name} - ref', loc='right')
       pyic.shade(lon, lat, data, ax=ax, cax=cax, clim=clim, cincr=cincr, logplot=logplot)

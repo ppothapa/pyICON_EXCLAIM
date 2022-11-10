@@ -223,6 +223,11 @@ def interp_to_rectgrid_xr(arr, fpath_ckdtree,
                           mask_out_of_range_before=False,
                          ):
 
+  # --- rename dimensions if necessary
+  for dim in ['cell', 'edge', 'vertex', 'ncells_2', 'ncells_3']:
+    if dim in arr.dims:
+      arr = arr.rename({dim: 'ncells'})
+
   # --- load interpolation indices
   ds_ckdt = xr.open_dataset(fpath_ckdtree)
   if ('clon' in coordinates) or (coordinates==''):
@@ -231,7 +236,6 @@ def interp_to_rectgrid_xr(arr, fpath_ckdtree,
   elif 'elon' in coordinates:
     inds = ds_ckdt.ickdtree_e
     dist = ds_ckdt.dckdtree_e
-    arr = arr.rename(ncells_2='ncells')
   elif 'vlon' in coordinates:
     inds = ds_ckdt.ickdtree_v
     dist = ds_ckdt.dckdtree_v
@@ -654,10 +658,11 @@ def calc_ckdtree(lon_i, lat_i, lon_o, lat_o, n_nearest_neighbours=1, n_jobs=1, u
       lzip_i = np.concatenate((xi[:,np.newaxis],yi[:,np.newaxis],zi[:,np.newaxis]), axis=1)
       lzip_o = np.concatenate((xo[:,np.newaxis],yo[:,np.newaxis],zo[:,np.newaxis]), axis=1) 
     tree = cKDTree(lzip_i)
-    dckdtree, ickdtree = tree.query(lzip_o , k=n_nearest_neighbours, n_jobs=n_jobs)
+    #dckdtree, ickdtree = tree.query(lzip_o , k=n_nearest_neighbours, n_jobs=n_jobs)
+    dckdtree, ickdtree = tree.query(lzip_o , k=n_nearest_neighbours)
   return dckdtree, ickdtree
 
-def calc_vertical_interp_weights(zdata, levs):
+def calc_vertical_interp_weights(zdata, levs, increases_along_axes=True):
   """ Calculate vertical interpolation weights and indices.
 
 Call example:
@@ -675,7 +680,10 @@ datai = data[ind_lev,icall]*fac+data[ind_lev+1,icall]*(1.-fac)
   for k, lev in enumerate(levs):
     #print(f'k = {k}')
     # --- find level below critical level
-    ind_lev[k,:] = (zdata<levs[k]).sum(axis=0)-1
+    if increases_along_axes:
+      ind_lev[k,:] = (zdata<levs[k]).sum(axis=0)-1
+    else:
+      ind_lev[k,:] = (zdata>levs[k]).sum(axis=0)-1
     ind_lev[k,ind_lev[k,:]==(nza-1)]=-1
     # --- zdata below and above lev 
     zd1 = zdata[ind_lev[k,:],icall]
@@ -817,6 +825,53 @@ def datetime64_to_float(dates):
   days   = int((str(dates.astype('datetime64[D]'))[8:10]))
   return years, months, days
 
+def get_averaging_interval(times, output_freq, end_of_interval=True):
+  """ Determine the length of the averaging time interval in seconds.
+
+  times: numpy array containing numpy.datetime64 objects: time points which are associated with averaing interval
+  output_freq: bool: pick either 'monthly', 'yearly', 'daily' or 'hourly'
+  end_of_interal: bool: sets whether time points of times are interpreted at the end of the averaging interval (default ICON output) or at the beginning or in the middle (mkexp time shift)
+  """
+  dt = np.zeros((times.size))
+  dt64type = times[0].dtype
+  if output_freq=='yearly':
+    for nn in range(times.size):
+      yy, mm, dd = datetime64_to_float(times[nn])
+      if end_of_interval:
+        y1, y2 = yy-1, yy
+      else:
+        y1, y2 = yy, yy+1
+      t1 = np.datetime64(f'{y1:04d}-01-01').astype(dt64type)
+      t2 = np.datetime64(f'{y2:04d}-01-01').astype(dt64type)
+      dt[nn] = t2-t1
+  elif output_freq=='monthly':
+    for nn in range(times.size):
+      yy, mm, dd = datetime64_to_float(times[nn])
+      if end_of_interval:
+        if mm==1:
+          m1, y1 = 12, yy-1
+          m2, y2 = 1,  yy
+        else:
+          m1, y1 = mm-1, yy
+          m2, y2 = mm, yy
+      else:
+        if mm==12:
+          m1, y1 = 12, yy
+          m2, y2 = 1,  yy+1
+        else:
+          m1, y1 = mm,   yy
+          m2, y2 = mm+1, yy
+      t1 = np.datetime64(f'{y1:04d}-{m1:02d}-01').astype(dt64type)
+      t2 = np.datetime64(f'{y2:04d}-{m2:02d}-01').astype(dt64type)
+      dt[nn] = t2-t1
+  elif output_freq=='daily':
+    dt += 86400.
+  elif output_freq=='hourly':
+    dt += 3600.
+  else:
+    raise ValueError(f'::: Error: Unsupported output_freq = {output_freq}!:::')
+  return dt
+
 def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use_loop=False, verbose=False, use_xr=False, load_xr_data=False, dimension_from_file='first'):
   it_ave = np.array(it_ave)
   # --- if no it_ave is given use t1 and t2 to determine averaging indices it_ave
@@ -849,25 +904,27 @@ def time_average(IcD, var, t1='none', t2='none', it_ave=[], iz='all', always_use
   #else:
   #  ave_mode = 'unknown'
        
-  dt64type = IcD.times[0].dtype
-  time_bnds = IcD.times[it_ave]
-  yy, mm, dd = datetime64_to_float(time_bnds[0])
-  if t1!=t2:
-    if IcD.output_freq=='yearly':
-      time_bnds = np.concatenate(([np.datetime64(f'{yy-1:04d}-{mm:02d}-{dd:02d}').astype(dt64type)],time_bnds))
-    elif IcD.output_freq=='monthly':
-      if mm==1:
-        yy += -1
-        mm = 13
-      time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
-    elif IcD.output_freq=='unknown':
-      time_bnds = np.concatenate(([time_bnds[0]-(time_bnds[1]-time_bnds[0])], time_bnds))
-    dt = np.diff(time_bnds).astype(IcD.dtype)
-  else:
-    # load single time instance
-    dt = np.array([1])
-  #dt = np.ones((it_ave.size), dtype=IcD.dtype)
-  #print('Warning dt set to ones!!!')
+  # --- determine the length of the time average interval (in seconds)
+  #dt64type = IcD.times[0].dtype
+  #time_bnds = IcD.times[it_ave]
+  #yy, mm, dd = datetime64_to_float(time_bnds[0])
+  #if t1!=t2:
+  #  if IcD.output_freq=='yearly':
+  #    time_bnds = np.concatenate(([np.datetime64(f'{yy-1:04d}-{mm:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+  #  elif IcD.output_freq=='monthly':
+  #    if mm==1:
+  #      yy += -1
+  #      mm = 13
+  #    time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+  #  elif IcD.output_freq=='unknown':
+  #    time_bnds = np.concatenate(([time_bnds[0]-(time_bnds[1]-time_bnds[0])], time_bnds))
+  #  dt = np.diff(time_bnds).astype(IcD.dtype)
+  #else:
+  #  # load single time instance
+  #  dt = np.array([1])
+  ##dt = np.ones((it_ave.size), dtype=IcD.dtype)
+  ##print('Warning dt set to ones!!!')
+  dt = get_averaging_interval(IcD.times[it_ave], IcD.output_freq, end_of_interval=IcD.time_at_end_of_interval)
 
   # --- get dimensions to allocate data
   if dimension_from_file=='first':
@@ -1015,6 +1072,14 @@ def identify_grid(path_grid, fpath_data):
   
   Dgrid_list = dict()
 
+  grid_name = 'r2b3_atm_r0030'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '320km'
+  Dgrid_list[grid_name]['long_name'] = 'icon_grid_0030_R02B03_G'
+  Dgrid_list[grid_name]['size'] = 5120
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '/' + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
+
   grid_name = 'r2b4_oce_r0003'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
   Dgrid_list[grid_name]['res'] = '160km'
@@ -1119,6 +1184,14 @@ def identify_grid(path_grid, fpath_data):
   #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '.nc'
   Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
 
+  grid_name = 'smtwv_oce_2022'; Dgrid_list[grid_name] = dict()
+  Dgrid_list[grid_name]['name'] = grid_name
+  Dgrid_list[grid_name]['res'] = '500m-11km'
+  Dgrid_list[grid_name]['long_name'] = 'SMT WAVE grid'
+  Dgrid_list[grid_name]['size'] = 66877252
+  #Dgrid_list[grid_name]['fpath_grid'] = path_grid + Dgrid_list[grid_name]['long_name'] + '.nc'
+  Dgrid_list[grid_name]['fpath_grid'] = f'{path_grid}/{grid_name}/{grid_name}_tgrid.nc'
+
   grid_name = 'icon_244_0158km60'; Dgrid_list[grid_name] = dict()
   Dgrid_list[grid_name]['name'] = grid_name
   Dgrid_list[grid_name]['res'] = 'XXXkm'
@@ -1143,7 +1216,7 @@ def identify_grid(path_grid, fpath_data):
       try:
         gsize = fpath_data.cells.size
       except:
-        raise ValueError('::: Error: Could not read numer ob cells from fpath_data! :::')
+        raise ValueError('::: Error: Could not read numer of cells from fpath_data! :::')
 
   for grid_name in Dgrid_list.keys():
     if gsize == Dgrid_list[grid_name]['size']:
@@ -1318,7 +1391,6 @@ def get_timesteps(flist, time_mode='num2date'):
     ##  np_time = np.array(tstrs, dtype='datetime64')
     ##else:
     ##  raise ValueError('::: Error: Wrong time_mode %s in get_timesteps! :::' % time_mode)
-    #mybreak()
     #times[nn*nt:(nn+1)*nt] = np_time
     #flist_ts[nn*nt:(nn+1)*nt] = np.array([fpath]*nt)
     #its[nn*nt:(nn+1)*nt] = np.arange(nt)

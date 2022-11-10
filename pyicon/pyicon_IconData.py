@@ -52,6 +52,7 @@ class IconData(object):
                model_type            = 'oce',
                do_conf_dwd           = False,
                output_freq           = 'auto',
+               time_at_end_of_interval = True,
                verbose               = False,
                dtype                 = 'float32',
               ):
@@ -285,6 +286,7 @@ class IconData(object):
         self.output_freq = 'unknown'
     else:
       self.output_freq = output_freq
+    self.time_at_end_of_interval = time_at_end_of_interval
 
     if load_variable_info:
       self.diag_out('load_variable_info')
@@ -924,10 +926,10 @@ class IconVariable(object):
     self.data[self.mask] = np.ma.masked
     return
 
-  def interp_to_rectgrid(self, fpath_ckdtree, mask_reg=None, indx='all', indy='all'):
+  def interp_to_rectgrid(self, fpath_ckdtree, mask_reg=None, lon_reg=None, lat_reg=None, indx='all', indy='all'):
     if self.isinterpolated:
       raise ValueError('::: Variable %s is already interpolated. :::'%self.name)
-    self.lon, self.lat, self.data = interp_to_rectgrid(self.data, fpath_ckdtree, mask_reg=mask_reg, indx=indx, indy=indy, coordinates=self.coordinates)
+    self.lon, self.lat, self.data = interp_to_rectgrid(self.data, fpath_ckdtree, mask_reg=mask_reg, lon_reg=lon_reg, lat_reg=lat_reg, indx=indx, indy=indy, coordinates=self.coordinates)
     return
 
   def interp_to_section(self, fpath_ckdtree):

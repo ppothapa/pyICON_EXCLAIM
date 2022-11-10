@@ -64,12 +64,17 @@ atm_2d      = ''
 atm_3d      = '' 
 atm_mon     = '' 
 
+time_mode_atm = 'num2date'  # 'num2date' is the new default previously, 'float2date' was regularly used
+
 # --- time average information (can be overwritten by qp_driver call)
 tave_ints = [['1950-02-01', '1952-01-01']]
 # --- decide which data files to take for time series plots
 tstep     = '????????????????'
+tstep_ts  = '????????????????'
 # --- set this to 12 for yearly averages in timeseries plots, set to 0 for no averaging
 ave_freq = 12
+
+time_at_end_of_interval = True
 
 # --- xarray usage
 xr_chunks = None
@@ -258,12 +263,16 @@ atm_2d      = \'{atm_2d}\'
 atm_3d      = \'{atm_3d}\'
 atm_mon     = \'{atm_mon}\'
 
+time_mode_atm = \'{time_mode_atm}\'
+
 # --- time average information (can be overwritten by qp_driver call)
 tave_ints = {tave_ints}
 # --- decide which data files to take for time series plots
 tstep     = \'{tstep}\'
 # --- set this to 12 for yearly averages in timeseries plots, set to 0 for no averaging
 ave_freq = {ave_freq}
+
+time_at_end_of_interval = {time_at_end_of_interval}
 
 # --- xarray usage
 xr_chunks = {xr_chunks}
@@ -549,6 +558,7 @@ if do_ocean_plots and not iopts.no_plots:
     calc_coeff             = False,
     load_xarray_dset       = load_xarray_dset,
     xr_chunks              = xr_chunks,
+    time_at_end_of_interval= time_at_end_of_interval,
     verbose                = verbose,
   )
 
@@ -573,16 +583,20 @@ if do_ocean_plots and not iopts.no_plots:
                  calc_coeff             = False,
                  load_xarray_dset       = load_xarray_dset,
                  xr_chunks              = xr_chunks,
-                 verbose                = verbose,
-
+                 time_at_end_of_interval= time_at_end_of_interval,
+                 verbose                = verbose, 
                 )
   fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
   [k100, k500, k800, k1000, k2000, k3000] = indfind(IcD.depthc, [100., 500., 800., 1000., 2000., 3000.])
 
   DIcD = dict()
-  for var in ['to', 'so', 'u', 'v', 'massflux', 'ice', 'monthly', 'mon']:
-    fname = '%s%s_%s.nc' % (run, D_variable_container[var], tstep)
-    print('Dataset %s' % (fname))
+  for var in ['to', 'so', 'u', 'v', 'massflux', 'ice', 'monthly', 'mon', 'sqr']:
+    if var=='mon':
+      tstep_tmp = tstep_ts
+    else:
+      tstep_tmp = tstep
+    fname = '%s%s_%s.nc' % (run, D_variable_container[var], tstep_tmp)
+    print(f'Data container for {var}: {fname}')
     DIcD[var] = pyic.IconData(
       fname=fname, **IDsettings)
   DIcD['massflux'].load_tgrid()
@@ -607,6 +621,7 @@ if do_ocean_plots and not iopts.no_plots:
                  load_triangular_grid   = False,
                  load_rectangular_grid  = True,
                  calc_coeff             = False,
+                 time_at_end_of_interval= time_at_end_of_interval,
                  verbose                = verbose,
                 )
   IcD_moc.depthc = IcD.depthc
@@ -694,9 +709,10 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_rectangular_grid  = True,
                  calc_coeff             = True,
                  verbose                = verbose,
-                 time_mode    = 'float2date',
+                 time_mode    = time_mode_atm,
                  model_type   = 'atm',
                  do_conf_dwd   = do_conf_dwd,
+                 time_at_end_of_interval= time_at_end_of_interval,
                 )
 
   fname_atm_3d = '%s%s_%s.nc' % (run, atm_3d, tstep)
@@ -717,13 +733,14 @@ if do_atmosphere_plots and not iopts.no_plots:
                  load_rectangular_grid  = True,
                  calc_coeff             = False,
                  verbose                = verbose,
-                 time_mode    = 'float2date',
+                 time_mode    = time_mode_atm,
                  model_type   = 'atm',
                  do_conf_dwd   = do_conf_dwd,
+                 time_at_end_of_interval= time_at_end_of_interval,
                 )
   fpath_ckdtree_atm = IcD_atm3d.rgrid_fpath_dict[rgrid_name_atm]
 
-  fname_atm_mon = '%s%s_%s.nc' % (run, atm_mon, tstep)
+  fname_atm_mon = '%s%s_%s.nc' % (run, atm_mon, tstep_ts)
   print('Dataset %s' % (fname_atm_mon))
   IcD_atm_mon = pyic.IconData(
                  fname        = fname_atm_mon,
@@ -744,6 +761,7 @@ if do_atmosphere_plots and not iopts.no_plots:
                  #time_mode    = 'float2date',
                  model_type   = 'atm',
                  do_conf_dwd   = do_conf_dwd,
+                 time_at_end_of_interval= time_at_end_of_interval,
                 )
   
   if do_ocean_plots==False:
@@ -752,7 +770,7 @@ if do_atmosphere_plots and not iopts.no_plots:
 
 if do_hamocc_plots and not iopts.no_plots:
   if not do_ocean_plots:
-    fname = '%s%s_%s.nc' % (run, DIcD['default'], tstep)
+    fname = '%s%s_%s.nc' % (run, D_variable_container['default'], tstep)
     print('Dataset %s' % (fname))
     IcD = pyic.IconData(
                    fname        = fname,
@@ -770,12 +788,13 @@ if do_hamocc_plots and not iopts.no_plots:
                    load_triangular_grid   = True, # needed for bstr
                    load_rectangular_grid  = True,
                    calc_coeff             = False,
+                   time_at_end_of_interval= time_at_end_of_interval,
                    verbose                = verbose,
                   )
     fpath_ckdtree = IcD.rgrid_fpath_dict[rgrid_name]
     [k100, k500, k800, k1000, k2000, k3000] = indfind(IcD.depthc, [100., 500., 800., 1000., 2000., 3000.])
 
-    fname_monthly = '%s%s_%s.nc' % (run, oce_monthly, tstep)
+    fname_monthly = '%s%s_%s.nc' % (run, D_variable_container['monthly'], tstep)
     print('Dataset %s' % (fname_monthly))
     IcD_monthly = pyic.IconData(
                    fname        = fname_monthly,
@@ -792,6 +811,7 @@ if do_hamocc_plots and not iopts.no_plots:
                    load_triangular_grid   = False,
                    load_rectangular_grid  = True,
                    calc_coeff             = False,
+                   time_at_end_of_interval= time_at_end_of_interval,
                    verbose                = verbose,
                   )
     IcD_monthly.wet_c = IcD.wet_c
@@ -814,6 +834,7 @@ if do_hamocc_plots and not iopts.no_plots:
                  load_triangular_grid   = False,
                  load_rectangular_grid  = True,
                  calc_coeff             = False,
+                 time_at_end_of_interval= time_at_end_of_interval,
                  verbose                = verbose,
                 )
   IcD_ham_inv.wet_c = IcD.wet_c
@@ -835,11 +856,12 @@ if do_hamocc_plots and not iopts.no_plots:
                  load_triangular_grid   = False,
                  load_rectangular_grid  = True,
                  calc_coeff             = False,
+                 time_at_end_of_interval= time_at_end_of_interval,
                  verbose                = verbose,
                 )
   IcD_ham_2d.wet_c = IcD.wet_c
 
-  fname_ham_mon = '%s%s_%s.nc' % (run, ham_mon, tstep)
+  fname_ham_mon = '%s%s_%s.nc' % (run, ham_mon, tstep_ts)
   print('Dataset %s' % (fname_ham_mon))
   IcD_ham_mon = pyic.IconData(
                  fname        = fname_ham_mon,
@@ -855,6 +877,7 @@ if do_hamocc_plots and not iopts.no_plots:
                  load_triangular_grid   = False,
                  load_rectangular_grid  = False,
                  calc_coeff             = False,
+                 time_at_end_of_interval= time_at_end_of_interval,
                  verbose                = verbose,
                 )
 print('Done reading datasets')
@@ -961,8 +984,12 @@ for tave_int in tave_ints:
     it_ave_months = np.where( mask_int )[0]
     # Note: In ICON the date of an average is set to the end of the averaging interval
     #       Thus, the 4th month corresponds to March and the 10th to September
-    it_ave_mar = np.where( mask_int & (months==4)  )[0]
-    it_ave_sep = np.where( mask_int & (months==10) )[0]
+    if IcD_monthly.time_at_end_of_interval:
+      it_ave_mar = np.where( mask_int & (months==4)  )[0]
+      it_ave_sep = np.where( mask_int & (months==10) )[0]
+    else:
+      it_ave_mar = np.where( mask_int & (months==3) )[0]
+      it_ave_sep = np.where( mask_int & (months==9) )[0]
     if it_ave_mar.size==0:
       it_ave_mar = it_ave_months
     if it_ave_sep.size==0:
@@ -986,7 +1013,7 @@ for tave_int in tave_ints:
     # upper ocean
     # -------------------------------------------------------------------------------- 
     #fname = '%s%s_%s.nc' % (run, oce_def, tstep)
-    fname = '%s%s_%s.nc' % (run, DIcD['monthly'], tstep)
+    fname = '%s%s_%s.nc' % (run, D_variable_container['monthly'], tstep)
     Ddict_global = dict(
       xlim=[-180.,180.], ylim=[-90.,90.],
       rgrid_name=rgrid_name,
@@ -1061,7 +1088,7 @@ for tave_int in tave_ints:
       #zos, it_ave          = pyic.time_average(IcD, 'zos',        t1=t1, t2=t2)
       #zos_square, it_ave   = pyic.time_average(IcD, 'zos_square', t1=t1, t2=t2)
       zos, it_ave          = pyic.time_average(DIcD['monthly'], 'zos',        t1=t1, t2=t2)
-      zos_square, it_ave   = pyic.time_average(DIcD['monthly'], 'zos_square', t1=t1, t2=t2)
+      zos_square, it_ave   = pyic.time_average(DIcD['monthly'], 'zos', t1=t1, t2=t2)
       zos_var = np.sqrt(zos_square-zos**2)
       IaV = pyic.IconVariable('zos_var', 'm', 'ssh variance')
       IaV.data = zos_var
@@ -2159,10 +2186,15 @@ for tave_int in tave_ints:
           toprow.append( tab_name )
 
       if do_atmosphere_plots:
-        varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean', 'ts_pme_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'fwfoce_gmean']
+        if do_conf_dwd:
+          varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean', 'ts_pme_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'fwfoce_gmean']
+          var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0, 0]
+          var_units_list = ['deg C', '', '', '', '', '', '', '', '']
+        else:
+          varlist = ['tas_gmean', 'radtop_gmean', 'prec_gmean', 'evap_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'fwfoce_gmean']
+          var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0]
+          var_units_list = ['deg C', '', '', '', '', '', '', '']
         var_fac_list = [1]*len(varlist)
-        var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0]
-        var_units_list = ['deg C', '', '', '', '', '', '', '']
         Dd = pyicqp.time_averages_monitoring(IcD_atm_mon, t1, t2, varlist, var_add_list=var_add_list, var_fac_list=var_fac_list, var_units_list=var_units_list)
         for var in varlist:
           val = Dd[var]['ave']*Dd[var]['fac']
@@ -2985,8 +3017,6 @@ for tave_int in tave_ints:
       #                         units='mN/m$^2$',
       #                         clim=[-200.,200.], cincr=25.0, cmap='RdYlBu_r',
       #                         IcD=IcD_atm2d, **Ddict_global)
-      plt.show()
-      sys.exit()
       save_fig('zonal wind stress', path_pics, fig_name, FigInf)
 
     # ------------------------------------------------------------------------------

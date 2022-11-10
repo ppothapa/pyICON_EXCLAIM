@@ -316,17 +316,18 @@ def qp_vplot(fpath, var, IcD='none', it=0,
 def time_averages_monitoring(IcD, t1, t2, varlist, var_fac_list=[], var_add_list=[], var_units_list=[]): 
 
   # --- define time bounds for correct time averaging
-  time_bnds = np.copy(IcD.times)
-  dt64type = time_bnds[0].dtype
-  # find year, month and day integers of first time step
-  yy, mm, dd = pyic.datetime64_to_float(time_bnds[0])
-  if mm==1:
-    yy += -1
-    mm = 13
-  # first time value is first value of time series minus one month
-  time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
-  # dt is the length of a time interval
-  dt = np.diff(time_bnds).astype(float)
+#  time_bnds = np.copy(IcD.times)
+#  dt64type = time_bnds[0].dtype
+#  # find year, month and day integers of first time step
+#  yy, mm, dd = pyic.datetime64_to_float(time_bnds[0])
+#  if mm==1:
+#    yy += -1
+#    mm = 13
+#  # first time value is first value of time series minus one month
+#  time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+#  # dt is the length of a time interval
+#  dt = np.diff(time_bnds).astype(float)
+  dt = pyic.get_averaging_interval(IcD.times, IcD.output_freq, end_of_interval=IcD.time_at_end_of_interval)
 
   if len(var_fac_list)==0:
     var_fac_list = [1]*len(varlist)
@@ -412,17 +413,18 @@ def qp_timeseries(IcD, fname, vars_plot,
     if nskip>0:
       times = times[:-nskip]
     # define time bounds for correct time averaging
-    time_bnds = np.copy(times)
-    dt64type = time_bnds[0].dtype
-    # find year, month and day integers of first time step
-    yy, mm, dd = pyic.datetime64_to_float(time_bnds[0])
-    if mm==1:
-      yy += -1
-      mm = 13
-    # first time value is first value of time series minus one month
-    time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
-    # dt is the length of a time interval
-    dt = np.diff(time_bnds).astype(float)
+#    time_bnds = np.copy(times)
+#    dt64type = time_bnds[0].dtype
+#    # find year, month and day integers of first time step
+#    yy, mm, dd = pyic.datetime64_to_float(time_bnds[0])
+#    if mm==1:
+#      yy += -1
+#      mm = 13
+#    # first time value is first value of time series minus one month
+#    time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
+#    # dt is the length of a time interval
+#    dt = np.diff(time_bnds).astype(float)
+    dt = pyic.get_averaging_interval(times, IcD.output_freq, end_of_interval=IcD.time_at_end_of_interval)
     nresh = int(times.size/ave_freq)
     times = np.reshape(times, (nresh, ave_freq)).transpose()
     # finally define times_plot as center or averaging time intervall
