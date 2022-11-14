@@ -2614,17 +2614,20 @@ for tave_int in tave_ints:
       lon, lat, data2di_2 = pyic.interp_to_rectgrid(data2d_2, fpath_ckdtree_atm, coordinates='clat clon')
       # --- calculate diff
       data_diff = data2di_2-data2di_1
-      IaV = pyic.IconVariable('data_diff', 'deg $^o$C', 'SST diff ('+run2+'-'+run1+')')
-      IaV.data = data_diff
-      pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
-                      use_tgrid=False,
-                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=True,
-                      asp=0.5,
-                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                     )
-      FigInf = dict(long_name=IaV.long_name)
-      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+      if not np.all(data_diff)==0.:
+        IaV = pyic.IconVariable('data_diff', 'deg $^o$C', 'SST diff ('+run2+'-'+run1+')')
+        IaV.data = data_diff
+        pyic.hplot_base(IcD_atm2d_1, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
+                        use_tgrid=False,
+                        projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                        land_facecolor='none', do_write_data_range=True,
+                        asp=0.5,
+                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                       )
+        FigInf = dict(long_name=IaV.long_name)
+        save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+      else:
+        print('SST diff zero... skipping...')
 
     # ---
     fig_name = 'seaice_fraction_diff'
@@ -2638,17 +2641,20 @@ for tave_int in tave_ints:
       lon, lat, data2di_2 = pyic.interp_to_rectgrid(data2d_2, fpath_ckdtree_atm, coordinates='clat clon')
       # --- calculate diff
       data_diff = data2di_2-data2di_1
-      IaV = pyic.IconVariable('data_diff', 'unitless', 'Sea-ice fraction diff ('+run2+'-'+run1+')')
-      IaV.data = data_diff
-      pyic.hplot_base(IcD_atm2d_1, IaV, clim=[-1.,1.], cincr=0.1, cmap='RdBu_r', 
-                      use_tgrid=False,
-                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='0.7', do_write_data_range=True,
-                      asp=0.5,
-                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                     )
-      FigInf = dict(long_name=IaV.long_name)
-      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+      if not np.all(data_diff)==0.:
+        IaV = pyic.IconVariable('data_diff', 'unitless', 'Sea-ice fraction diff ('+run2+'-'+run1+')')
+        IaV.data = data_diff
+        pyic.hplot_base(IcD_atm2d_1, IaV, clim=[-1.,1.], cincr=0.1, cmap='RdBu_r', 
+                        use_tgrid=False,
+                        projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                        land_facecolor='0.7', do_write_data_range=True,
+                        asp=0.5,
+                        save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                       )
+        FigInf = dict(long_name=IaV.long_name)
+        save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+      else:
+        print('Sea-ice fraction diff zero... skipping...')
 
     # ---
     fig_name = 'atm_prw_diff'
