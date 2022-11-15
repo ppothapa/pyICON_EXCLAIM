@@ -27,6 +27,8 @@ The easiest way is to use the following script:
 source /path/to/pyicon/tools/conda_act_mistral_pyicon_env.sh
 ```
 
+## Quick start for pyicon @DWD (Confluence, only intern)
+https://ninjoservices.dwd.de/wiki/display/KUQ/pyICON+for+ICON+with+NWP+physics
 
 ## Installing locally
 

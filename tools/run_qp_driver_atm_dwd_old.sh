@@ -15,7 +15,8 @@ rand=$(cat /dev/urandom | tr -dc 'A-Z' | fold -w 3 | head -n 1)
 
 path_pyicon=`(cd .. && pwd)`"/"
 config_file="./config_qp_${rand}.py"
-qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
+#qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
+qp_driver="${path_pyicon}pyicon/quickplots/old_qp_driver.py"
 
 cat > ${config_file} << %eof%
 # --- path to quickplots
@@ -73,10 +74,6 @@ tave_ints = [
 ]
 ave_freq = 12
 
-# --- decide if time-series (ts) plots are plotted for all the 
-#     available data or only for the intervall defined by tave_int
-use_tave_int_for_ts = True
-
 # --- what to plot and what not?
 # --- not to plot:
 #red_list = ['']
@@ -87,9 +84,9 @@ use_tave_int_for_ts = True
 # --- start qp_driver
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-run="terra"
+run="sml39"
 path_data="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run}/output/icon/"
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='2000-01-01,2011-01-01'
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1979-01-01,1999-12-31'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 
