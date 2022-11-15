@@ -85,7 +85,7 @@ startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
 run="atmoce01"
 path_data="/hpc/uwork/tvpham/ICON-CLM_SP_uwork/chain/scratch/atmoce01/output/icon/"
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1979-01-01,1999-12-31'
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='2000-01-01,2011-01-01'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 

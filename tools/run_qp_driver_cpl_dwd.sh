@@ -81,6 +81,10 @@ tave_ints = [
 ]
 ave_freq = 12
 
+# --- decide if time-series (ts) plots are plotted for all the 
+#     available data or only for the intervall defined by tave_int
+use_tave_int_for_ts = True
+
 # --- what to plot and what not?
 # --- not to plot:
 #red_list = ['']

@@ -69,6 +69,10 @@ ave_freq = 12
 
 time_at_end_of_interval = True
 
+# --- decide if time-series (ts) plots are plotted for all the 
+#     available data or only for the intervall defined by tave_int
+use_tave_int_for_ts = False
+
 # --- xarray usage
 xr_chunks = None
 load_xarray_dset = False
@@ -283,6 +287,10 @@ tstep     = \'{tstep}\'
 ave_freq = {ave_freq}
 
 time_at_end_of_interval = {time_at_end_of_interval}
+
+# --- decide if time-series (ts) plots are plotted for all the 
+#     available data or only for the intervall defined by tave_int
+use_tave_int_for_ts = {use_tave_int_for_ts}
 
 # --- xarray usage
 xr_chunks = {xr_chunks}
@@ -2094,7 +2102,7 @@ for tave_int in tave_ints:
         fname_atm_mon_1, fname_atm_mon_2, ['tas_gmean'],
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file,
         var_add=-273.15, units='$^o$C', 
-        lstart=1, run1=run1, run2=run2,
+        lstart=1, run1=run1, run2=run2, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2103,7 +2111,7 @@ for tave_int in tave_ints:
       FigInf, Dhandles = pyicqp.qp_timeseries_comp(IcD_atm_mon_1, IcD_atm_mon_2, 
         fname_atm_mon_1, fname_atm_mon_2, ['radtop_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, 
-        lstart=1, run1=run1, run2=run2,
+        lstart=1, run1=run1, run2=run2, use_tave_int_for_ts=use_tave_int_for_ts, 
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2112,7 +2120,7 @@ for tave_int in tave_ints:
       FigInf, Dhandles = pyicqp.qp_timeseries_comp(IcD_atm_mon_1, IcD_atm_mon_2, 
         fname_atm_mon_1, fname_atm_mon_2, ['rsdt_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, 
-        lstart=1, run1=run1, run2=run2,
+        lstart=1, run1=run1, run2=run2, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2121,7 +2129,7 @@ for tave_int in tave_ints:
       FigInf, Dhandles = pyicqp.qp_timeseries_comp(IcD_atm_mon_1, IcD_atm_mon_2, 
         fname_atm_mon_1, fname_atm_mon_2, ['rsut_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file,
-        lstart=1, run1=run1, run2=run2,
+        lstart=1, run1=run1, run2=run2, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2134,7 +2142,7 @@ for tave_int in tave_ints:
       FigInf, Dhandles = pyicqp.qp_timeseries_comp(IcD_atm_mon_1, IcD_atm_mon_2, 
         fname_atm_mon_1, fname_atm_mon_2, ['rlut_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc,
-        lstart=1, run1=run1, run2=run2,
+        lstart=1, run1=run1, run2=run2, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2143,7 +2151,7 @@ for tave_int in tave_ints:
       FigInf, Dhandles = pyicqp.qp_timeseries_comp(IcD_atm_mon_1, IcD_atm_mon_2, 
         fname_atm_mon_1, fname_atm_mon_2, ['prec_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file,
-        lstart=1, run1=run1, run2=run2,
+        lstart=1, run1=run1, run2=run2, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2152,7 +2160,7 @@ for tave_int in tave_ints:
       FigInf, Dhandles = pyicqp.qp_timeseries_comp(IcD_atm_mon_1, IcD_atm_mon_2, 
         fname_atm_mon_1, fname_atm_mon_2, ['evap_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file,
-        lstart=1, run1=run1, run2=run2,
+        lstart=1, run1=run1, run2=run2, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2162,7 +2170,7 @@ for tave_int in tave_ints:
          FigInf, Dhandles = pyicqp.qp_timeseries_comp(IcD_atm_mon_1, IcD_atm_mon_2, 
            fname_atm_mon_1, fname_atm_mon_2, ['pme_gmean'], 
            t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file,
-           lstart=1, run1=run1, run2=run2,
+           lstart=1, run1=run1, run2=run2, use_tave_int_for_ts=use_tave_int_for_ts,
            save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
          )
          save_fig(fig_name, path_pics, fig_name)
@@ -2174,7 +2182,7 @@ for tave_int in tave_ints:
          FigInf, Dhandles = pyicqp.qp_timeseries_comp(IcD_atm_mon_1, IcD_atm_mon_2, 
            fname_atm_mon_1, fname_atm_mon_2, ['fwfoce_gmean'], 
            t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file,
-           lstart=1, run1=run1, run2=run2,
+           lstart=1, run1=run1, run2=run2, use_tave_int_for_ts=use_tave_int_for_ts,
            save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
          )
          save_fig(fig_name, path_pics, fig_name)

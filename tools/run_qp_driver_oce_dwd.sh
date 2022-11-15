@@ -78,7 +78,11 @@ tave_ints = [
 #['1630-02-01', '1640-01-01'],
 ['4450-02-01', '4500-01-01'],
 ]
-ave_freq = 1
+ave_freq = 12
+
+# --- decide if time-series (ts) plots are plotted for all the 
+#     available data or only for the intervall defined by tave_int
+use_tave_int_for_ts = True
 
 # --- what to plot and what not?
 # --- not to plot:

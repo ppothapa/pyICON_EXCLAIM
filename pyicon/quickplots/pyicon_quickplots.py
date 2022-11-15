@@ -381,6 +381,7 @@ def qp_timeseries(IcD, fname, vars_plot,
                   lstart=None, lend=None,
                   ave_freq=0,
                   omit_last_file=True,
+                  use_tave_int_for_ts=False,
                   mode_ave=['mean'],
                   labels=None,
                   do_write_data_range=True,
@@ -405,15 +406,16 @@ def qp_timeseries(IcD, fname, vars_plot,
   times, flist_ts, its = pyic.get_timesteps(flist)
   # end: not needed if IcD.load_timeseries is used
 
-  # if lend is not defined or if it is too large, 
-  # define it in a way that it matches t2
-  is_lend_updated = 0
-  if lend==None or lend > len(times):
-    tend = np.datetime64(str(t2)+'T00:00:00')
+  if use_tave_int_for_ts:
+    lstart = 0
+    lend = len(times)
+    tstart = np.datetime64(str(t1)+'T00:00:00')
+    tend   = np.datetime64(str(t2)+'T00:00:00')
     for i in np.arange(len(times)):
+       if times[i]<=tstart:
+         lstart = i
        if times[i]>tend:
          lend = i
-         is_lend_updated = 1
          break
 
   # --- prepare time averaging
@@ -441,8 +443,10 @@ def qp_timeseries(IcD, fname, vars_plot,
     # finally define times_plot as center or averaging time intervall
     #times_ave = times.mean(axis=0)
     times_plot = times[int(ave_freq/2),:] # get middle of ave_freq
-    # update lend
-    if is_lend_updated != 0:
+    if use_tave_int_for_ts:
+      # update lstart, lend
+      #lstart = max(1,int(lstart/ave_freq))
+      lstart = int(lstart/ave_freq)
       lend = int(lend/ave_freq)
 
   # --- make axes if they are not given as arguement
@@ -588,6 +592,7 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
                        run1='', run2='',
                        ave_freq=0,
                        omit_last_file=True,
+                       use_tave_int_for_ts=False,
                        mode_ave=['mean'],
                        labels=None,
                        do_write_data_range=True,
@@ -620,15 +625,16 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
      sys.exit()
   # end: not needed if IcD.load_timeseries is used
 
-  # if lend is not defined or if it is too large, 
-  # define it in a way that it matches t2
-  is_lend_updated = 0
-  if lend==None or lend > len(times):
-    tend = np.datetime64(str(t2)+'T00:00:00')
+  if use_tave_int_for_ts:
+    lstart_tave_int = 1
+    lend_tave_int = len(times)
+    tstart = np.datetime64(str(t1)+'T00:00:00')
+    tend   = np.datetime64(str(t2)+'T00:00:00')
     for i in np.arange(len(times)):
+       if times[i]<=tstart:
+         lstart_tave_int = i
        if times[i]>tend:
-         lend = i
-         is_lend_updated = 1
+         lend_tave_int = i
          break
 
   # --- prepare time averaging
@@ -655,9 +661,10 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
     # finally define times_plot as center or averaging time intervall
     #times_ave = times.mean(axis=0)
     times_plot = times[int(ave_freq/2),:] # get middle of ave_freq
-    # update lend
-    if is_lend_updated != 0:
-      lend = int(lend/ave_freq)
+    # update lstart_tave_int, lend_tave_int
+    if use_tave_int_for_ts:
+      lstart_tave_int = max(1,int(lstart_tave_int/ave_freq))
+      lend_tave_int = int(lend_tave_int/ave_freq)
 
   # --- make axes if they are not given as arguement
   if isinstance(ax, str) and ax=='none':
@@ -754,6 +761,13 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
     data1  = data1[slice(lstart,lend)]
     data2  = data2[slice(lstart,lend)]
     dtsum = dtsum[slice(lstart,lend)]
+
+    # --- skip data to match tave_int
+    if use_tave_int_for_ts:
+      times_plot = times_plot[slice(lstart_tave_int,lend_tave_int)]
+      data1  = data1[slice(lstart_tave_int,lend_tave_int)]
+      data2  = data2[slice(lstart_tave_int,lend_tave_int)]
+      dtsum = dtsum[slice(lstart_tave_int,lend_tave_int)]
 
     # --- define labels
     if labels is None:

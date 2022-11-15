@@ -76,6 +76,10 @@ ave_freq = 12
 
 time_at_end_of_interval = True
 
+# --- decide if time-series (ts) plots are plotted for all the 
+#     available data or only for the intervall defined by tave_int
+use_tave_int_for_ts = False
+
 # --- xarray usage
 xr_chunks = None
 load_xarray_dset = False
@@ -273,6 +277,10 @@ tstep     = \'{tstep}\'
 ave_freq = {ave_freq}
 
 time_at_end_of_interval = {time_at_end_of_interval}
+
+# --- decide if time-series (ts) plots are plotted for all the 
+#     available data or only for the intervall defined by tave_int
+use_tave_int_for_ts = {use_tave_int_for_ts}
 
 # --- xarray usage
 xr_chunks = {xr_chunks}
@@ -2006,7 +2014,7 @@ for tave_int in tave_ints:
     fig_name = 'ts_amoc'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon, ['amoc26n'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, 
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2014,7 +2022,7 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       try:
         FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon, ['global_heat_content'], 
-          t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, 
+          t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts,
           save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
         )
         save_fig(fig_name, path_pics, fig_name)
@@ -2023,28 +2031,28 @@ for tave_int in tave_ints:
     fig_name = 'ts_ssh'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon, ['ssh_global'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, 
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_sst'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon, ['sst_global'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, 
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_sss'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon, ['sss_global'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, 
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_hfl'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon, ['HeatFlux_Total_global'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, 
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2053,7 +2061,7 @@ for tave_int in tave_ints:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon,
         ['FrshFlux_Precipitation_global', 'FrshFlux_SnowFall_global', 'FrshFlux_Evaporation_global', 'FrshFlux_Runoff_global', 'FrshFlux_VolumeIce_global', 'FrshFlux_TotalOcean_global', 'FrshFlux_TotalIce_global', 'FrshFlux_VolumeTotal_global'], 
         title='Fresh water flux [m/s]',
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, 
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2062,7 +2070,7 @@ for tave_int in tave_ints:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon,
         ['ice_volume_nh', 'ice_volume_nh'], 
         title='sea ice volume Northern hemisphere [km^3]',
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'],
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'], use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2071,7 +2079,7 @@ for tave_int in tave_ints:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon,
         ['ice_volume_sh', 'ice_volume_sh'], 
         title='sea ice volume Southern hemisphere [km^3]',
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'],
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'], use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2080,7 +2088,7 @@ for tave_int in tave_ints:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon,
         ['ice_extent_nh', 'ice_extent_nh'], 
         title='sea ice extent Northern hemisphere [km^2]',
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'],
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'], use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2089,7 +2097,7 @@ for tave_int in tave_ints:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_mon, fname_mon,
         ['ice_extent_sh', 'ice_extent_sh'], 
         title='sea ice extent Southern hemisphere [km^2]',
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'],
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, mode_ave=['max', 'min'], labels=['max', 'min'], use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2099,28 +2107,28 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['tas_gmean'],
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file,
-        var_add=-273.15, units='$^o$C', lstart=1,
+        var_add=-273.15, units='$^o$C', lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_radtop_gmean'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['radtop_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rsdt_gmean'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsdt_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rsut_gmean'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsut_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2131,21 +2139,21 @@ for tave_int in tave_ints:
       else:
          vfc = -1.
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rlut_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, lstart=1, 
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_prec_gmean'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['prec_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_evap_gmean'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['evap_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2153,7 +2161,7 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       if do_conf_dwd:
          FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['pme_gmean'], 
-           t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
+           t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
            save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
          )
          save_fig(fig_name, path_pics, fig_name)
@@ -2163,7 +2171,7 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       if not do_conf_dwd:
          FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['fwfoce_gmean'], 
-           t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, 
+           t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
            save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
          )
          save_fig(fig_name, path_pics, fig_name)
@@ -3116,67 +3124,67 @@ for tave_int in tave_ints:
     # --- 
     fig_name = 'ts_global_npp'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_primary_production'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_primary_production'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_global_nppcya'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_npp_cya'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_npp_cya'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_global_zoograzing'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_zooplankton_grazing'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_zooplankton_grazing'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_global_netco2flux'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_net_co2_flux'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_net_co2_flux'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_n2fix'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['N2_fixation'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['N2_fixation'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_WC_denit'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['WC_denit'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['WC_denit'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_sed_denit'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['SED_denit'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['SED_denit'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_global_surface_alk'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_surface_alk'], t1=t1, t2=t2, ave_freq=ave_freq, var_fac=1e6, units='mmol m$^{-3}$', omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_surface_alk'], t1=t1, t2=t2, ave_freq=ave_freq, var_fac=1e6, units='mmol m$^{-3}$', omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_global_surface_dic'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_surface_dic'], t1=t1, t2=t2, ave_freq=ave_freq, var_fac=1e6, units='mmol C m$^{-3}$', omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_surface_dic'], t1=t1, t2=t2, ave_freq=ave_freq, var_fac=1e6, units='mmol C m$^{-3}$', omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_global_surface_phos'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_surface_phosphate'], t1=t1, t2=t2, ave_freq=ave_freq, var_fac=1e6, units='mmol P m$^{-3}$', omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_surface_phosphate'], t1=t1, t2=t2, ave_freq=ave_freq, var_fac=1e6, units='mmol P m$^{-3}$', omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_global_surface_sil'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_surface_silicate'], t1=t1, t2=t2, ave_freq=ave_freq, var_fac=1e6, units='mmol Si m$^{-3}$', omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_surface_silicate'], t1=t1, t2=t2, ave_freq=ave_freq, var_fac=1e6, units='mmol Si m$^{-3}$', omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_global_opal_prod'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_opal_production'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_opal_production'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_global_caco3_prod'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_caco3_production'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_caco3_production'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_global_OMexp90'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_OM_export_at_90m'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_OM_export_at_90m'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_global_calcexp90'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_calc_export_at_90m'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_calc_export_at_90m'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_global_opalexp90'
     if fig_name in fig_names:
-      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_opal_export_at_90m'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
+      FigInf, Dhandles = pyicqp.qp_timeseries(IcD_ham_mon, fname_ham_mon, ['global_opal_export_at_90m'], t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts, save_data=save_data, fpath_nc=path_nc+fig_name+'.nc')
       save_fig(fig_name, path_pics, fig_name)
 
     # ------------------------------------------------------------------------------

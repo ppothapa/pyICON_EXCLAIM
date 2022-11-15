@@ -73,6 +73,10 @@ tave_ints = [
 ]
 ave_freq = 12
 
+# --- decide if time-series (ts) plots are plotted for all the 
+#     available data or only for the intervall defined by tave_int
+use_tave_int_for_ts = True
+
 # --- what to plot and what not?
 # --- not to plot:
 #red_list = ['']
@@ -83,11 +87,11 @@ ave_freq = 12
 # --- start qp_compare
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-run1="test11"
-run2="test12"
+run1="terra"
+run2="sen04"
 path_data1="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run1}/output/icon/"
 path_data2="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run2}/output/icon/"
-python -u ${qp_compare} --batch=True ${config_file} --path_data1=$path_data1 --path_data2=$path_data2 --run1=$run1 --run2=$run2 --tave_int='1979-01-01,1980-01-01'
+python -u ${qp_compare} --batch=True ${config_file} --path_data1=$path_data1 --path_data2=$path_data2 --run1=$run1 --run2=$run2 --tave_int='2000-01-01,2011-01-01'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 
