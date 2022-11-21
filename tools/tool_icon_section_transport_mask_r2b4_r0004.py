@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 from netCDF4 import Dataset
-from ipdb import set_trace as mybreak
+#from ipdb import set_trace as mybreak
 from cartopy import crs as ccrs
 
 # --- dummy object to collect variables
@@ -200,9 +200,9 @@ do_plot_sections_in_the_end = True
 
 # --- path to triploar grid file
 gname = 'r2b4_oce_r0004'
-path_grid = f'/mnt/lustre01/work/mh0033/m300602/icon/grids/{gname}/'
+path_grid = f'/work/mh0033/m300602/icon/grids/{gname}/'
 fpath_tgrid = f'{path_grid}/{gname}_tgrid.nc'
-fpath_fx = f'/mnt/lustre01/work/mh0033/m300602/icon/grids/{gname}/{gname}_L40_fx.nc'
+fpath_fx = f'/work/mh0033/m300602/icon/grids/{gname}/{gname}_L40_fx.nc'
 # --- path to output netcdf file
 fpath_ncfile_out = f'{path_grid}section_mask_{gname}.nc'
 
