@@ -1940,12 +1940,15 @@ def plot(data,
   
   # --- interpolate and cut to region
   if plot_method=='nn':
-    try:
-      datai = interp_to_rectgrid_xr(data.compute(), fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg, coordinates=coordinates)
-      lon = datai.lon
-      lat = datai.lat
-    except:
-      lon, lat, datai = interp_to_rectgrid(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
+    datai = interp_to_rectgrid_xr(data.compute(), fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg, coordinates=coordinates)
+    lon = datai.lon
+    lat = datai.lat
+    #try:
+    #  datai = interp_to_rectgrid_xr(data.compute(), fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg, coordinates=coordinates)
+    #  lon = datai.lon
+    #  lat = datai.lat
+    #except:
+    #  lon, lat, datai = interp_to_rectgrid(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
   else:
     print('Deriving triangulation object, this can take a while...')
       
@@ -1984,7 +1987,10 @@ def plot(data,
     if logplot:
       cbar_str = f'log_10({data.long_name}) [{units}]'
     else:
-      cbar_str = f'{data.long_name} [{units}]'
+      try:
+        cbar_str = f'{data.long_name} [{units}]'
+      except:
+        cbar_str = f'{data.name}'
   if (title_right=='auto') and ('time' in data.coords):
     tstr = str(data.time.data)
     #tstr = tstr.split('T')[0].replace('-', '')+'T'+tstr.split('T')[1].split('.')[0].replace(':','')+'Z'
