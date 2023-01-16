@@ -1,19 +1,28 @@
+print('sys glob os')
+import sys
+import glob, os
+#import datetime
 print('numpy')
 import numpy as np
+print('netcdf')
+from netCDF4 import Dataset, num2date
+#print('ipdb')
+#from ipdb import set_trace as mybreak  
 print('xarray')
 import xarray as xr
 print('Done modules calc.')
 
 def convert_tgrid_data(ds_tg):
+
     """ Convert xarray grid file to grid file compatible with pyicon function.
 
-    Open classical ICON grid file by:
-    ds_tg = xr.open_dataset(fpath_tg, chunks=dict())
+Open classical ICON grid file by:
+ds_tg = xr.open_dataset(fpath_tg, chunks=dict())
 
-    Then convert by:
-    ds_IcD = pyic.convert_tgrid_data(ds_tg)
+Then convert by:
+ds_IcD = pyic.convert_tgrid_data(ds_tg)
 
-    ds_tg and ds_IcD are both lazy xarray data sets containing dask arrays.
+ds_tg and ds_IcD are both lazy xarray data sets containing dask arrays.
     """
     ds_IcD = xr.Dataset()
     
@@ -106,50 +115,6 @@ def convert_tgrid_data(ds_tg):
         pass
 
     return ds_IcD
-
-
-def convert_fxgrid_data(ds_fxg):
-    # Here we assume the name mapping is alwys in the same order
-    # This may not necessarily be the case so proceed with caution
-    name_mapping = {
-        "ncells": "cell",
-        "ncells_2": "edge",
-        "ncells_3": "vertex",
-        "vertices": "nv",
-        "vertices_2": "nc",
-        "vertices_3": "ne"
-        }
-
-    for key in name_mapping:
-        if key in ds_fxg.dims:
-            ds_fxg = ds_fxg.rename_dims({key: name_mapping[key]})
-
-    return ds_fxg
-    
-
-def convert_data(ds_data):
-    # For some reason edge points sometimes have an nc of 4 rather than 2
-    # So proceed with caution. We use the value nc, nv or ne to ascertain
-    # What type of point something is.
-    name_mapping = {
-        2: ("nc", "edge"),
-        3: ("nv", "cell"),
-        4: ("nc", "edge"),
-        6: ("ne", "vertex")
-    }
-
-    for key in ds_data.dims:
-        if key.startswith("vertices"):
-            vertex_suffix = key[8:]
-            
-            vertices = ds_data.dims[key]
-            
-            ds_data = ds_data.rename_dims({
-                key: name_mapping[vertices][0],
-                "ncells" + vertex_suffix: name_mapping[vertices][1]
-                                           })
-    return ds_data
-
 
 def print_verbose(verbose=1, message="", verbose_stage=1):
   if verbose>=verbose_stage:
@@ -380,17 +345,18 @@ def xr_edges2cell(ds_IcD, ve, dze, dzc, edge2cell_coeff_cc=None, fixed_vol_norm=
 
 def xr_calc_edge2edge_viacell_coeff(ds_IcD):
     # FIXME: Continue here
-    raise NotImplementedError("method not yet implemented")
     edge2edge_viacell_coeff = ()
     return edge2edge_viacell_coeff
 
-
 def xr_edges2edges_via_cell(ds_IcD, vn_e, dze='const'):
     # FIXME: Continue here
-    raise NotImplementedError("method not yet implemented")
     out_vn_e = ()
     return out_vn_e
 
+def xr_edges2edges_via_cell(ds_IcD, vn_e, scalar, dze='const'):
+    # FIXME: Continue here
+    out_vn_e = ()
+    return out_vn_e
 
 ## Divergence
 
