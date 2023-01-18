@@ -382,6 +382,7 @@ def qp_timeseries(IcD, fname, vars_plot,
                   ave_freq=0,
                   omit_last_file=True,
                   use_tave_int_for_ts=False,
+                  fpath_ref_data_atm='',
                   mode_ave=['mean'],
                   labels=None,
                   do_write_data_range=True,
@@ -406,48 +407,41 @@ def qp_timeseries(IcD, fname, vars_plot,
   times, flist_ts, its = pyic.get_timesteps(flist)
   # end: not needed if IcD.load_timeseries is used
 
-  if use_tave_int_for_ts:
-    lstart = 0
-    lend = len(times)
-    tstart = np.datetime64(str(t1)+'T00:00:00')
-    tend   = np.datetime64(str(t2)+'T00:00:00')
-    for i in np.arange(len(times)):
-       if times[i]<=tstart:
-         lstart = i
-       if times[i]>tend:
-         lend = i
-         break
-
   # --- prepare time averaging
   times_plot = np.copy(times)
+  if fpath_ref_data_atm != '':
+    # save times for validation with ERA5
+    times_exp = np.copy(times)
   if ave_freq>0:
     # skip all time points which do not fit in final year
     nskip = times.size%ave_freq
     if nskip>0:
       times = times[:-nskip]
+      if fpath_ref_data_atm != '':
+        # save times for validation with ERA5
+        times_exp = times_exp[:-nskip]
     # define time bounds for correct time averaging
-#    time_bnds = np.copy(times)
-#    dt64type = time_bnds[0].dtype
-#    # find year, month and day integers of first time step
-#    yy, mm, dd = pyic.datetime64_to_float(time_bnds[0])
-#    if mm==1:
-#      yy += -1
-#      mm = 13
-#    # first time value is first value of time series minus one month
-#    time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
-#    # dt is the length of a time interval
-#    dt = np.diff(time_bnds).astype(float)
     dt = pyic.get_averaging_interval(times, IcD.output_freq, end_of_interval=IcD.time_at_end_of_interval)
     nresh = int(times.size/ave_freq)
     times = np.reshape(times, (nresh, ave_freq)).transpose()
     # finally define times_plot as center or averaging time intervall
-    #times_ave = times.mean(axis=0)
     times_plot = times[int(ave_freq/2),:] # get middle of ave_freq
-    if use_tave_int_for_ts:
-      # update lstart, lend
-      #lstart = max(1,int(lstart/ave_freq))
-      lstart = int(lstart/ave_freq)
-      lend = int(lend/ave_freq)
+
+  # calculate lstart, lend in case of t1, t2 are used as time 
+  # bounds for the times series
+  if use_tave_int_for_ts:
+    tstart = np.datetime64(str(t1)+'T00:00:00')
+    tend   = np.datetime64(str(t2)+'T00:00:00')
+    lstart = 0
+    lend = len(times_plot)-1
+    for i in np.arange(len(times_plot)):
+       if times_plot[i]<tstart:
+         lstart = i+1
+       if times_plot[i]>=tend:
+         lend = i
+         break
+    # also save times_plot for the loop over vars_plot
+    times_plot_save = times_plot
 
   # --- make axes if they are not given as arguement
   if isinstance(ax, str) and ax=='none':
@@ -470,12 +464,15 @@ def qp_timeseries(IcD, fname, vars_plot,
 
   # --- loop over all variables which should be plotted
   for mm, var in enumerate(vars_plot):
+    if use_tave_int_for_ts:
+      # times_plot has to be redefined in the loop otherwise 
+      # times_plot[slice(lstart,lend)] does it wrong
+      times_plot = times_plot_save
     # --- load the data
     # start: not needed if IcD.load_timeseries is used
     data = np.array([])
     for nn, fpath in enumerate(flist):
       f = Dataset(fpath, 'r')
-#GB: T2m, u10m, v10m have a height dimesnsion in ICON-NWP
       if f.variables[var].ndim==5:
         data_file = f.variables[var][:,0,0,0]
       else: 
@@ -495,11 +492,9 @@ def qp_timeseries(IcD, fname, vars_plot,
     if ave_freq>0:
       if nskip>0:
         data = data[:-nskip]
-      #print(f'{var}: {data.size} {times_plot.size}')
       data = np.reshape(data, (nresh, ave_freq)).transpose()
       dt   = np.reshape(dt  , (nresh, ave_freq)).transpose()
       if mode_ave[mm]=='mean':
-        #data = data.mean(axis=0))
         data = (data*dt).sum(axis=0)/dt.sum(axis=0)
         dtsum = dt.sum(axis=0)
       elif mode_ave[mm]=='min':
@@ -507,23 +502,88 @@ def qp_timeseries(IcD, fname, vars_plot,
       elif mode_ave[mm]=='max':
         data = data.max(axis=0)
 
+    # --- read corresponding ERA5 data
+    if fpath_ref_data_atm != '':
+      f = Dataset(fpath_ref_data_atm, 'r')
+      # read time
+      times_ref_tot = f.variables['time']
+      # relative to absolute time axis
+      times_ref_tot= num2date(times_ref_tot[:], units=times_ref_tot.units, calendar=times_ref_tot.calendar
+                  ).astype("datetime64[s]")
+      # check if experiment falls within the ERA5 period
+      if times_exp[0] < times_ref_tot[0] or times_exp[len(times_exp)-1] > times_ref_tot[len(times_ref_tot)-1]:
+        print('Experiment period not included in ERA5 period!')
+        sys.exit()
+      # check whether experiment has monthly outputs
+      if times_exp[1]-times_exp[0] > 2678400: # 31 days (in seconds)
+        print('Experiment output frequency should be monthly in order to use ERA5 as reference!')
+        sys.exit()
+      # calculate rstart and rend for reading ERA5
+      for i in np.arange(len(times_ref_tot)):
+        if times_ref_tot[i]==times_exp[0]:
+          rstart = i
+        if times_ref_tot[i]==times_exp[len(times_exp)-1]:
+          rend = i+1
+      # read ERA5 data
+      if vars_plot == ['tas_gmean']:
+        data_ref = f.variables['t2m_gmts'][rstart:rend]
+      elif vars_plot == ['radtop_gmean']:
+        data_ref = (f.variables['tsr_gmts'][rstart:rend] 
+                 +  f.variables['ttr_gmts'][rstart:rend]) / 86400
+      elif vars_plot == ['rsdt_gmean']:
+        data_ref = f.variables['tisr_gmts'][rstart:rend]  / 86400
+      elif vars_plot == ['rsut_gmean']:
+        data_ref = (f.variables['tisr_gmts'][rstart:rend] 
+                 -  f.variables['tsr_gmts'][rstart:rend]) / 86400
+      elif vars_plot == ['rlut_gmean']:
+        data_ref = f.variables['ttr_gmts'][rstart:rend]   / 86400
+      elif vars_plot == ['prec_gmean']:
+        data_ref = f.variables['tp_gmts'][rstart:rend] * 1e3 / 86400
+      elif vars_plot == ['evap_gmean']:
+        data_ref = f.variables['e_gmts'][rstart:rend]  * 1e3 / 86400
+      elif vars_plot == ['pme_gmean']:
+        data_ref = (f.variables['tp_gmts'][rstart:rend] 
+                 +  f.variables['e_gmts'][rstart:rend]) * 1e3 / 86400
+      # --- time averaging
+      if ave_freq>0:
+        data_ref = np.reshape(data_ref, (nresh, ave_freq)).transpose()
+        if mode_ave[mm]=='mean':
+          data_ref = (data_ref*dt).sum(axis=0)/dt.sum(axis=0)
+        elif mode_ave[mm]=='min':
+          data_ref = data_ref.min(axis=0)
+        elif mode_ave[mm]=='max':
+          data_ref = data_ref.max(axis=0)
+
     # --- modify data if var_fac or var_add are given
     data *= var_fac
     data += var_add
+    if fpath_ref_data_atm != '':
+      data_ref *= var_fac
+      data_ref += var_add
 
     # --- skip data at start and end if lstart and lend are defined
     times_plot = times_plot[slice(lstart,lend)]
     data  = data[slice(lstart,lend)]
     dtsum = dtsum[slice(lstart,lend)]
+    if fpath_ref_data_atm != '':
+      data_ref  = data_ref[slice(lstart,lend)]
 
     # --- define labels
-    if labels is None:
-      label = var
+    if fpath_ref_data_atm != '':
+        label1 = 'exp'
+        label2 = 'era5'
     else:
-      label = labels[mm]
+      if labels is None:
+        label = var
+      else:
+        label = labels[mm]
 
     # --- finally plotting
-    hl, = ax.plot(times_plot, data, label=label)
+    if fpath_ref_data_atm != '':
+      hl1, = ax.plot(times_plot, data, color='blue', label=label1)
+      hl2, = ax.plot(times_plot, data_ref, color='red', label=label2)
+    else:
+      hl, = ax.plot(times_plot, data, label=label)
 
     if adjust_xylim:
       ax.set_xlim([times_plot.min(), times_plot.max()])
@@ -549,7 +609,7 @@ def qp_timeseries(IcD, fname, vars_plot,
   ax.set_title(title)
 
   # --- legend
-  if len(vars_plot)>1:
+  if len(vars_plot)>1 or fpath_ref_data_atm != '':
     ax.legend()
 
   # --- vertical lines indicating time frame
@@ -561,15 +621,22 @@ def qp_timeseries(IcD, fname, vars_plot,
   # --- data range information below figure
   if do_write_data_range:
     ind = (times_plot>=t1) & (times_plot<=t2)
-    #data_mean = data[ind].mean()  # inaccurate if data consists of monthly means
     data_mean = (data[ind]*dtsum[ind]).sum()/dtsum[ind].sum()
-    #print(f'old: {data[ind].mean()}') 
-    #print(f'new: {(data[ind]*dtsum[ind]).sum()/dtsum[ind].sum()}') 
-    try:
-      info_str = 'in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data[ind].min(), data_mean, data[ind].std(), data[ind].max())
-      ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
-    except:
-      pass
+    if fpath_ref_data_atm != '':
+      data_ref_mean = (data_ref[ind]*dtsum[ind]).sum()/dtsum[ind].sum()
+      try:
+        info_str1 = 'for exp in timeframe:  min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data[ind].min(), data_mean, data[ind].std(), data[ind].max())
+        info_str2 = 'for era5 in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data_ref[ind].min(), data_ref_mean, data_ref[ind].std(), data_ref[ind].max())
+        ax.text(0.5, -0.14, info_str1, ha='center', va='top', transform=ax.transAxes, fontsize=8)
+        ax.text(0.5, -0.24, info_str2, ha='center', va='bottom', transform=ax.transAxes, fontsize=8)
+      except:
+        pass
+    else:
+      try:
+        info_str = 'in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data[ind].min(), data_mean, data[ind].std(), data[ind].max())
+        ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
+      except:
+        pass
 
   if save_data:
     # --- write netcdf file
@@ -579,7 +646,11 @@ def qp_timeseries(IcD, fname, vars_plot,
   FigInf = dict()
   Dhandles = dict()
   Dhandles['ax'] = ax
-  Dhandles['hl'] = hl
+  if fpath_ref_data_atm != '':
+    Dhandles['hl1'] = hl1
+    Dhandles['hl2'] = hl2
+  else:
+    Dhandles['hl'] = hl
   Dhandles['hlt1'] = hlt1
   Dhandles['hlt2'] = hlt2
   return FigInf, Dhandles
@@ -593,6 +664,7 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
                        ave_freq=0,
                        omit_last_file=True,
                        use_tave_int_for_ts=False,
+                       fpath_ref_data_atm='',
                        mode_ave=['mean'],
                        labels=None,
                        do_write_data_range=True,
@@ -621,50 +693,45 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
     flist2 = flist2[:-1]
   times2, flist_ts2, its = pyic.get_timesteps(flist2)
   if np.shape(times2) != np.shape(times):
-     print ('Exit: time instances in '+fname1+' and '+fname2+' do not match!')
+     print ('Time instances in '+fname1+' and '+fname2+' do not match!')
      sys.exit()
   # end: not needed if IcD.load_timeseries is used
 
-  if use_tave_int_for_ts:
-    lstart_tave_int = 1
-    lend_tave_int = len(times)
-    tstart = np.datetime64(str(t1)+'T00:00:00')
-    tend   = np.datetime64(str(t2)+'T00:00:00')
-    for i in np.arange(len(times)):
-       if times[i]<=tstart:
-         lstart_tave_int = i
-       if times[i]>tend:
-         lend_tave_int = i
-         break
-
   # --- prepare time averaging
   times_plot = np.copy(times)
+  if fpath_ref_data_atm != '':
+    # save times for validation with ERA5
+    times_exp = np.copy(times)
   if ave_freq>0:
     # skip all time points which do not fit in final year
     nskip = times.size%ave_freq
     if nskip>0:
       times = times[:-nskip]
+    if fpath_ref_data_atm != '':
+        # save times for validation with ERA5
+        times_exp = times_exp[:-nskip]
     # define time bounds for correct time averaging
-    time_bnds = np.copy(times)
-    dt64type = time_bnds[0].dtype
-    # find year, month and day integers of first time step
-    yy, mm, dd = pyic.datetime64_to_float(time_bnds[0])
-    if mm==1:
-      yy += -1
-      mm = 13
-    # first time value is first value of time series minus one month
-    time_bnds = np.concatenate(([np.datetime64(f'{yy:04d}-{mm-1:02d}-{dd:02d}').astype(dt64type)],time_bnds))
-    # dt is the length of a time interval
-    dt = np.diff(time_bnds).astype(float)
+    dt = pyic.get_averaging_interval(times, IcD1.output_freq, end_of_interval=IcD1.time_at_end_of_interval)
     nresh = int(times.size/ave_freq)
     times = np.reshape(times, (nresh, ave_freq)).transpose()
     # finally define times_plot as center or averaging time intervall
-    #times_ave = times.mean(axis=0)
     times_plot = times[int(ave_freq/2),:] # get middle of ave_freq
-    # update lstart_tave_int, lend_tave_int
-    if use_tave_int_for_ts:
-      lstart_tave_int = max(1,int(lstart_tave_int/ave_freq))
-      lend_tave_int = int(lend_tave_int/ave_freq)
+
+  # calculate lstart, lend in case of t1, t2 are used as time 
+  # bounds for the times series
+  if use_tave_int_for_ts:
+    tstart = np.datetime64(str(t1)+'T00:00:00')
+    tend   = np.datetime64(str(t2)+'T00:00:00')
+    lstart = 0
+    lend = len(times_plot)-1
+    for i in np.arange(len(times_plot)):
+       if times_plot[i]<tstart:
+         lstart = i+1
+       if times_plot[i]>=tend:
+         lend = i
+         break
+    # also save times_plot for the loop over vars_plot
+    times_plot_save = times_plot
 
   # --- make axes if they are not given as arguement
   if isinstance(ax, str) and ax=='none':
@@ -683,16 +750,18 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
   if save_data:
     coords = {'times': times_plot[slice(lstart,lend)]}
     ds = xr.Dataset()
-    #ds['time_bnds'] = xr.DataArray(times[sice(lstart,lend)])
 
   # --- loop over all variables which should be plotted
   for mm, var in enumerate(vars_plot):
+    if use_tave_int_for_ts:
+      # times_plot has to be redefined in the loop otherwise 
+      # times_plot[slice(lstart,lend)] does it wrong
+      times_plot = times_plot_save
     # --- load data 1
     # start: not needed if IcD.load_timeseries is used
     data1 = np.array([])
     for nn, fpath in enumerate(flist1):
       f = Dataset(fpath, 'r')
-#GB: T2m, u10m, v10m have a height dimesnsion in ICON-NWP
       if f.variables[var].ndim==5:
         data_file = f.variables[var][:,0,0,0]
       else: 
@@ -711,7 +780,6 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
     data2 = np.array([])
     for nn, fpath in enumerate(flist2):
       f = Dataset(fpath, 'r')
-#GB: T2m, u10m, v10m have a height dimesnsion in ICON-NWP
       if f.variables[var].ndim==5:
         data_file = f.variables[var][:,0,0,0]
       else: 
@@ -732,14 +800,10 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
       if nskip>0:
         data1 = data1[:-nskip]
         data2 = data2[:-nskip]
-      #print(f'{var}: {data1.size} {times_plot.size}')
-      #print(f'{var}: {data2.size} {times_plot.size}')
       data1 = np.reshape(data1, (nresh, ave_freq)).transpose()
       data2 = np.reshape(data2, (nresh, ave_freq)).transpose()
       dt   = np.reshape(dt  , (nresh, ave_freq)).transpose()
       if mode_ave[mm]=='mean':
-        #data1 = data1.mean(axis=0))
-        #data2 = data2.mean(axis=0))
         data1 = (data1*dt).sum(axis=0)/dt.sum(axis=0)
         data2 = (data2*dt).sum(axis=0)/dt.sum(axis=0)
         dtsum = dt.sum(axis=0)
@@ -750,40 +814,104 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
         data1 = data1.max(axis=0)
         data2 = data2.max(axis=0)
 
+    # --- read corresponding ERA5 data
+    if fpath_ref_data_atm != '':
+      f = Dataset(fpath_ref_data_atm, 'r')
+      # read time
+      times_ref_tot = f.variables['time']
+      # relative to absolute time axis
+      times_ref_tot= num2date(times_ref_tot[:], units=times_ref_tot.units, calendar=times_ref_tot.calendar
+                  ).astype("datetime64[s]")
+      # check if experiment falls within the ERA5 period
+      if times_exp[0] < times_ref_tot[0] or times_exp[len(times_exp)-1] > times_ref_tot[len(times_ref_tot)-1]:
+        print('Experiment period not included in ERA5 period!')
+        sys.exit()
+      # check whether experiment has monthly outputs
+      if times_exp[1]-times_exp[0] > 2678400: # 31 days (in seconds)
+        print('Experiment output frequency should be monthly in order to use ERA5 as reference!')
+        sys.exit()
+      # calculate rstart and rend for reading ERA5
+      for i in np.arange(len(times_ref_tot)):
+        if times_ref_tot[i]==times_exp[0]:
+          rstart = i
+        if times_ref_tot[i]==times_exp[len(times_exp)-1]:
+          rend = i+1
+      # read ERA5 data
+      if vars_plot == ['tas_gmean']:
+        data_ref = f.variables['t2m_gmts'][rstart:rend]
+      elif vars_plot == ['radtop_gmean']:
+        data_ref = (f.variables['tsr_gmts'][rstart:rend] 
+                 +  f.variables['ttr_gmts'][rstart:rend]) / 86400
+      elif vars_plot == ['rsdt_gmean']:
+        data_ref = f.variables['tisr_gmts'][rstart:rend]  / 86400
+      elif vars_plot == ['rsut_gmean']:
+        data_ref = (f.variables['tisr_gmts'][rstart:rend] 
+                 -  f.variables['tsr_gmts'][rstart:rend]) / 86400
+      elif vars_plot == ['rlut_gmean']:
+        data_ref = f.variables['ttr_gmts'][rstart:rend]   / 86400
+      elif vars_plot == ['prec_gmean']:
+        data_ref = f.variables['tp_gmts'][rstart:rend] * 1e3 / 86400
+      elif vars_plot == ['evap_gmean']:
+        data_ref = f.variables['e_gmts'][rstart:rend]  * 1e3 / 86400
+      elif vars_plot == ['pme_gmean']:
+        data_ref = (f.variables['tp_gmts'][rstart:rend] 
+                 +  f.variables['e_gmts'][rstart:rend]) * 1e3 / 86400
+      # --- time averaging
+      if ave_freq>0:
+        data_ref = np.reshape(data_ref, (nresh, ave_freq)).transpose()
+        if mode_ave[mm]=='mean':
+          data_ref = (data_ref*dt).sum(axis=0)/dt.sum(axis=0)
+        elif mode_ave[mm]=='min':
+          data_ref = data_ref.min(axis=0)
+        elif mode_ave[mm]=='max':
+          data_ref = data_ref.max(axis=0)
+
     # --- modify data if var_fac or var_add are given
     data1 *= var_fac
     data2 *= var_fac
     data1 += var_add
     data2 += var_add
+    if fpath_ref_data_atm != '':
+      data_ref *= var_fac
+      data_ref += var_add
 
     # --- skip data at start and end if lstart and lend are defined
     times_plot = times_plot[slice(lstart,lend)]
     data1  = data1[slice(lstart,lend)]
     data2  = data2[slice(lstart,lend)]
     dtsum = dtsum[slice(lstart,lend)]
-
-    # --- skip data to match tave_int
-    if use_tave_int_for_ts:
-      times_plot = times_plot[slice(lstart_tave_int,lend_tave_int)]
-      data1  = data1[slice(lstart_tave_int,lend_tave_int)]
-      data2  = data2[slice(lstart_tave_int,lend_tave_int)]
-      dtsum = dtsum[slice(lstart_tave_int,lend_tave_int)]
+    if fpath_ref_data_atm != '' and  use_tave_int_for_ts:
+      data_ref  = data_ref[slice(lstart,lend)]
 
     # --- define labels
-    if labels is None:
-      label1 = run1
-      label2 = run2
+    if fpath_ref_data_atm != '':
+      if labels is None:
+        label1 = run1
+        label2 = run2
+        label3 = 'era5'
+      else:
+        label1 = labels[mm]
+        label2 = labels[mm]
+        label3 = labels[mm]
     else:
-      label1 = labels[mm]
-      label2 = labels[mm]
+      if labels is None:
+        label1 = run1
+        label2 = run2
+      else:
+        label1 = labels[mm]
+        label2 = labels[mm]
 
     # --- finally plotting
-    hl1, = ax.plot(times_plot, data1, color='blue', label=label1)
-    hl2, = ax.plot(times_plot, data2, color='red',  label=label2)
+    if fpath_ref_data_atm != '':
+      hl1, = ax.plot(times_plot, data1, color='blue', label=label1)
+      hl2, = ax.plot(times_plot, data2, color='green', label=label2)
+      hl3, = ax.plot(times_plot, data_ref, color='red', label=label3)
+    else:
+      hl1, = ax.plot(times_plot, data1, color='blue', label=label1)
+      hl2, = ax.plot(times_plot, data2, color='red',  label=label2)
 
     if adjust_xylim:
       ax.set_xlim([times_plot.min(), times_plot.max()])
-      #ax.set_ylim([data.min(), data.max()])
       ax.set_ylim([np.amin(data1.min(),data2.min()), np.amax(data1.max(),data2.max())])
 
     if save_data:
@@ -806,8 +934,6 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
   ax.set_title(title)
 
   # --- legend
-  #if len(vars_plot)>1:
-  #  ax.legend()
   ax.legend()
 
   # --- vertical lines indicating time frame
@@ -819,18 +945,27 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
   # --- data range information below figure
   if do_write_data_range:
     ind = (times_plot>=t1) & (times_plot<=t2)
-    #data_mean = data[ind].mean()  # inaccurate if data consists of monthly means
     data1_mean = (data1[ind]*dtsum[ind]).sum()/dtsum[ind].sum()
     data2_mean = (data2[ind]*dtsum[ind]).sum()/dtsum[ind].sum()
-    #print(f'old: {data[ind].mean()}') 
-    #print(f'new: {(data[ind]*dtsum[ind]).sum()/dtsum[ind].sum()}') 
-    try:
-      info_str1 = 'for '+run1+' in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data1[ind].min(), data1_mean, data1[ind].std(), data1[ind].max())
-      info_str2 = 'for '+run2+' in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data2[ind].min(), data2_mean, data2[ind].std(), data2[ind].max())
-      ax.text(0.5, -0.14, info_str1, ha='center', va='top', transform=ax.transAxes, fontsize=8)
-      ax.text(0.5, -0.24, info_str2, ha='center', va='bottom', transform=ax.transAxes, fontsize=8)
-    except:
-      pass
+    if fpath_ref_data_atm != '':
+      data_ref_mean = (data_ref[ind]*dtsum[ind]).sum()/dtsum[ind].sum()
+      try:
+        info_str1 = 'for '+run1+' in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data1[ind].min(), data1_mean, data1[ind].std(), data1[ind].max())
+        info_str2 = 'for '+run2+' in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data2[ind].min(), data2_mean, data2[ind].std(), data2[ind].max())
+        info_str3 = 'for era5 in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data_ref[ind].min(), data_ref_mean, data_ref[ind].std(), data_ref[ind].max())
+        ax.text(0.5, -0.16, info_str1, ha='center', va='bottom', transform=ax.transAxes, fontsize=7)
+        ax.text(0.5, -0.20, info_str2, ha='center', va='bottom', transform=ax.transAxes, fontsize=7)
+        ax.text(0.5, -0.24, info_str3, ha='center', va='bottom', transform=ax.transAxes, fontsize=7)
+      except:
+        pass
+    else:
+      try:
+        info_str1 = 'for '+run1+' in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data1[ind].min(), data1_mean, data1[ind].std(), data1[ind].max())
+        info_str2 = 'for '+run2+' in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data2[ind].min(), data2_mean, data2[ind].std(), data2[ind].max())
+        ax.text(0.5, -0.14, info_str1, ha='center', va='top', transform=ax.transAxes, fontsize=8)
+        ax.text(0.5, -0.24, info_str2, ha='center', va='bottom', transform=ax.transAxes, fontsize=8)
+      except:
+        pass
 
   if save_data:
     # --- write netcdf file
@@ -842,6 +977,8 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
   Dhandles['ax'] = ax
   Dhandles['hl1'] = hl1
   Dhandles['hl2'] = hl2
+  if fpath_ref_data_atm != '':
+    Dhandles['hl3'] = hl3
   Dhandles['hlt1'] = hlt1
   Dhandles['hlt2'] = hlt2
   return FigInf, Dhandles

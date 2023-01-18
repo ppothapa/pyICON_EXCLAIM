@@ -8,8 +8,8 @@ reload(pyic)
 
 ts = pyic.timing([0], 'start')
 
-tgname        = 'r2b4_atm_r0012'
-gname         = 'icon_grid_0012_R02B04_G'
+tgname        = 'r2b4_atm_r0013'
+gname         = 'icon_grid_0013_R02B04_G'
 path_tgrid    = f'/hpc/uwork/gboeloen/pyICON/grids/'
 fname_tgrid   = f'{gname}.nc'
 path_ckdtree  = f'/hpc/uwork/gboeloen/pyICON/grids/{tgname}/ckdtree/'
@@ -19,7 +19,7 @@ path_sections = path_ckdtree + 'sections/'
 all_grids = [
   'global_1.0',
   'global_1.0_era',
-  'regional_1.0_era',
+  'global_1.5_era5',
   'global_0.3',
             ]
 
@@ -59,9 +59,9 @@ for gname in gnames:
                       save_as_nc=False,
                       )
 
-  sname = 'regional_1.0_era'
+  sname = 'global_1.5_era5'
   if sname in all_grids:
-    pyic.ckdtree_hgrid(lon_reg=[-30.,40.], lat_reg=[30.,80.], res=1.0,
+    pyic.ckdtree_hgrid(lon_reg=[-180.,180], lat_reg=[-90,91.5], res=1.5,
                       fname_tgrid  = fname_tgrid,
                       path_tgrid   = path_tgrid,
                       path_ckdtree = path_rgrid,
@@ -70,7 +70,6 @@ for gname in gnames:
                       tgname = tgname,
                       save_as_nc=False,
                       )
-
 
   sname = 'global_1.0'
   if sname in all_grids:
@@ -105,7 +104,6 @@ for gname in gnames:
                       path_ckdtree = path_sections,
                       sname = sname,
                       gname = gname,
-                      tgname = tgname,
                       save_as_nc=False,
                       )
 
@@ -117,7 +115,6 @@ for gname in gnames:
                       path_ckdtree = path_sections,
                       sname = sname,
                       gname = gname,
-                      tgname = tgname,
                       save_as_nc=False,
                       )
     
@@ -129,7 +126,6 @@ for gname in gnames:
                       path_ckdtree = path_sections,
                       sname = sname,
                       gname = gname,
-                      tgname = tgname,
                       save_as_nc=False,
                       )
 

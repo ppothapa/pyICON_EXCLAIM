@@ -42,7 +42,6 @@ fpath_tgrid         = 'auto'
 fpath_tgrid_atm     = 'auto' 
 fpath_ref_data_oce  = '' 
 fpath_ref_data_atm  = '' 
-fpath_ref_data_atm = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_era.nc'
 fpath_fx            = '' 
 
 # --- nc file prefixes
@@ -89,7 +88,7 @@ path_nc = './'
 # --- information for re-gridding
 sec_name_30w   = '30W_300pts'
 rgrid_name     = 'global_0.3'
-rgrid_name_atm = 'global_1.0_era'
+rgrid_name_atm = 'global_1.5_era5'
 
 verbose = False
 do_write_final_config = False
@@ -350,31 +349,32 @@ if do_ocean_plots:
   fig_names += ['ts_amoc', 'ts_heat_content', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
 if do_atmosphere_plots:
   fig_names += ['sec:Surface fluxes']
-  fig_names += ['atm_zonal_wind_stress', 'atm_meridional_wind_stress']
+  fig_names += ['atm_tauu', 'atm_tauu_bias', 'atm_tauv', 'atm_tauv_bias']
   fig_names += ['atm_curl_tau', 'atm_wek']
-  fig_names += ['sec:Bias surface fluxes']
-  fig_names += ['atm_tauu_bias', 'atm_tauv_bias']
+  fig_names += ['atm_surf_shfl', 'atm_surf_shfl_bias', 'atm_surf_lhfl', 'atm_surf_lhfl_bias']
+  fig_names += ['sec:TOA fluxes']
+  fig_names += ['atm_toa_sob', 'atm_toa_sob_bias', 'atm_toa_thb', 'atm_toa_thb_bias']
   fig_names += ['sec:Atmosphere surface']
-  fig_names += ['atm_2m_temp','atm_surface_temp', 'atm_sea_level_pressure', 'sea_surface_temp', 'seaice_fraction']
-  fig_names += ['atm_10m_wind', 'atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover', 'atm_p_e']
-  fig_names += ['atm_surface_shfl', 'atm_surface_lhfl', 'atm_toa_sob', 'atm_toa_thb']
-  fig_names += ['sec:Bias atmosphere surface']
-  fig_names += ['atm_tas_bias']
-  fig_names += ['atm_prw_bias']
-  fig_names += ['atm_psl_bias']
-  fig_names += ['sec:Above surface']
-  fig_names += ['atm_geoh_500', 'atm_temp_850']
+  fig_names += ['sea_ts', 'seaice_fraction'] # we have these to check what's in the forcing in uncoupled runs
+  fig_names += ['atm_psl', 'atm_psl_bias', 'atm_w10m', 'atm_w10m_bias']
+  fig_names += ['atm_ts', 'atm_ts_bias', 'atm_t2m', 'atm_t2m_bias']
+  fig_names += ['atm_cwv', 'atm_cwv_bias', 'atm_tcc', 'atm_tcc_bias']
+  fig_names += ['atm_tp', 'atm_tp_bias', 'atm_pme', 'atm_pme_bias']
+  fig_names += ['sec:Atmosphere pressure levels']
+  fig_names += ['atm_u_250', 'atm_u_250_bias', 'atm_v_250', 'atm_v_250_bias', 'atm_geop_500', 'atm_geop_500_bias']
+  fig_names += ['atm_rel_hum_700', 'atm_rel_hum_700_bias', 'atm_temp_850', 'atm_temp_850_bias']
   fig_names += ['sec:Atmosphere zonal averages']
-  fig_names += ['atm_temp_zave', 'atm_temp_zave_bias', 'atm_logv_temp_zave', 'atm_logv_temp_zave_bias']
-  fig_names += ['atm_u_zave', 'atm_u_zave_bias', 'atm_logv_u_zave', 'atm_logv_u_zave_bias']
-  fig_names += ['atm_v_zave', 'atm_v_zave_bias', 'atm_logv_v_zave', 'atm_logv_v_zave_bias']
-  fig_names += ['atm_rel_hum_zave']
-  fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave', 'atm_psi']
+  fig_names += ['atm_temp_zave', 'atm_temp_zave_bias', 'atm_logv_temp_zave']
+  fig_names += ['atm_u_zave', 'atm_u_zave_bias', 'atm_logv_u_zave']
+  fig_names += ['atm_v_zave', 'atm_v_zave_bias', 'atm_logv_v_zave']
+  fig_names += ['atm_rel_hum_zave', 'atm_rel_hum_zave_bias']
+  fig_names += ['atm_cloud_cover_zave', 'atm_cloud_cover_zave_bias']
+  fig_names += ['atm_cloud_water_zave', 'atm_cloud_water_zave_bias']
+  fig_names += ['atm_cloud_ice_zave', 'atm_cloud_ice_zave_bias']
+  fig_names += ['atm_cloud_water_ice_zave', 'atm_psi']
   fig_names += ['sec:Time series']
-  fig_names += ['ts_tas_gmean', 'ts_radtop_gmean']
+  fig_names += ['ts_t2m_gmean', 'ts_radtop_gmean']
   fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_pme_gmean', 'ts_fwfoce_gmean']
-#fig_names += ['sec:TKE and IDEMIX']
-#fig_names += ['tke30w', 'iwe30w', 'kv30w']
   # --- variable names
   if not do_conf_dwd:
      vpfull   = 'pfull'
@@ -454,52 +454,7 @@ if not len(green_list)==0:
 if iopts.debug:
   print('XXXXXXXXXXXXXXXXX Debugging mode! XXXXXXXXXXXXXXX')
   fig_names = []
-  #fig_names += ['temp30w', 'salt30w', 'dens30w']
-  #fig_names += ['atm_psi']
-  #fig_names += ['ts_tas_gmean']
-  #fig_names += ['sst']
-  #fig_names += ['ts_amoc']
-  #fig_names += ['ts_amoc', 'ts_ssh', 'ts_sst', 'ts_sss', 'ts_hfl', 'ts_wfl', 'ts_ice_volume_nh', 'ts_ice_volume_sh', 'ts_ice_extent_nh', 'ts_ice_extent_sh',]
-  #fig_names += ['mlotst_mar', 'mlotst_sep']
-  #fig_names = ['temp_bias_gzave']
-  #fig_names = ['sss']
-  #fig_names = ['ssh_variance']
-  #fig_names += ['amoc']
-  #fig_names += ['sst_bias', 'temp_bias_gzave', 'temp_bias_azave', 'temp_bias_ipzave']
-  #fig_names += ['sss_bias', 'salt_bias_gzave', 'salt_bias_azave', 'salt_bias_ipzave']
-  #fig_names += ['ice_concentration_nh', 'ice_thickness_nh', 'snow_thickness_nh',] 
-  #fig_names += ['ice_concentration_nh']
-  #fig_names += ['ice_concentration_sh', 'ice_thickness_sh', 'snow_thickness_sh',]
-  #fig_names += ['bstr']
-  #fig_names += ['ke_100m', 'ke_2000m']
-  #fig_names += ['atm_sea_level_pressure']
-  #fig_names += ['atm_2m_temp','atm_sea_level_pressure',]
-  #fig_names += ['atm_zonal_wind_stress',]
-  #fig_names += ['atm_curl_tau', 'atm_wek']
-  #fig_names += ['atm_column_water_vapour', 'atm_total_precipitation', 'atm_total_cloud_cover']
-  #fig_names += ['atm_tas_bias']
-  #fig_names += ['atm_temp_zave', 'atm_u_zave', 'atm_v_zave', 'atm_rel_hum_zave']
-  #fig_names += ['atm_logv_temp_zave']
-  #fig_names += ['atm_cloud_cover_zave', 'atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave']
-  #fig_names += ['atm_cloud_water_zave', 'atm_cloud_ice_zave', 'atm_cloud_water_ice_zave']
-  #fig_names += ['vort']
-  #fig_names += ['np_zonal_wind_stress']
-  #fig_names += ['amoc', 'pmoc', 'gmoc']
-  #fig_names += ['temp_gzave', 'temp_azave', 'temp_ipzave']
-  #fig_names += ['salt30w', 'temp30w']
-  #fig_names += ['ts_ice_extent_sh']
-  #fig_names += ['atm_temp_zave_bias', 'atm_logv_temp_zave_bias', 'atm_logv_temp_zave', 'atm_temp_zave']
-  #fig_names += ['atm_temp_zave', 'atm_temp_zave_bias', 'atm_logv_temp_zave', 'atm_logv_temp_zave_bias']
-  #fig_names += ['atm_u_zave', 'atm_u_zave_bias', 'atm_logv_u_zave', 'atm_logv_u_zave_bias']
-  #fig_names += ['atm_v_zave', 'atm_v_zave_bias', 'atm_logv_v_zave', 'atm_logv_v_zave_bias']
-  #fig_names += ['atm_geoh_500', 'atm_temp_850']
   fig_names += ['arctic_budgets']
-  #fig_names += ['passage_transports', 'tab_passage_transports']
-  #fig_names += ['tab_passage_transports']
-  #fig_names += ['ts_amoc', 'tab_overview']
-  #fig_names += ['ts_radtop_gmean', 'tab_overview']
-  #fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_pme_gmean', 'ts_fwfoce_gmean']
-  #fig_names += ['tab_overview']
 
 fig_names = np.array(fig_names)
 
@@ -2103,11 +2058,12 @@ for tave_int in tave_ints:
       save_fig(fig_name, path_pics, fig_name)
   
     # --- atmosphere monitoring
-    fig_name = 'ts_tas_gmean'
+    fig_name = 'ts_t2m_gmean'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['tas_gmean'],
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file,
         var_add=-273.15, units='$^o$C', lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+        fpath_ref_data_atm=fpath_ref_data_atm,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2115,6 +2071,7 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['radtop_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+        fpath_ref_data_atm=fpath_ref_data_atm,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2122,6 +2079,7 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsdt_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+        fpath_ref_data_atm=fpath_ref_data_atm,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2129,39 +2087,43 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsut_gmean'], 
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+        fpath_ref_data_atm=fpath_ref_data_atm,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rlut_gmean'
     if fig_name in fig_names:
-      if not do_conf_dwd:
-         vfc = 1.
-      else:
-         vfc = -1.
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rlut_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+        fpath_ref_data_atm=fpath_ref_data_atm,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_prec_gmean'
     if fig_name in fig_names:
+      vfc = 86400. #  convert mm (kg m-2) --> mm/day
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['prec_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+        fpath_ref_data_atm=fpath_ref_data_atm, units='mm/day',
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_evap_gmean'
     if fig_name in fig_names:
+      vfc = 86400. #  convert mm (kg m-2) --> mm/day
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['evap_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+        fpath_ref_data_atm=fpath_ref_data_atm, units='mm/day',
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_pme_gmean'
     if fig_name in fig_names:
       if do_conf_dwd:
+         vfc = 86400. #  convert mm (kg m-2) --> mm/day
          FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['pme_gmean'], 
-           t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+           t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+           fpath_ref_data_atm=fpath_ref_data_atm, units='mm/day',
            save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
          )
          save_fig(fig_name, path_pics, fig_name)
@@ -2172,6 +2134,7 @@ for tave_int in tave_ints:
       if not do_conf_dwd:
          FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['fwfoce_gmean'], 
            t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+           fpath_ref_data_atm=fpath_ref_data_atm,
            save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
          )
          save_fig(fig_name, path_pics, fig_name)
@@ -2205,11 +2168,11 @@ for tave_int in tave_ints:
         if do_conf_dwd:
           varlist = ['tas_gmean', 'radtop_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'prec_gmean', 'evap_gmean', 'pme_gmean'] # 'fwfoce_gmean']
           var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0]
-          var_units_list = ['deg C', '', '', '', '', '', '', '']
+          var_units_list = ['$^o$C', '', '', '', '', '', '', '']
         else:
           varlist = ['tas_gmean', 'radtop_gmean', 'rsdt_gmean', 'rsut_gmean', 'rlut_gmean', 'prec_gmean', 'evap_gmean', 'fwfoce_gmean']
           var_add_list = [-273.15, 0, 0, 0, 0, 0, 0, 0]
-          var_units_list = ['deg C', '', '', '', '', '', '', '']
+          var_units_list = ['$^o$C', '', '', '', '', '', '', '']
         var_fac_list = [1]*len(varlist)
         Dd = pyicqp.time_averages_monitoring(IcD_atm_mon, t1, t2, varlist, var_add_list=var_add_list, var_fac_list=var_fac_list, var_units_list=var_units_list)
         for var in varlist:
@@ -2273,14 +2236,9 @@ for tave_int in tave_ints:
     # -------------------------------------------------------------------------------- 
     # Surface fluxes
     # -------------------------------------------------------------------------------- 
-    #Ddict = dict(
-    #  xlim=[-180.,180.], ylim=[-90.,90.],
-    #  rgrid_name=rgrid_name,
-    #  path_ckdtree=path_ckdtree,
-    #  projection=projection,
-    #            )
+
     # ---
-    fig_name = 'atm_zonal_wind_stress'
+    fig_name = 'atm_tauu'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vtauu, it=0,
                                t1=t1, t2=t2,
@@ -2291,9 +2249,39 @@ for tave_int in tave_ints:
                                save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                                **Ddict_global)
       save_fig('zonal wind stress', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_tauu_bias'
+    if fig_name in fig_names:
+      var = vtauu
+      var_ref1 = 'ewss' # eastward turbulent stress
+      var_ref2 = 'lgws' # eastward gravity wave stress
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz='all')
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref1 = f.variables[var_ref1][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
+      data_ref2 = f.variables[var_ref2][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
+      data_ref = data_ref1 + data_ref2
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', 'mN/m$^2$', 'zonal wind stress bias')
+      IaV.data = data_bias*1e3
+      pyic.hplot_base(IcD_atm2d, IaV, clim=100, clevs=[-100,-80,-60,-40,-20,0,20,40,60,80,100], cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],  do_write_data_range=True,
+                      #land_facecolor='none',
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
   
     # ---
-    fig_name = 'atm_meridional_wind_stress'
+    fig_name = 'atm_tauv'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vtauv, it=0,
                                t1=t1, t2=t2,
@@ -2304,6 +2292,36 @@ for tave_int in tave_ints:
                                save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                                **Ddict_global)
       save_fig('meridional wind stress', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_tauv_bias'
+    if fig_name in fig_names:
+      var = vtauv
+      var_ref1 = 'nsss' # northward turbulent stress
+      var_ref2 = 'mgws' # northward gravity wave stress
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz='all')
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref1 = f.variables[var_ref1][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
+      data_ref2 = f.variables[var_ref2][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
+      data_ref = data_ref1 + data_ref2
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', 'mN/m$^2$', 'meridional wind stress bias')
+      IaV.data = data_bias*1e3
+      pyic.hplot_base(IcD_atm2d, IaV, clim=100, clevs=[-100,-80,-60,-40,-20,0,20,40,60,80,100], cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],  do_write_data_range=True,
+                      #land_facecolor='none',
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
   
     # ---
     fig_name = 'atm_curl_tau'
@@ -2358,7 +2376,7 @@ for tave_int in tave_ints:
       IaV = pyic.IconVariable('w_ek', 'm / year', 'Ekman pumping', coordinates='vlat vlon')
       IaV.data = w_ek*86400*365
       IaV.interp_to_rectgrid(fpath_ckdtree_atm)
-      pyic.hplot_base(IcD_atm2d, IaV, clim=60, contfs='auto', cmap='RdBu_r', 
+      pyic.hplot_base(IcD_atm2d, IaV, clim=60., cincr=10., cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       land_facecolor='0.7', do_write_data_range=True,
@@ -2366,47 +2384,290 @@ for tave_int in tave_ints:
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('Ekman pumping', path_pics, fig_name)
-  
-    # -------------------------------------------------------------------------------- 
-    # Atmosphere 2D
-    # -------------------------------------------------------------------------------- 
-    #Ddict = dict(
-    #  xlim=[-180.,180.], ylim=[-90.,90.],
-    #  rgrid_name=rgrid_name,
-    #  path_ckdtree=path_ckdtree,
-    #  projection=projection,
-    #            )
-  
-    ## ---
-    if do_atmosphere_plots:
-      print('Calculate atmosphere pressure interpolation weights...')
-      # --- load 3D pressure
-      pfull, it_ave = pyic.time_average(IcD_atm3d, vpfull, t1, t2, iz='all')
-      # linear vert ax
-      IcD_atm3d.plevc = np.array([100000,92500,85000,77500,70000,60000,50000,40000,30000,25000,20000,15000,10000,7000,5000,3000,1000])
-      icall, ind_lev, fac = pyic.calc_vertical_interp_weights(pfull, IcD_atm3d.plevc)
-      # log10 vert ax
-      IcD_atm3d.plev_log = np.array([100900,99500,97100,93900,90200,86100,81700,77200,72500,67900,63300,58800,54300,49900,45700,41600,37700,33900,30402,27015,23833,20867,18116,15578,13239,11066,9102,7406,5964,4752,3743,2914,2235,1685,1245,901,637,440,296,193,122,74,43,23,11,4,1])
-      icall_log, ind_lev_log, fac_log = pyic.calc_vertical_interp_weights(pfull, IcD_atm3d.plev_log)
-      ip500 = np.argmin((IcD_atm3d.plevc-500e2)**2)
-      ip850 = np.argmin((IcD_atm3d.plevc-850e2)**2)
-  
+
     # ---
-    fig_name = 'atm_2m_temp'
-    if fig_name in fig_names:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vtas, it=0,
+    fig_name = 'atm_surf_shfl'
+    if fig_name in fig_names and do_conf_dwd:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vshfl_s, it=0,
                                t1=t1, t2=t2,
-                               var_add=-273.15,
-                               units = '$^o$C',
-                               clim=[-30.,30.], cincr=5.0, cmap='cmo.thermal',
+                               var_fac=1.,
+                               units='$W m^{-2}$',
+                               clim=[-150.,150.], cincr=25.0, cmap='RdBu_r',
                                land_facecolor='none',
                                IcD=IcD_atm2d,
                                save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                                **Ddict_global)
-      save_fig('2m temperature', path_pics, fig_name, FigInf)
-  
+      save_fig('surface sensible heat flux', path_pics, fig_name, FigInf)
+
     # ---
-    fig_name = 'atm_surface_temp'
+    fig_name = 'atm_surf_shfl_bias'
+    if fig_name in fig_names:
+      var = vshfl_s
+      var_ref = 'sshf'
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][:,:] / 86400 # J/m^2 --> W/m^2 (with daily accumulation)
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$W m^{-2}$', 'surface sensible heat flux bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=80., cincr=10., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_surf_lhfl'
+    if fig_name in fig_names and do_conf_dwd:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vlhfl_s, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1.,
+                               units='$W m^{-2}$',
+                               clim=[-250.,0.], cincr=25.0, cmap='RdYlBu_r',
+                               land_facecolor='none',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('surface latent heat flux', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_surf_lhfl_bias'
+    if fig_name in fig_names:
+      var = vlhfl_s
+      var_ref = 'slhf'
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][:,:] / 86400 # J/m^2 --> W/m^2 (with daily accumulation)
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$W m^{-2}$', 'surface latent heat flux bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=140., cincr=20., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # -------------------------------------------------------------------------------- 
+    # TOA fluxes
+    # -------------------------------------------------------------------------------- 
+
+    # ---
+    fig_name = 'atm_toa_sob'
+    if fig_name in fig_names and do_conf_dwd:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vsob_t, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1.,
+                               units='$W m^{-2}$',
+                               clim=[0.,350.], cincr=25.0, cmap='RdYlBu_r',
+                               land_facecolor='none',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('TOA short wave net flux', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_toa_sob_bias'
+    if fig_name in fig_names:
+      var = vsob_t
+      var_ref = 'tsr'
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][:,:] / 86400 # J/m^2 --> W/m^2 (with daily accumulation)
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$W m^{-2}$', 'TOA short wave net flux bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=80., cincr=10., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_toa_thb'
+    if fig_name in fig_names and do_conf_dwd:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vthb_t, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1.,
+                               units='$W m^{-2}$',
+                               clim=[-300.,0.], cincr=25.0, cmap='RdYlBu_r',
+                               land_facecolor='none',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('TOA long wave net flux', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_toa_thb_bias'
+    if fig_name in fig_names:
+      var = vthb_t
+      var_ref = 'ttr'
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][:,:] / 86400 # J/m^2 --> W/m^2 (with daily accumulation)
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$W m^{-2}$', 'TOA long wave net flux bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=50., cincr=10., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+  
+    # -------------------------------------------------------------------------------- 
+    # Atmosphere 2D
+    # -------------------------------------------------------------------------------- 
+
+    # ----------  screen level parameters & vertically integrated quantities
+    # ---
+    fig_name = 'sea_ts' # we have it to check what's in the forcing of uncoupled runs
+    if fig_name in fig_names and do_conf_dwd:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vsst, it=0,
+                               t1=t1, t2=t2,
+                               var_add=-273.15,
+                               units = '$^o$C',
+                               clim=[0.,24.], cincr=2.0, cmap='cmo.thermal',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('sea surface temperature', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'seaice_fraction' # we have it to check what's in the forcing of uncoupled runs
+    if fig_name in fig_names and do_conf_dwd:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vfrsi, it=0,
+                               t1=t1, t2=t2,
+                               var_add=0.,
+                               units = '',
+                               clim=[0.,1.], cincr=0.1, cmap='RdBu',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('sea ice fraction', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_psl'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vpsl, it=0,
+                               t1=t1, t2=t2,
+                               var_add=-1000.,
+                               var_fac=0.01,
+                               units='hPa-1000',
+                               clim=[-25.,25.], cincr=5.0, cmap='RdBu_r',
+                               land_facecolor='none',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('sea level pressure', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_psl_bias'
+    if fig_name in fig_names:
+      var = vpsl
+      var_ref = 'msl'
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz='all')
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][:,:]
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', 'hPa', 'sea level pressure bias')
+      IaV.data = data_bias/100.
+      pyic.hplot_base(IcD_atm2d, IaV, clim=10., cincr=1., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_w10m'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vsfcwind, it=0, iz=0,
+                               t1=t1, t2=t2,
+                               units = '$m s^{-1}$',
+                               clim=[0.5, 10.], clevs=[0.5,1.,2.,3.,5.,7.,10.], cmap='RdYlBu_r',
+                               land_facecolor='none',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('10m wind speed', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_w10m_bias'
+    if fig_name in fig_names:
+      var = vsfcwind
+      var_ref = 'si10'
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][:,:]
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$m s^{-1}$', '10m wind speed bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=6., cincr=0.5, cmap='RdBu_r',
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_ts'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vts, it=0,
                                t1=t1, t2=t2,
@@ -2420,247 +2681,79 @@ for tave_int in tave_ints:
       save_fig('surface temperature', path_pics, fig_name, FigInf)
 
     # ---
-    fig_name = 'sea_surface_temp'
-    if fig_name in fig_names and do_conf_dwd:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vsst, it=0,
+    fig_name = 'atm_ts_bias'
+    if fig_name in fig_names:
+      var = vts
+      var_ref = 'skt'
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][:,:]
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$^o$C', 'surface temperature bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=24., cincr=2., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_t2m'
+    if fig_name in fig_names:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vtas, it=0,
                                t1=t1, t2=t2,
                                var_add=-273.15,
                                units = '$^o$C',
-                               clim=[0.,24.], cincr=2.0, cmap='cmo.thermal',
-                               IcD=IcD_atm2d,
-                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                               **Ddict_global)
-      save_fig('Sea surface temperature', path_pics, fig_name, FigInf)
-
-    # ---
-    fig_name = 'seaice_fraction'
-    if fig_name in fig_names and do_conf_dwd:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vfrsi, it=0,
-                               t1=t1, t2=t2,
-                               var_add=0.,
-                               units = '',
-                               clim=[0.,1.], cincr=0.1, cmap='RdBu',
-                               IcD=IcD_atm2d,
-                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                               **Ddict_global)
-      save_fig('Seaice fraction', path_pics, fig_name, FigInf)
-  
-    # ---
-    fig_name = 'atm_tas_bias'
-    if fig_name in fig_names:
-      var = vtas
-      var_ref = 'tas'
-      # --- interpolate data
-      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
-      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
-      datai = data2di
-      # --- reference
-      f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref = f.variables[var_ref][:]
-      f.close()
-      # --- calculate bias
-      data_bias = datai-data_ref
-      IaV = pyic.IconVariable('data_bias', 'deg C', 'bias: 2m temperature')
-      IaV.data = data_bias
-      pyic.hplot_base(IcD_atm2d, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
-                      use_tgrid=False,
-                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=True,
-                      asp=0.5,
-                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                     )
-      FigInf = dict(long_name=IaV.long_name)
-      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
-    
-    # ---
-    fig_name = 'atm_prw_bias'
-    if fig_name in fig_names:
-      var = vprw
-      var_ref = 'prw'
-      # --- interpolate data
-      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
-      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
-      datai = data2di
-      # --- reference
-      f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref = f.variables[var_ref][:]
-      f.close()
-      # --- calculate bias
-      data_bias = datai-data_ref
-      IaV = pyic.IconVariable('data_bias', 'kg m-2', 'bias: integrated water vapor')
-      IaV.data = data_bias
-      pyic.hplot_base(IcD_atm2d, IaV, clim='sym', contfs='auto', cmap='RdBu_r', 
-                      use_tgrid=False,
-                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=True,
-                      asp=0.5,
-                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                     )
-      FigInf = dict(long_name=IaV.long_name)
-      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
-  
-    # ---
-    fig_name = 'atm_psl_bias'
-    if fig_name in fig_names:
-      var = vpsl
-      var_ref = 'psl'
-      # --- interpolate data
-      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz='all')
-      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
-      datai = data2di
-      # --- reference
-      f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref = f.variables[var_ref][:]
-      f.close()
-      # --- calculate bias
-      data_bias = datai-data_ref
-      IaV = pyic.IconVariable('data_bias', 'hPa', 'bias: sea level pressure')
-      IaV.data = data_bias/100.
-      pyic.hplot_base(IcD_atm2d, IaV, clim=10., contfs='auto', cmap='RdBu_r', 
-                      use_tgrid=False,
-                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      land_facecolor='none', do_write_data_range=True,
-                      asp=0.5,
-                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                     )
-      FigInf = dict(long_name=IaV.long_name)
-      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
-
-    # ---
-    fig_name = 'atm_geoh_500'
-    if fig_name in fig_names:
-      f = Dataset(IcD_atm3d.flist_ts[0], 'r')
-      if not do_conf_dwd:
-         zg = f.variables[vzg][:,:]
-      else:
-         zg = f.variables[vzg][0,:,:]/9.81
-      f.close()
-      zgvi = zg[ind_lev,icall]*fac+zg[ind_lev+1,icall]*(1.-fac)
-      IaV = pyic.IconVariable('zgvihi', 'm', 'geopotential height of 500 hPa')
-      IaV.data = zgvi[ip500,:]
-      IaV.interp_to_rectgrid(fpath_ckdtree_atm)
-      pyic.hplot_base(IcD_atm2d, IaV, clim=[5000,6000], contfs='auto', cmap='RdYlBu_r', 
-                      use_tgrid=False,
-                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      do_write_data_range=True,
-                      land_facecolor='none',
-                      asp=0.5,
-                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                     )
-      save_fig(IaV.long_name, path_pics, fig_name)
-
-    # ---
-    fig_name = 'atm_temp_850'
-    if fig_name in fig_names:
-      ta, it_ave = pyic.time_average(IcD_atm3d, vta, t1, t2, iz='all')
-      tavi = ta[ind_lev,icall]*fac+ta[ind_lev-1,icall]*(1.-fac)
-      tavi += -273.15
-      IaV = pyic.IconVariable('tavi', '$^o$C', 'temperature at 850 hPa')
-      IaV.data = tavi[ip850,:]
-      IaV.interp_to_rectgrid(fpath_ckdtree_atm)
-      pyic.hplot_base(IcD_atm2d, IaV, clim=30, contfs=np.arange(-30,35,5), cmap='RdYlBu_r', 
-                      use_tgrid=False,
-                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
-                      do_write_data_range=True,
-                      land_facecolor='none',
-                      asp=0.5,
-                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                     )
-      save_fig(IaV.long_name, path_pics, fig_name)
-
-    # --- GB: try regional cut
-    fig_name = 'atm_temp_850_reg'
-    if fig_name in fig_names:
-      ta, it_ave = pyic.time_average(IcD_atm3d, vta, t1, t2, iz='all')
-      tavi = ta[ind_lev,icall]*fac+ta[ind_lev-1,icall]*(1.-fac)
-      tavi += -273.15
-      IaV = pyic.IconVariable('tavi', '$^o$C', 'temperature at 850 hPa')
-      IaV.data = tavi[ip850,:]
-      IaV.interp_to_rectgrid(fpath_ckdtree_atm)
-      pyic.hplot_base(IcD_atm2d, IaV, clim=30, contfs=np.arange(-30,35,5), cmap='RdYlBu_r',
-                      use_tgrid=False,
-                      projection=projection, xlim=[-30.,40.], ylim=[30.,80.],
-                      do_write_data_range=True,
-                      land_facecolor='none',
-                      asp=0.5,
-                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                     )
-      save_fig(IaV.long_name, path_pics, fig_name)
-
-    # ---
-    fig_name = 'atm_tauu_bias'
-    if fig_name in fig_names:
-      var = vtauu
-      var_ref = 'tauu'
-      # --- interpolate data
-      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz='all')
-      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
-      datai = data2di
-      # --- reference
-      f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref = f.variables[var_ref][:]
-      f.close()
-      # --- calculate bias
-      data_bias = datai-data_ref
-      IaV = pyic.IconVariable('data_bias', 'mN m-2', 'bias: zonal wind stress')
-      IaV.data = data_bias*1e3
-      pyic.hplot_base(IcD_atm2d, IaV, clim=100, contfs='auto', cmap='RdBu_r', 
-                      use_tgrid=False,
-                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],  do_write_data_range=True,
-                      #land_facecolor='none',
-                      asp=0.5,
-                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                     )
-      FigInf = dict(long_name=IaV.long_name)
-      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
-  
-    # ---
-    fig_name = 'atm_tauv_bias'
-    if fig_name in fig_names:
-      var = vtauv
-      var_ref = 'tauv'
-      # --- interpolate data
-      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz='all')
-      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
-      datai = data2di
-      # --- reference
-      f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref = f.variables[var_ref][:]
-      f.close()
-      # --- calculate bias
-      data_bias = datai-data_ref
-      IaV = pyic.IconVariable('data_bias', 'mN m-2', 'bias: meridional wind stress')
-      IaV.data = data_bias*1e3
-      pyic.hplot_base(IcD_atm2d, IaV, clim=100, contfs='auto', cmap='RdBu_r', 
-                      use_tgrid=False,
-                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],  do_write_data_range=True,
-                      #land_facecolor='none',
-                      asp=0.5,
-                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                     )
-      FigInf = dict(long_name=IaV.long_name)
-      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
-  
-    # ---
-    fig_name = 'atm_sea_level_pressure'
-    if fig_name in fig_names:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vpsl, it=0,
-                               t1=t1, t2=t2,
-                               var_add=-1000.,
-                               var_fac=0.01,
-                               units='hPa-1000',
-                               clim=[-25.,25.], cincr=5.0, cmap='RdYlBu_r',
+                               clim=[-30.,30.], cincr=5.0, cmap='cmo.thermal',
                                land_facecolor='none',
                                IcD=IcD_atm2d,
                                save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                                **Ddict_global)
-      save_fig('sea level pressure', path_pics, fig_name, FigInf)
-  
+      save_fig('2m temperature', path_pics, fig_name, FigInf)
+
     # ---
-    fig_name = 'atm_column_water_vapour'
+    fig_name = 'atm_t2m_bias'
+    if fig_name in fig_names:
+      var = vtas
+      var_ref = 't2m'
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][:,:]
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$^o$C', '2m temperature bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=12., cincr=1., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_cwv'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vprw, it=0,
                                t1=t1, t2=t2,
+                               units = '$kg m^{-2}$',
                                clim=[10.,50.], cincr=10.0, cmap='RdYlBu_r',
                                land_facecolor='none',
                                IcD=IcD_atm2d,
@@ -2668,6 +2761,78 @@ for tave_int in tave_ints:
                                **Ddict_global)
       save_fig('column water vapour', path_pics, fig_name, FigInf)
   
+    # ---
+    fig_name = 'atm_cwv_bias'
+    if fig_name in fig_names:
+      var = vprw
+      var_ref = 'tcwv'
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][:,:]
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$kg m^{-2}$', 'integrated water vapor bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=20., cincr=2., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_tcc'
+    if fig_name in fig_names:
+      if not do_conf_dwd:
+         vfc = 100.
+      else:
+         vfc = 1.
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vclt, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=vfc,
+                               units='%',
+                               clim=[0.,100.], cincr=20.0, cmap='RdYlBu_r',
+                               land_facecolor='none',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('total cloud cover', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_tcc_bias'
+    if fig_name in fig_names:
+      var = vclt
+      var_ref = 'tcc'
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][:,:]
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '%', 'total cloud cover bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=100., cincr=10., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
     # ---
     fig_name = 'atm_cllvi_clivi'
     if fig_name in fig_names:
@@ -2686,46 +2851,56 @@ for tave_int in tave_ints:
       save_fig(IaV.long_name, path_pics, fig_name, FigInf)
   
     # ---
-    fig_name = 'atm_total_precipitation'
+    fig_name = 'atm_tp'
     if fig_name in fig_names:
       FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vpr, it=0,
                                t1=t1, t2=t2,
                                var_fac=86400.,
-                               units='mm/d',
+                               units='mm/day',
                                clim=[1,12], clevs=[1,2,4,8,12], cmap='RdYlBu',
                                land_facecolor='none',
                                IcD=IcD_atm2d,
                                save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                                **Ddict_global)
       save_fig('total precipitation', path_pics, fig_name, FigInf)
-  
+
     # ---
-    fig_name = 'atm_total_cloud_cover'
+    fig_name = 'atm_tp_bias'
     if fig_name in fig_names:
-      if not do_conf_dwd:
-         vfc = 100.
-      else:
-         vfc = 1.
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vclt, it=0,
-                               t1=t1, t2=t2,
-                               var_fac=vfc,
-                               units='%',
-                               clim=[10.,90.], cincr=20.0, cmap='RdYlBu_r',
-                               land_facecolor='none',
-                               IcD=IcD_atm2d,
-                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                               **Ddict_global)
-      save_fig('total cloud cover', path_pics, fig_name, FigInf)
+      var = vpr
+      var_ref = 'tp'
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di * 86400
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][:,:] * 1000 # m/day --> mm/day
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', 'mm/day', 'total precipitation bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=5., cincr=0.5, cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
   
     # ---
-    fig_name = 'atm_p_e'
+    fig_name = 'atm_pme'
     if fig_name in fig_names:
       pr, it_ave = pyic.time_average(IcD_atm2d, vpr, t1, t2, iz='all')
       evspsbl, it_ave = pyic.time_average(IcD_atm2d, vevspsbl, t1, t2, iz='all')
-      IaV = pyic.IconVariable('p_e', 'mm/day', 'P-E')
+      IaV = pyic.IconVariable('pme', 'mm/day', 'P-E')
       IaV.data = (pr+evspsbl)*86400
       IaV.interp_to_rectgrid(fpath_ckdtree_atm)
-      pyic.hplot_base(IcD_atm2d, IaV, clim=5, cincr=1, cmap='RdBu', 
+      pyic.hplot_base(IcD_atm2d, IaV, clim=5., cincr=1., cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, do_write_data_range=True,
                       land_facecolor='none',
@@ -2736,73 +2911,296 @@ for tave_int in tave_ints:
       save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
-    fig_name = 'atm_surface_shfl'
-    if fig_name in fig_names and do_conf_dwd:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vshfl_s, it=0,
-                               t1=t1, t2=t2,
-                               var_fac=1.,
-                               units='W m-2',
-                               clim=[-150.,150.], cincr=25.0, cmap='RdYlBu_r',
-                               land_facecolor='none',
-                               IcD=IcD_atm2d,
-                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                               **Ddict_global)
-      save_fig('Surface sensible heat flux', path_pics, fig_name, FigInf)
-
-    # ---
-    fig_name = 'atm_surface_lhfl'
-    if fig_name in fig_names and do_conf_dwd:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vlhfl_s, it=0,
-                               t1=t1, t2=t2,
-                               var_fac=1.,
-                               units='W m-2',
-                               clim=[-250.,250.], cincr=25.0, cmap='RdYlBu_r',
-                               land_facecolor='none',
-                               IcD=IcD_atm2d,
-                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                               **Ddict_global)
-      save_fig('Surface latent heat flux', path_pics, fig_name, FigInf)
-
-    # ---
-    fig_name = 'atm_toa_sob'
-    if fig_name in fig_names and do_conf_dwd:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vsob_t, it=0,
-                               t1=t1, t2=t2,
-                               var_fac=1.,
-                               units='W m-2',
-                               clim=[0.,350.], cincr=25.0, cmap='RdYlBu',
-                               land_facecolor='none',
-                               IcD=IcD_atm2d,
-                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                               **Ddict_global)
-      save_fig('TOA short wave net flux', path_pics, fig_name, FigInf)
-
-    # ---
-    fig_name = 'atm_toa_thb'
-    if fig_name in fig_names and do_conf_dwd:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vthb_t, it=0,
-                               t1=t1, t2=t2,
-                               var_fac=1.,
-                               units='W m-2',
-                               clim=[-300.,0.], cincr=25.0, cmap='RdYlBu_r',
-                               land_facecolor='none',
-                               IcD=IcD_atm2d,
-                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                               **Ddict_global)
-      save_fig('TOA long wave net flux', path_pics, fig_name, FigInf)
-  
-    # ---
-    fig_name = 'atm_10m_wind'
+    fig_name = 'atm_pme_bias'
     if fig_name in fig_names:
-      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vsfcwind, it=0, iz=0,
-                               t1=t1, t2=t2,
-                               clim=[0.5, 10.], clevs=[0.5,1.,2.,3.,5.,7.,10.], cmap='RdYlBu_r',
-                               land_facecolor='none',
-                               IcD=IcD_atm2d,
-                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                               **Ddict_global)
-      save_fig('10m wind', path_pics, fig_name, FigInf)
- 
+      var1 = vpr
+      var2 = vevspsbl
+      var_ref1 = 'tp'
+      var_ref2 = 'e'
+      # --- interpolate data
+      pr, it_ave = pyic.time_average(IcD_atm2d, var1, t1, t2, iz=0)
+      evspsbl, it_ave = pyic.time_average(IcD_atm2d, var2, t1, t2, iz=0)
+      lon, lat, pri = pyic.interp_to_rectgrid(pr, fpath_ckdtree_atm, coordinates='clat clon')
+      lon, lat, evspsbli = pyic.interp_to_rectgrid(evspsbl, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = (pri+evspsbli)*86400
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref1 = f.variables[var_ref1][:,:] * 1000 # m/day --> mm/day
+      data_ref2 = f.variables[var_ref2][:,:] * 1000 # m/day --> mm/day
+      data_ref = data_ref1 + data_ref2
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', 'mm/day', 'P-E bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=5., cincr=1., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    if do_atmosphere_plots:
+      print('Calculate atmosphere pressure interpolation weights...')
+      # --- load 3D pressure
+      pfull, it_ave = pyic.time_average(IcD_atm3d, vpfull, t1, t2, iz='all')
+      # linear vert ax
+      IcD_atm3d.plevc = np.array([100000, 97500, 95000, 92500, 90000, 87500, 85000, 82500, 80000, 77500, 75000, 70000, 65000, 60000, 55000, 50000, 45000, 40000, 35000, 30000, 25000, 22500, 20000, 17500, 15000, 12500, 10000, 7000, 5000, 3000, 2000, 1000, 700, 500, 300, 200, 100])
+      icall, ind_lev, fac = pyic.calc_vertical_interp_weights(pfull, IcD_atm3d.plevc)
+      # log10 vert ax
+      IcD_atm3d.plev_log = np.array([100900,99500,97100,93900,90200,86100,81700,77200,72500,67900,63300,58800,54300,49900,45700,41600,37700,33900,30402,27015,23833,20867,18116,15578,13239,11066,9102,7406,5964,4752,3743,2914,2235,1685,1245,901,637,440,296,193,122,74,43,23,11,4,1])
+      icall_log, ind_lev_log, fac_log = pyic.calc_vertical_interp_weights(pfull, IcD_atm3d.plev_log)
+      ip250 = np.argmin((IcD_atm3d.plevc-250e2)**2)
+      ip500 = np.argmin((IcD_atm3d.plevc-500e2)**2)
+      ip700 = np.argmin((IcD_atm3d.plevc-700e2)**2)
+      ip850 = np.argmin((IcD_atm3d.plevc-850e2)**2)
+
+    # ----------  selected variables at selected pressure levels
+    # ---
+    fig_name = 'atm_u_250'
+    if fig_name in fig_names:
+      data, it_ave = pyic.time_average(IcD_atm3d, vua, t1, t2, iz='all')
+      datavi = data[ind_lev,icall]*fac+data[ind_lev-1,icall]*(1.-fac)
+      IaV = pyic.IconVariable('datavi', '$m s^{-1}$', 'u-comp of wind @ 250 hPa')
+      IaV.data = datavi[ip250,:]
+      IaV.interp_to_rectgrid(fpath_ckdtree_atm)
+      pyic.hplot_base(IcD_atm2d, IaV, clim=[-50.,50.], cincr=10., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      do_write_data_range=True,
+                      land_facecolor='none',
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      save_fig(IaV.long_name, path_pics, fig_name)
+
+    # ---
+    fig_name = 'atm_u_250_bias'
+    if fig_name in fig_names:
+      var = vua
+      var_ref = 'u'
+      # --- interpolate data
+      data, it_ave = pyic.time_average(IcD_atm3d, var, t1, t2, iz='all')
+      datavi = data[ind_lev,icall]*fac+data[ind_lev-1,icall]*(1.-fac)
+      data2d = datavi[ip250,:]
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][5,:,:] # dim=5 --> 250 hPa
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$m s^{-1}$', 'u-comp of wind @ 250 hPa bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=[-10.,10.], cincr=2., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_v_250'
+    if fig_name in fig_names:
+      ta, it_ave = pyic.time_average(IcD_atm3d, vva, t1, t2, iz='all')
+      tavi = ta[ind_lev,icall]*fac+ta[ind_lev-1,icall]*(1.-fac)
+      IaV = pyic.IconVariable('tavi', '$m s^{-1}$', 'v-comp of wind @ 250 hPa')
+      IaV.data = tavi[ip250,:]
+      IaV.interp_to_rectgrid(fpath_ckdtree_atm)
+      pyic.hplot_base(IcD_atm2d, IaV, clim=[-10.,10.], cincr=1., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      do_write_data_range=True,
+                      land_facecolor='none',
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      save_fig(IaV.long_name, path_pics, fig_name)
+
+    # ---
+    fig_name = 'atm_v_250_bias'
+    if fig_name in fig_names:
+      var = vva
+      var_ref = 'v'
+      # --- interpolate data
+      data, it_ave = pyic.time_average(IcD_atm3d, var, t1, t2, iz='all')
+      datavi = data[ind_lev,icall]*fac+data[ind_lev-1,icall]*(1.-fac)
+      data2d = datavi[ip250,:]
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][5,:,:] # dim=5 --> 250 hPa
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$m s^{-1}$', 'v-comp of wind @ 250 hPa bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=[-2.,2.], cincr=0.5, cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_geop_500'
+    if fig_name in fig_names:
+      #f = Dataset(IcD_atm3d.flist_ts[0], 'r')
+      #if not do_conf_dwd:
+      #   data = f.variables[vzg][:,:]
+      #else:
+      #   data = f.variables[vzg][0,:,:]/9.81
+      #f.close()
+      data, it_ave = pyic.time_average(IcD_atm3d, vzg, t1, t2, iz='all')
+      datavi = data[ind_lev,icall]*fac+data[ind_lev+1,icall]*(1.-fac)
+      IaV = pyic.IconVariable('datavi', 'm', 'geopotential height @ 500 hPa')
+      IaV.data = datavi[ip500,:] / 9.81
+      IaV.interp_to_rectgrid(fpath_ckdtree_atm)
+      pyic.hplot_base(IcD_atm2d, IaV, clim=[5000,6000], cincr=100., cmap='RdYlBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      do_write_data_range=True,
+                      land_facecolor='none',
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      save_fig(IaV.long_name, path_pics, fig_name)
+
+    # ---
+    fig_name = 'atm_geop_500_bias'
+    if fig_name in fig_names:
+      var = vzg
+      var_ref = 'z'
+      # --- interpolate data
+      data, it_ave = pyic.time_average(IcD_atm3d, var, t1, t2, iz='all')
+      datavi = data[ind_lev,icall]*fac+data[ind_lev-1,icall]*(1.-fac)
+      data2d = datavi[ip500,:] / 9.81
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][3,:,:] / 9.81 # dim=3 --> 500 hPa
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', 'm', 'geopotential @ 500 hPa bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=[-1000.,1000], cincr=100., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_rel_hum_700'
+    if fig_name in fig_names:
+      data, it_ave = pyic.time_average(IcD_atm3d, vhur, t1, t2, iz='all')
+      datavi = data[ind_lev,icall]*fac+data[ind_lev-1,icall]*(1.-fac)
+      IaV = pyic.IconVariable('datavi', '%', 'relative humidity @ 700 hPa')
+      IaV.data = datavi[ip700,:]
+      IaV.interp_to_rectgrid(fpath_ckdtree_atm)
+      pyic.hplot_base(IcD_atm2d, IaV, clim=[0.,100.], cincr=10., cmap='RdYlBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      do_write_data_range=True,
+                      land_facecolor='none',
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      save_fig(IaV.long_name, path_pics, fig_name)
+
+    # ---
+    fig_name = 'atm_rel_hum_700_bias'
+    if fig_name in fig_names:
+      var = vhur
+      var_ref = 'r'
+      # --- interpolate data
+      data, it_ave = pyic.time_average(IcD_atm3d, var, t1, t2, iz='all')
+      datavi = data[ind_lev,icall]*fac+data[ind_lev-1,icall]*(1.-fac)
+      data2d = datavi[ip700,:]
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][2,:,:] # dim=2 --> 700 hPa
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '%', 'relative humidity @ 700 hPa bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=40., cincr=5., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_temp_850'
+    if fig_name in fig_names:
+      data, it_ave = pyic.time_average(IcD_atm3d, vta, t1, t2, iz='all')
+      datavi = data[ind_lev,icall]*fac+data[ind_lev-1,icall]*(1.-fac)
+      datavi += -273.15
+      IaV = pyic.IconVariable('datavi', '$^o$C', 'temperature @ 850 hPa')
+      IaV.data = datavi[ip850,:]
+      IaV.interp_to_rectgrid(fpath_ckdtree_atm)
+      pyic.hplot_base(IcD_atm2d, IaV, clim=[-35,35], cincr=5., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      do_write_data_range=True,
+                      land_facecolor='none',
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      save_fig(IaV.long_name, path_pics, fig_name)
+
+    # ---
+    fig_name = 'atm_temp_850_bias'
+    if fig_name in fig_names:
+      var = vta
+      var_ref = 't'
+      # --- interpolate data
+      data, it_ave = pyic.time_average(IcD_atm3d, var, t1, t2, iz='all')
+      datavi = data[ind_lev,icall]*fac+data[ind_lev-1,icall]*(1.-fac)
+      data2d = datavi[ip850,:]
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref = f.variables[var_ref][1,:,:] # dim=1 --> 850 hPa
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$^o$C', 'temperature @ 850 hPa bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=10., cincr=1., cmap='RdBu_r', 
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
     # ----------  zonal averages
     # --- temperature
     fig_name = 'atm_temp_zave'
@@ -2810,12 +3208,11 @@ for tave_int in tave_ints:
       data, it_ave = pyic.time_average(IcD_atm3d, vta, t1, t2, iz='all')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
 
-      IaV = pyic.IconVariable('temp', 'deg C', 'zon. ave. temperature')
+      IaV = pyic.IconVariable('temp', '$^o$C', 'zon. ave. temperature')
       IaV.data = 1.*data_zave
       IaV.data += -273.15
       IaV.lat_sec = lat_sec
-      pyic.vplot_base(IcD_atm3d, IaV, clim=[-80., 30.], cincr=5, contfs='auto',
-                      cmap='RdYlBu_r',
+      pyic.vplot_base(IcD_atm3d, IaV, clim=[-80., 30.], cincr=10., contfs='auto', cmap='RdYlBu_r',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2825,14 +3222,15 @@ for tave_int in tave_ints:
     fig_name = 'atm_temp_zave_bias'
     if fig_name in fig_names:
       f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref_zave = f.variables['ta_L17'][:]
+      data_ref_zave = f.variables['t_zm'][:,:]
       f.close()
 
-      IaV = pyic.IconVariable('temp bias', 'deg C', 'zon. ave. temperature bias')
+      IaV = pyic.IconVariable('temp bias', '$^o$C', 'zon. ave. temperature bias')
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, 
                       clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
+                      #clim=10., cincr=2., contfs='auto', cmap='RdBu_r',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -2842,7 +3240,7 @@ for tave_int in tave_ints:
     fig_name = 'atm_logv_temp_zave'
     if fig_name in fig_names:
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev_log, fac_log, fpath_ckdtree_atm)
-      IaV = pyic.IconVariable('temp', 'deg C', 'zon. ave. temperature')
+      IaV = pyic.IconVariable('temp', '$^o$C', 'zon. ave. temperature')
       IaV.data = 1.*data_zave
       IaV.data += -273.15
       IaV.lat_sec = lat_sec
@@ -2854,23 +3252,6 @@ for tave_int in tave_ints:
                      )
       save_fig('log v-axis: temperature', path_pics, fig_name)
 
-    # ---
-    fig_name = 'atm_logv_temp_zave_bias'
-    if fig_name in fig_names:
-      f = Dataset(fpath_ref_data_atm , 'r')
-      data_ref_zave = f.variables['ta_L47'][:]
-      f.close()
-      IaV = pyic.IconVariable('temp bias', 'deg C', 'zon. ave. temperature bias')
-      IaV.data = data_zave - data_ref_zave
-      IaV.lat_sec = lat_sec
-      pyic.vplot_base(IcD_atm3d, IaV, 
-                      clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
-                      vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=True,
-                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                     )
-      save_fig('log v-axis: temperature bias', path_pics, fig_name)
-  
     # --- zon. vel.
     fig_name = 'atm_u_zave'
     if fig_name in fig_names:
@@ -2890,7 +3271,7 @@ for tave_int in tave_ints:
     fig_name = 'atm_u_zave_bias'
     if fig_name in fig_names:
       f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref_zave = f.variables['ua_L17'][:]
+      data_ref_zave = f.variables['u_zm'][:,:]
       f.close()
       IaV = pyic.IconVariable('u', 'm/s', 'zon. ave. zonal velocity bias')
       IaV.data = data_zave - data_ref_zave
@@ -2917,23 +3298,6 @@ for tave_int in tave_ints:
                      )
       save_fig('log v-axis: zon. velocity', path_pics, fig_name)
 
-    # ---
-    fig_name = 'atm_logv_u_zave_bias'
-    if fig_name in fig_names:
-      f = Dataset(fpath_ref_data_atm , 'r')
-      data_ref_zave = f.variables['ua_L47'][:]
-      f.close()
-      IaV = pyic.IconVariable('u', 'm/s', 'zon. ave. zonal velocity bias')
-      IaV.data = data_zave - data_ref_zave
-      IaV.lat_sec = lat_sec
-      pyic.vplot_base(IcD_atm3d, IaV, 
-                      clim=10, contfs=[-10,-5,-2,-1,-0.5,0.5,1,2,5,10], cmap='RdBu_r',
-                      vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=True,
-                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                     )
-      save_fig('log v-axis: zon. vel. bias', path_pics, fig_name)
-
     # --- mer. vel.
     fig_name = 'atm_v_zave'
     if fig_name in fig_names:
@@ -2953,7 +3317,7 @@ for tave_int in tave_ints:
     fig_name = 'atm_v_zave_bias'
     if fig_name in fig_names:
       f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref_zave = f.variables['va_L17'][:]
+      data_ref_zave = f.variables['v_zm'][:,:]
       f.close()
       IaV = pyic.IconVariable('v', 'm/s', 'zon. ave. meridional velocity bias')
       IaV.data = data_zave - data_ref_zave
@@ -2981,90 +3345,162 @@ for tave_int in tave_ints:
       save_fig('log v-axis: mer. velocity', path_pics, fig_name)
 
     # ---
-    fig_name = 'atm_logv_v_zave_bias'
-    if fig_name in fig_names:
-      f = Dataset(fpath_ref_data_atm , 'r')
-      data_ref_zave = f.variables['va_L47'][:]
-      f.close()
-      IaV = pyic.IconVariable('v', 'm/s', 'zon. ave. meridional velocity bias')
-      IaV.data = data_zave - data_ref_zave
-      IaV.lat_sec = lat_sec
-      pyic.vplot_base(IcD_atm3d, IaV, 
-                      clim=1, contfs=[-1.0,-0.5,-0.2,-0.1,-0.05,0.05,0.1,0.2,0.5,1.0], cmap='RdBu_r',
-                      vertaxtype='log10', daxl=2.1,
-                      asp=0.5, do_write_data_range=True,
-                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
-                     )
-      save_fig('log v-axis: mer. velocity bias', path_pics, fig_name)
-  
-    # ---
     fig_name = 'atm_spec_hum_zave'
     if fig_name in fig_names:
       data, it_ave = pyic.time_average(IcD_atm3d, vhus, t1, t2, iz='all')
+      lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
       IaV = pyic.IconVariable('hus', 'g/kg', 'zon. ave. specific humidity')
-      IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      IaV.data *= 1000.
+      IaV.data = data_zave * 1000.
+      IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, clim=0.5, contfs=[0.005,0.01,0.03,0.05,0.1,0.3,0.5,1.,2.,5.,8.],
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('specific humidity', path_pics, fig_name)
+
+    # ---
+    fig_name = 'atm_spec_hum_bias'
+    if fig_name in fig_names:
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref_zave = f.variables['q_zm'][:,:]
+      f.close()
+      IaV = pyic.IconVariable('hus', 'g/kg', 'zon. ave. specific humidity bias')
+      IaV.data = data_zave - data_ref_zave * 1000
+      IaV.lat_sec = lat_sec
+      pyic.vplot_base(IcD_atm3d, IaV, 
+                      clim=1, contfs=[-1.0,-0.5,-0.2,-0.1,-0.05,0.05,0.1,0.2,0.5,1.0], cmap='RdBu_r',
+                      asp=0.5, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      save_fig('specific humidity bias', path_pics, fig_name)
   
     # ---
     fig_name = 'atm_rel_hum_zave'
     if fig_name in fig_names:
       data, it_ave = pyic.time_average(IcD_atm3d, vhur, t1, t2, iz='all')
+      lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
       IaV = pyic.IconVariable('hur', '%', 'zon. ave. relative humidity')
-      IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      if not do_conf_dwd:
-         IaV.data *= 100.
+      if do_conf_dwd:
+         IaV.data = data_zave
+      else:
+         IaV.data = data_zave * 100.
+      IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, clim=[0,100.], cincr=10., contfs='auto',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('relative humidity', path_pics, fig_name)
+
+    # ---
+    fig_name = 'atm_rel_hum_zave_bias'
+    if fig_name in fig_names:
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref_zave = f.variables['r_zm'][:,:]
+      f.close()
+      IaV = pyic.IconVariable('hur', '%', 'zon. ave. relative humidity bias')
+      IaV.data = data_zave - data_ref_zave
+      IaV.lat_sec = lat_sec
+      pyic.vplot_base(IcD_atm3d, IaV, 
+                      clim=50., cincr=10., contfs='auto', cmap='RdBu_r',
+                      asp=0.5, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      save_fig('relative humidity bias', path_pics, fig_name)
   
     # ---
     fig_name = 'atm_cloud_cover_zave'
     if fig_name in fig_names:
       data, it_ave = pyic.time_average(IcD_atm3d, vcl, t1, t2, iz='all')
+      lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
       IaV = pyic.IconVariable('cl', '%', 'zon. ave. cloud cover')
-      IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      if not do_conf_dwd:
-         IaV.data *= 100.
+      if do_conf_dwd:
+         IaV.data = data_zave
+      else:
+         IaV.data = data_zave * 100.
+      IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, clim=[0,25.], cincr=2.5, contfs='auto',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('cloud cover', path_pics, fig_name)
+
+    # ---
+    fig_name = 'atm_cloud_cover_zave_bias'
+    if fig_name in fig_names:
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref_zave = f.variables['cc_zm'][:,:] * 100.
+      f.close()
+      IaV = pyic.IconVariable('cl', '%', 'zon. ave. cloud cover bias')
+      IaV.data = data_zave - data_ref_zave
+      IaV.lat_sec = lat_sec
+      pyic.vplot_base(IcD_atm3d, IaV, 
+                      clim=25., cincr=5., contfs='auto', cmap='RdBu_r',
+                      asp=0.5, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      save_fig('cloud cover bias', path_pics, fig_name)
   
     # ---
     fig_name = 'atm_cloud_water_zave'
     if fig_name in fig_names:
       data, it_ave = pyic.time_average(IcD_atm3d, vclw, t1, t2, iz='all')
       IaV = pyic.IconVariable('clw', 'mg/kg', 'zon. ave. cloud water')
-      IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      IaV.data *= 1e6
-      clw = IaV.data
-      pyic.vplot_base(IcD_atm3d, IaV, clim=[0,25.], cincr=2., contfs='auto',
+      lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
+      IaV.data = data_zave * 1e6
+      clw = IaV.data # save it for the plot clw+cli
+      IaV.lat_sec = lat_sec
+      pyic.vplot_base(IcD_atm3d, IaV, clim=[0,40.], cincr=2., contfs='auto',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('cloud water', path_pics, fig_name)
+
+    # ---
+    fig_name = 'atm_cloud_water_zave_bias'
+    if fig_name in fig_names:
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref_zave = f.variables['clwc_zm'][:,:] * 1e6
+      f.close()
+      IaV = pyic.IconVariable('clw', 'mg/kg', 'zon. ave. cloud water bias')
+      IaV.data = data_zave - data_ref_zave
+      IaV.lat_sec = lat_sec
+      pyic.vplot_base(IcD_atm3d, IaV, 
+                      clim=40., cincr=5., contfs='auto', cmap='RdBu_r',
+                      asp=0.5, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      save_fig('cloud water bias', path_pics, fig_name)
   
     # ---
     fig_name = 'atm_cloud_ice_zave'
     if fig_name in fig_names:
       data, it_ave = pyic.time_average(IcD_atm3d, vcli, t1, t2, iz='all')
       IaV = pyic.IconVariable('cli', 'mg/kg', 'zon. ave. cloud ice')
-      IaV.lat_sec, IaV.data = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      IaV.data *= 1e6
-      cli = IaV.data
-      pyic.vplot_base(IcD_atm3d, IaV, clim=[0,25.], cincr=2., contfs='auto',
+      lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
+      IaV.data = data_zave *  1e6
+      cli = IaV.data # save it for the plot clw+cli
+      IaV.lat_sec = lat_sec
+      pyic.vplot_base(IcD_atm3d, IaV, clim=[0,15.], cincr=1., contfs='auto',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
       save_fig('cloud ice', path_pics, fig_name)
+
+    # ---
+    fig_name = 'atm_cloud_ice_zave_bias'
+    if fig_name in fig_names:
+      f = Dataset(fpath_ref_data_atm, 'r')
+      data_ref_zave = f.variables['ciwc_zm'][:,:] * 1e6
+      f.close()
+      IaV = pyic.IconVariable('cli', 'mg/kg', 'zon. ave. cloud ice bias')
+      IaV.data = data_zave - data_ref_zave
+      IaV.lat_sec = lat_sec
+      pyic.vplot_base(IcD_atm3d, IaV, 
+                      clim=15., cincr=3., contfs='auto', cmap='RdBu_r',
+                      asp=0.5, do_write_data_range=True,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      save_fig('cloud ice bias', path_pics, fig_name)
   
     # ---
     fig_name = 'atm_cloud_water_ice_zave'
