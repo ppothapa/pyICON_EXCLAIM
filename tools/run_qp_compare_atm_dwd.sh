@@ -47,7 +47,7 @@ gnameu = gname.split('_')[0].upper()
 fpath_tgrid         = path_grid + gname+'_tgrid.nc'
 fpath_tgrid_atm     = path_grid_atm + gname_atm+'_tgrid.nc'
 fpath_ref_data_oce  = path_grid + 'ts_phc3.0_annual_icon_grid_0043_R02B04_G_L40.nc'
-fpath_ref_data_atm  = path_grid_atm + 'pyicon_prepare_era.nc'
+fpath_ref_data_atm  = path_grid_atm + 'era5_pyicon_2000-2010_1.5x1.5deg.nc'
 fpath_fx            = path_grid + 'oce_fx.19600102T000000Z.nc'
 
 # --- nc file prefixes ocean
