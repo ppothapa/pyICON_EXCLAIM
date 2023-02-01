@@ -214,7 +214,7 @@ def interp_to_rectgrid(data, fpath_ckdtree,
   datai[datai==0.] = np.ma.masked
   return lon, lat, datai
 
-def interp_to_rectgrid_xr(arr, fpath_ckdtree, 
+def interp_to_rectgrid_xr(arr, fpath_ckdtree='auto', 
                           lon_reg=None, lat_reg=None,
                           coordinates='clat clon',
                           radius_of_influence=1000e3,
@@ -227,6 +227,13 @@ def interp_to_rectgrid_xr(arr, fpath_ckdtree,
   for dim in ['cell', 'edge', 'vertex', 'ncells_2', 'ncells_3']:
     if dim in arr.dims:
       arr = arr.rename({dim: 'ncells'})
+
+  # --- get fpath_ckdtree if necessary
+  if fpath_ckdtree=='auto':
+    path_grid = '/work/mh0033/m300602/icon/grids/'
+    Dgrid = identify_grid(path_grid, arr) 
+    fpath_ckdtree = Dgrid['Drectgrids']['res0.30_180W-180E_90S-90N']
+    print(fpath_ckdtree)
 
   # --- load interpolation indices
   ds_ckdt = xr.open_dataset(fpath_ckdtree)
@@ -1264,9 +1271,11 @@ def mask_big_triangles(vlon, vlat, vertex_of_cell, Tri, only_lon=True):
   Tri.set_mask(mask_bt)
   return Tri, mask_bt
 
-def triangulation(ds_tgrid, lon_reg=None, lat_reg=None, do_mask_big_triangles=True, only_lon=True):
+def triangulation(ds_tgrid, lon_reg=None, lat_reg=None, do_mask_big_triangles=True, only_lon=True, shift_to_zero_dateline=False):
   vlon = ds_tgrid.vlon * 180./np.pi
   vlat = ds_tgrid.vlat * 180./np.pi
+  if shift_to_zero_dateline:
+    vlon[vlon<0.] += 360.
   vertex_of_cell = ds_tgrid.vertex_of_cell.transpose()-1
 
   if lon_reg is not None:
