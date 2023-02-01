@@ -24,13 +24,13 @@ class Simulation(object):
         self.DGridMapping = get_grid_uuid()
 
         path_grid = '/work/mh0033/m300602/icon/grids/'
-        if self.fpath_tgrid=='auto':
-            print('\'fpath\' needs to be specified: we get an error.')
-            Dgrid = identify_grid(path_grid, fpath)
-            self.fpath_tgrid = Dgrid['fpath_grid']
-        if self.fpath_fx=='auto':
-            print('\'lev\' needs to be specified: we get an error.')
-            self.fpath_fx = f'{path_grid}/{gname}/{gname}_{lev}_fx.nc'
+        #if self.fpath_tgrid=='auto':
+        #    print('\'fpath\' needs to be specified: we get an error.')
+        #    Dgrid = identify_grid(path_grid, fpath)
+        #    self.fpath_tgrid = Dgrid['fpath_grid']
+        #if self.fpath_fx=='auto':
+        #    print('\'lev\' needs to be specified: we get an error.')
+        #    self.fpath_fx = f'{path_grid}/{gname}/{gname}_{lev}_fx.nc'
         return
     def _get_info_str(self):
         info = f"""{self.run}:
@@ -134,6 +134,10 @@ class SimulationList(object):
             self.dict[S.run] = S
         except:
             print("::: Warning: Could not add {S.run} to SimulationList.dict! :::")
+    def addSim(self, *args, **kwargs):
+        S = Simulation(*args, **kwargs) 
+        self.add(S)
+        return
     def __iter__(self):
         return SimulationIterator(self)
     def __getitem__(self, item):
