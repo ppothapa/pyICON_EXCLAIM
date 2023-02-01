@@ -1795,6 +1795,7 @@ def tbox(text, loc, ax, facecolor='w', alpha=1.0):
 
 def plot(data, 
          # --- axes settings
+         Plot=None,
          ax=None, cax=None, 
          asp=None,
          # --- data manipulations
@@ -2004,13 +2005,16 @@ def plot(data,
     title_left = ''
   
   # -- start plotting
-  if ax is None:
+  if ax is None and Plot is None:
     hca, hcb = arrange_axes(1,1, plot_cb=cbar_pos, asp=asp, fig_size_fac=2,
                                  sharex=True, sharey=True, xlabel="", ylabel="",
                                  projection=ccrs_proj, axlab_kw=None, dfigr=0.5,
                                 )
     ii=-1
     ii+=1; ax=hca[ii]; cax=hcb[ii]
+  elif Plot is not None:
+    ax = Plot.ax
+    cax = Plot.cax
   shade_kwargs = dict(ax=ax, cax=cax, clim=clim, projection=shade_proj, cmap=cmap, logplot=logplot, conts=conts, contfs=contfs)
   if plot_method!='tgrid':
     hm = shade(lon, lat, datai.data, **shade_kwargs)
@@ -2282,3 +2286,36 @@ def plot_sec(data,
     ax.invert_yaxis()
 
   return
+
+class Plot(object):
+    def __init__(self, nx=1, ny=1, cb=True, sharex=False, sharey=False, fig_size_fac=1.5, asp=0.5, projection=None):
+        self.hca, self.hcb = pyic.arrange_axes(nx, ny, 
+                          plot_cb=cb, 
+                          sharex=sharex, sharey=sharey, 
+                          asp=asp, fig_size_fac=fig_size_fac,
+                          projection=projection,
+                         )
+        self.nca = -1
+        self.ax = self.hca[self.nca]
+        self.cax = self.hcb[self.nca]
+        return
+    def next(self):
+        self.nca +=1
+        self.ax = self.hca[self.nca]
+        self.cax = self.hcb[self.nca]
+        return self.ax, self.cax
+    def switch(self, nn):
+        self.nca = nn
+        self.ax = self.hca[self.nca]
+        self.cax = self.hcb[self.nca]
+        return
+    def shade(self, *args, **kwargs):
+        kwargs['ax'] = self.ax
+        kwargs['cax'] = self.cax
+        hm = pyic.shade(*args, **kwargs)
+        return hm
+    def plot(self, *args, **kwargs):
+        kwargs['ax'] = self.ax
+        kwargs['cax'] = self.cax
+        hm = pyic.plot(*args, **kwargs)
+        return hm
