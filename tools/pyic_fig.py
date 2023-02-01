@@ -222,9 +222,16 @@ mfdset_kwargs = dict(combine='nested', concat_dim='time',
                      data_vars='minimal', coords='minimal', 
                      compat='override', join='override',)
 ds = xr.open_mfdataset(fpath_data, **mfdset_kwargs)
+data = ds[var]
+
+# --- rename dimensions
+if 'cells' in data.dims:
+  data = data.rename(cells='ncells')
+for dim in data.dims:
+  if dim.startswith('layers'):
+    data = data.rename({dim: 'depth'})
 
 # --- reduce time and depth dimension
-data = ds[var]
 if 'depth' in data.dims:
   depth_name = 'depth'
 elif 'depth_2' in data.dims:
