@@ -153,6 +153,15 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     if isinstance(ylim, str) and (ylim=='auto'):
       ylim = [IcD.lat.min(), IcD.lat.max()]
 
+    # --- calculate area weighted mean
+    area = calc_grid_area_rectgrid(IcD.lon,IcD.lat)
+    area_v = np.reshape(area,IcD.lon.size*IcD.lat.size)
+    data_v = np.reshape(IaV.data,IcD.lon.size*IcD.lat.size)
+    data_awm = np.dot(area_v,data_v)
+    # --- calculate area weighted stdev
+    sqrtdiff_v = np.square(data_v-data_awm)
+    data_awstd = np.sqrt(np.dot(area_v,sqrtdiff_v))
+
   # --- plot refinement
   ax.set_title(title)
   ax.set_xlabel(xlabel)
@@ -168,7 +177,8 @@ def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
     plot_settings(ax, template=template, land_facecolor=land_facecolor)
 
   if do_write_data_range:
-    info_str = 'min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (IaV.data.min(), IaV.data.mean(), IaV.data.std(), IaV.data.max())
+    #info_str = 'min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (IaV.data.min(), IaV.data.mean(), IaV.data.std(), IaV.data.max())
+    info_str = 'min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (IaV.data.min(), data_awm, data_awstd, IaV.data.max())
     ax.text(0.5, -0.18, info_str, ha='center', va='top', transform=ax.transAxes)
 
   # --- saving data to netcdf 
@@ -1795,6 +1805,7 @@ def tbox(text, loc, ax, facecolor='w', alpha=1.0):
 
 def plot(data, 
          # --- axes settings
+         Plot=None,
          ax=None, cax=None, 
          asp=None,
          # --- data manipulations
@@ -1940,12 +1951,15 @@ def plot(data,
   
   # --- interpolate and cut to region
   if plot_method=='nn':
-    try:
-      datai = interp_to_rectgrid_xr(data.compute(), fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg, coordinates=coordinates)
-      lon = datai.lon
-      lat = datai.lat
-    except:
-      lon, lat, datai = interp_to_rectgrid(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
+    datai = interp_to_rectgrid_xr(data.compute(), fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg, coordinates=coordinates)
+    lon = datai.lon
+    lat = datai.lat
+    #try:
+    #  datai = interp_to_rectgrid_xr(data.compute(), fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg, coordinates=coordinates)
+    #  lon = datai.lon
+    #  lat = datai.lat
+    #except:
+    #  lon, lat, datai = interp_to_rectgrid(data, fpath_ckdtree, lon_reg=lon_reg, lat_reg=lat_reg)
   else:
     print('Deriving triangulation object, this can take a while...')
       
@@ -1984,7 +1998,10 @@ def plot(data,
     if logplot:
       cbar_str = f'log_10({data.long_name}) [{units}]'
     else:
-      cbar_str = f'{data.long_name} [{units}]'
+      try:
+        cbar_str = f'{data.long_name} [{units}]'
+      except:
+        cbar_str = f'{data.name}'
   if (title_right=='auto') and ('time' in data.coords):
     tstr = str(data.time.data)
     #tstr = tstr.split('T')[0].replace('-', '')+'T'+tstr.split('T')[1].split('.')[0].replace(':','')+'Z'
@@ -1998,13 +2015,16 @@ def plot(data,
     title_left = ''
   
   # -- start plotting
-  if ax is None:
+  if ax is None and Plot is None:
     hca, hcb = arrange_axes(1,1, plot_cb=cbar_pos, asp=asp, fig_size_fac=2,
                                  sharex=True, sharey=True, xlabel="", ylabel="",
                                  projection=ccrs_proj, axlab_kw=None, dfigr=0.5,
                                 )
     ii=-1
     ii+=1; ax=hca[ii]; cax=hcb[ii]
+  elif Plot is not None:
+    ax = Plot.ax
+    cax = Plot.cax
   shade_kwargs = dict(ax=ax, cax=cax, clim=clim, projection=shade_proj, cmap=cmap, logplot=logplot, conts=conts, contfs=contfs)
   if plot_method!='tgrid':
     hm = shade(lon, lat, datai.data, **shade_kwargs)
@@ -2276,3 +2296,54 @@ def plot_sec(data,
     ax.invert_yaxis()
 
   return
+
+class Plot(object):
+    def __init__(self, nx=1, ny=1, cb=True, sharex=False, sharey=False, fig_size_fac=1.5, asp=0.5, projection=None):
+        self.hca, self.hcb = pyic.arrange_axes(nx, ny, 
+                          plot_cb=cb, 
+                          sharex=sharex, sharey=sharey, 
+                          asp=asp, fig_size_fac=fig_size_fac,
+                          projection=projection,
+                         )
+        self.nca = -1
+        self.ax = self.hca[self.nca]
+        self.cax = self.hcb[self.nca]
+        return
+    def next(self):
+        self.nca +=1
+        self.ax = self.hca[self.nca]
+        self.cax = self.hcb[self.nca]
+        return self.ax, self.cax
+    def switch(self, nn):
+        self.nca = nn
+        self.ax = self.hca[self.nca]
+        self.cax = self.hcb[self.nca]
+        return
+    def shade(self, *args, **kwargs):
+        kwargs['ax'] = self.ax
+        kwargs['cax'] = self.cax
+        hm = pyic.shade(*args, **kwargs)
+        return hm
+    def plot(self, *args, **kwargs):
+        kwargs['ax'] = self.ax
+        kwargs['cax'] = self.cax
+        hm = pyic.plot(*args, **kwargs)
+        return hm
+
+def calc_grid_area_rectgrid(lon, lat):
+  # FIXME: Optimize by getting rid of loops
+  radius = 6371000.
+  dlon = np.radians(lon[2] - lon[1])
+  area = np.zeros((lat.size,lon.size))
+  for j in np.arange(1,np.size(lat)-1):
+    lat1 = (lat[j-1] +  lat[j]  )*0.5
+    lat2 = (lat[j]   +  lat[j+1])*0.5
+    lat1 = np.radians(lat1)
+    lat2 = np.radians(lat2)
+    for i in np.arange(1,np.size(lon)-1):
+      # A = R^2 |sin(lat1)-sin(lat2)| |lon1-lon2| where R is earth radius (6378 kms)
+      area[j,i] = np.square(radius)*(np.sin(lat2)-np.sin(lat1))*dlon
+  # area fraction w.r.t. Earth's surface area
+  area_e = 4. * np.pi * np.square(radius)
+  area = area / area_e
+  return area

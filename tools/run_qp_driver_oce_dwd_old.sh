@@ -15,7 +15,8 @@ rand=$(cat /dev/urandom | tr -dc 'A-Z' | fold -w 3 | head -n 1)
 
 path_pyicon=`(cd .. && pwd)`"/"
 config_file="./config_qp_${rand}.py"
-qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
+#qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
+qp_driver="${path_pyicon}pyicon/quickplots/old_qp_driver.py"
 
 cat > ${config_file} << %eof%
 # --- path to quickplots
@@ -25,29 +26,28 @@ path_quickplots = '../all_qps/'
 omit_last_file = False
 
 # --- do ocean and/or atmosphere plots
-do_atmosphere_plots = True
-do_conf_dwd         = True
-do_ocean_plots      = False
+do_atmosphere_plots = False
+do_ocean_plots      = True
 
 # --- grid information
 gname     = 'R2B4-R2B4'
 lev       = 'L40'
-gname_atm = 'r2b4_atm_r0012'
-lev_atm   = 'L90'
+gname_atm = 'r2b4_atm_r0013'
+lev_atm   = 'L84'
 
 # --- path to interpolation files
-path_grid        = '/hpc/uwork/icon-sml/pyICON/grids/'+gname+'/'
-path_grid_atm    = '/hpc/uwork/icon-sml/pyICON/grids/'+gname_atm+'/'
+path_grid        = '/hpc/uwork/gboeloen/pyICON/grids/'+gname+'/'
+path_grid_atm    = '/hpc/uwork/gboeloen/pyICON/grids/'+gname_atm+'/'
 path_ckdtree     = path_grid+'/ckdtree/'
 path_ckdtree_atm = path_grid_atm+'/ckdtree/'
 
 # --- grid files and reference data
-path_pool_oce       = '/hpc/uwork/icon-sml/pyICON/grids/'
+path_pool_oce       = '/hpc/uwork/gboeloen/pyICON/grids/'
 gnameu = gname.split('_')[0].upper()
 fpath_tgrid         = path_grid + gname+'_tgrid.nc'
-fpath_tgrid_atm     = path_grid_atm + gname_atm+'_tgrid.nc'
+fpath_tgrid_atm     = path_grid + gname_atm+'.nc'
 fpath_ref_data_oce  = path_grid + 'ts_phc3.0_annual_icon_grid_0043_R02B04_G_L40.nc'
-fpath_ref_data_atm  = path_grid_atm + 'pyicon_prepare_era.nc'
+fpath_ref_data_atm  = '/mnt/lustre01/work/mh0033/m300602/icon/era/pyicon_prepare_era.nc'
 fpath_fx            = path_grid + 'oce_fx.19600102T000000Z.nc'
 
 # --- nc file prefixes ocean
@@ -73,10 +73,6 @@ tave_ints = [
 ]
 ave_freq = 12
 
-# --- decide if time-series (ts) plots are plotted for all the 
-#     available data or only for the intervall defined by tave_int
-use_tave_int_for_ts = True
-
 # --- what to plot and what not?
 # --- not to plot:
 #red_list = ['']
@@ -87,8 +83,8 @@ use_tave_int_for_ts = True
 # --- start qp_driver
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-run="terra"
-path_data="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run}/output/icon/"
+run="atmoce01"
+path_data="/hpc/uwork/tvpham/ICON-CLM_SP_uwork/chain/scratch/atmoce01/output/icon/"
 python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='2000-01-01,2011-01-01'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
@@ -98,4 +94,3 @@ rm ${config_file}
 echo "--------------------------------------------------------------------------------"
 echo "Started at ${startdate}"
 echo "Ended at   ${enddate}"
-

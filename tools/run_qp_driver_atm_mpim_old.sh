@@ -15,7 +15,8 @@ rand=$(cat /dev/urandom | tr -dc 'A-Z' | fold -w 3 | head -n 1)
 
 path_pyicon=`(cd .. && pwd)`"/"
 config_file="./config_qp_${rand}.py"
-qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
+#qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
+qp_driver="${path_pyicon}pyicon/quickplots/old_qp_driver.py"
 
 cat > ${config_file} << %eof%
 # --- path to quickplots
@@ -26,14 +27,13 @@ omit_last_file = False
 
 # --- do ocean and/or atmosphere plots
 do_atmosphere_plots = True
-do_conf_dwd         = True
 do_ocean_plots      = False
 
 # --- grid information
 gname     = 'R2B4-R2B4'
 lev       = 'L40'
-gname_atm = 'r2b4_atm_r0012'
-lev_atm   = 'L90'
+gname_atm = 'r2b4_atm_r0013'
+lev_atm   = 'L87'
 
 # --- path to interpolation files
 path_grid        = '/hpc/uwork/icon-sml/pyICON/grids/'+gname+'/'
@@ -50,14 +50,13 @@ fpath_ref_data_oce  = path_grid + 'ts_phc3.0_annual_icon_grid_0043_R02B04_G_L40.
 fpath_ref_data_atm  = path_grid_atm + 'pyicon_prepare_era.nc'
 fpath_fx            = path_grid + 'oce_fx.19600102T000000Z.nc'
 
-# --- nc file prefixes ocean
+# --- nc file prefixes
 oce_def     = '_oce_def'
 oce_moc     = '_oce_moc'
-oce_mon     = '_oce_mon'
+oce_mon     = '_oce_MON'
 oce_ice     = '_oce_ice'
 oce_monthly = '_oce_dbg'
 
-# --- nc file prefixes atmosphere
 atm_2d      = '_atm_2d_ml'
 atm_3d      = '_atm_3d_ml'
 atm_mon     = '_atm_mon'
@@ -72,24 +71,14 @@ tave_ints = [
 ['4450-02-01', '4500-01-01'],
 ]
 ave_freq = 12
-
-# --- decide if time-series (ts) plots are plotted for all the 
-#     available data or only for the intervall defined by tave_int
-use_tave_int_for_ts = True
-
-# --- what to plot and what not?
-# --- not to plot:
-#red_list = ['']
-# --- to plot:
-#green_list = ['']
 %eof%
 
 # --- start qp_driver
 startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
-run="terra"
-path_data="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run}/output/icon/"
-python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='2000-01-01,2011-01-01'
+run="slo1327"
+path_data="/hpc/uwork/gboeloen/pyICON/test_data_atm/${run}/"
+python -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1870-01-01,1889-12-31'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 

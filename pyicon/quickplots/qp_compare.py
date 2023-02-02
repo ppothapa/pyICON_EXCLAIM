@@ -151,48 +151,9 @@ runs = []
 for nn, S in enumerate(Sims): 
   runs.append(S.run)
 
-# --- read namelists
-dfs = []
-for nn, S in enumerate(Sims): 
-    run = S.run
-    # ------ open namelist
-    nml = f90nml.read(S.namelist_oce)
-    # ------ go through all sections (sub-namelists)
-    df = pd.DataFrame() 
-    df.loc[0, 'run'] = run
-    for nml_sec in nml.keys():
-      if nml_sec=='output_nml':
-        continue
-      for entr in nml[nml_sec]:
-        if entr=='dzlev_m':
-          continue
-        try:
-          df.loc[0, entr] = nml[nml_sec][entr]
-        except:
-          print(f'xx  {entr}')
-    dfs.append(df)
-# ----- only keep parameters which have changed
-dfm = pd.concat(dfs)
-ll = list(dfm.columns)
-cols_unique = []
-for col in list(dfm.columns):
-  #print(f'col={col}, {np.unique(dfm.loc[:,col]).size}')
-  if np.unique(dfm.loc[:,col]).size>1:
-    #print(col)
-    cols_unique.append(col)
-dfu = dfm.loc[:,cols_unique]
-dfu = dfu.drop(['restart_filename'], axis=1)
-dfu.reset_index(drop=True, inplace=True) 
-tstr_list = []
-for S in Sims:
-  tstr_list.append(str(S.tave_int[0])+' - '+str(S.tave_int[1]))
-dfu.insert(loc=1, column='time_average', value=tstr_list)
-dfu = dfu.set_index('run') 
-tab_parameters_html = dfu.transpose().to_html()
-
 Set.plot_names = []
 Set.plot_names += ['sec:Information']
-Set.plot_names += ['tab_parameters']
+#Set.plot_names += ['tab_parameters']
 Set.plot_names += ['sec:Upper ocean']
 Set.plot_names += ['ssh', 'mld_mar', 'mld_sep']
 Set.plot_names += ['ice_concentration_nh_mar', 'ice_concentration_nh_sep']
@@ -257,6 +218,48 @@ def get_flist(searchstr):
   if Set.omit_last_file:
     flist = flist[:-1]
   return flist
+
+# --- read namelists
+fig_name = 'tab_parameters'
+if fig_name in Set.fig_names:
+  dfs = []
+  for nn, S in enumerate(Sims): 
+      run = S.run
+      # ------ open namelist
+      nml = f90nml.read(S.namelist_oce)
+      # ------ go through all sections (sub-namelists)
+      df = pd.DataFrame() 
+      df.loc[0, 'run'] = run
+      for nml_sec in nml.keys():
+        if nml_sec=='output_nml':
+          continue
+        for entr in nml[nml_sec]:
+          if entr=='dzlev_m':
+            continue
+          try:
+            df.loc[0, entr] = nml[nml_sec][entr]
+          except:
+            print(f'xx  {entr}')
+      dfs.append(df)
+  # ----- only keep parameters which have changed
+  dfm = pd.concat(dfs)
+  ll = list(dfm.columns)
+  cols_unique = []
+  for col in list(dfm.columns):
+    #print(f'col={col}, {np.unique(dfm.loc[:,col]).size}')
+    if np.unique(dfm.loc[:,col]).size>1:
+      #print(col)
+      cols_unique.append(col)
+  dfu = dfm.loc[:,cols_unique]
+  dfu = dfu.drop(['restart_filename'], axis=1)
+  dfu.reset_index(drop=True, inplace=True) 
+  tstr_list = []
+  for S in Sims:
+    tstr_list.append(str(S.tave_int[0])+' - '+str(S.tave_int[1]))
+  dfu.insert(loc=1, column='time_average', value=tstr_list)
+  dfu = dfu.set_index('run') 
+  tab_parameters_html = dfu.transpose().to_html()
+
 
 if True:
   for nn, S in enumerate(Sims):

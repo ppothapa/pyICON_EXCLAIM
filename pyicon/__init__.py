@@ -18,6 +18,8 @@ print('-----plotting')
 from .pyicon_plotting import *
 print('-----accessor')
 from .pyicon_accessor import *
+print('-----simulation')
+from .pyicon_simulation import *
 
 # --- import pyicon.view
 print('-----view')
