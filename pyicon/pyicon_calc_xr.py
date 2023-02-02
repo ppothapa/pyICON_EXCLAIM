@@ -393,3 +393,18 @@ def xr_calc_grad(ds_IcD, scalar, grad_coeff=None):
         - scalar.isel(cell=ds_IcD.adjacent_cell_of_edge.isel(nc=0))
     ) * grad_coeff
     return grad_of_scalar
+
+## Curl
+
+#def xr_calc_rot_coeff(ds_IcD):
+#    rot_coeff = (
+#
+#def xr_calc_curl(ds_IcD, vector, rot_coeff=None):
+#    if rot_coeff is None:
+#        rot_coeff = xr_calc_rot_coeff(ds_IcD)
+#    curl_of_vector = (
+#        curl_v = (
+#            vector.isel(edge=ds_IcD.edges_of_vertex) 
+#            * rot_coeff)
+#            ).sum(dim=2)
+#    return curl_of_vector
