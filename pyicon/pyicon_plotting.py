@@ -2299,7 +2299,7 @@ def plot_sec(data,
 
 class Plot(object):
     def __init__(self, nx=1, ny=1, cb=True, sharex=False, sharey=False, fig_size_fac=1.5, asp=0.5, projection=None):
-        self.hca, self.hcb = pyic.arrange_axes(nx, ny, 
+        self.hca, self.hcb = arrange_axes(nx, ny, 
                           plot_cb=cb, 
                           sharex=sharex, sharey=sharey, 
                           asp=asp, fig_size_fac=fig_size_fac,
@@ -2327,7 +2327,7 @@ class Plot(object):
     def plot(self, *args, **kwargs):
         kwargs['ax'] = self.ax
         kwargs['cax'] = self.cax
-        hm = pyic.plot(*args, **kwargs)
+        hm = plot(*args, **kwargs)
         return hm
 
 def calc_grid_area_rectgrid(lon, lat):
