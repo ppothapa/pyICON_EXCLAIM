@@ -399,19 +399,19 @@ def xr_edges2cell(ds_IcD, ve, dze, dzc, edge2cell_coeff_cc=None, fixed_vol_norm=
 ## Mapping between edges and edges
 
 def xr_calc_edge2edge_viacell_coeff(ds_IcD):
-    raise NotImplementedError()
+    raise NotImplementedError("")
     # FIXME: Continue here
     edge2edge_viacell_coeff = ()
     return edge2edge_viacell_coeff
 
 def xr_edges2edges_via_cell(ds_IcD, vn_e, dze='const'):
-    raise NotImplementedError()
+    raise NotImplementedError("")
     # FIXME: Continue here
     out_vn_e = ()
     return out_vn_e
 
 def xr_edges2edges_via_cell(ds_IcD, vn_e, scalar, dze='const'):
-    raise NotImplementedError()
+    raise NotImplementedError("")
     # FIXME: Continue here
     out_vn_e = ()
     return out_vn_e
@@ -453,16 +453,16 @@ def xr_calc_grad(ds_IcD, scalar, grad_coeff=None):
 ## Curl
 
 def xr_calc_rot_coeff(ds_IcD):
-   raise NotImplementedError()
-   rot_coeff = ()
+    raise NotImplementedError("")
+    rot_coeff = ()
 
 def xr_calc_curl(ds_IcD, vector, rot_coeff=None):
-   raise NotImplementedError()
-   if rot_coeff is None:
-       rot_coeff = xr_calc_rot_coeff(ds_IcD)
-   curl_of_vector = (
-       curl_v = (
-           vector.isel(edge=ds_IcD.edges_of_vertex) 
-           * rot_coeff)
-           ).sum(dim=2)
-   return curl_of_vector
+    raise NotImplementedError("")
+    if rot_coeff is None:
+        rot_coeff = xr_calc_rot_coeff(ds_IcD)
+    # curl_of_vector = (
+    #     curl_v = (
+    #         vector.isel(edge=ds_IcD.edges_of_vertex) 
+    #         * rot_coeff)
+    #         ).sum(dim=2)
+    return curl_of_vector
