@@ -63,16 +63,24 @@ def test_xr_crop_tgrid(tgrid, request):
         & (tgrid["clat"] > -5) & (tgrid["clat"] < 5),
         drop=True).astype("int32")
 
+    # This checks ireg_c is as expected
+    assert ireg_c.sum() == 301614
+    assert ireg_c.prod() == -8253145384319188992
+
     cropped_tgrid = pyic.xr_crop_tgrid(tgrid, ireg_c)
 
     # Check ireg_[cev] is present
-    for point in "ev":
+    for point in "cev":
         assert f"ireg_{point}" in cropped_tgrid.keys()
 
     # Check ncells == len(ireg_c)
     assert cropped_tgrid.dims["cell"] == ireg_c.sizes["cell"]
 
-    # Check ireg_[ev] is correct
+    # Check ireg_[cev] is correct
+    # Ideally we would hash the array and compare, but this will probably do
+    assert cropped_tgrid["ireg_c"].sum() == 301614
+    assert cropped_tgrid["ireg_c"].prod() == -8253145384319188992
+
     assert cropped_tgrid["ireg_e"].sum() == 839941
     assert cropped_tgrid["ireg_e"].prod() == 0
 
