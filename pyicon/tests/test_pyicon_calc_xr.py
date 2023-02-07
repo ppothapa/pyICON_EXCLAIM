@@ -48,7 +48,7 @@ def test_convert_tgrid_data(raw_grid):
     assert "cell" in converted_tgrid.dims
 
 
-@pytest.mark.parametrize("tgrid", ["raw_grid"])
+@pytest.mark.parametrize("tgrid", ["raw_grid", "processed_tgrid"])
 def test_xr_crop_tgrid(tgrid, request):
     # Set ireg_c and crop the grid
     tgrid = request.getfixturevalue(tgrid)
