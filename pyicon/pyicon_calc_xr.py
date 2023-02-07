@@ -25,7 +25,7 @@ ds_IcD = pyic.convert_tgrid_data(ds_tg)
 ds_tg and ds_IcD are both lazy xarray data sets containing dask arrays.
     """
     ds_IcD = xr.Dataset()
-    
+
     # --- constants (from src/shared/mo_physical_constants.f90)
     ds_IcD['grid_sphere_radius'] = 6.371229e6
     ds_IcD['grav'] = 9.80665
