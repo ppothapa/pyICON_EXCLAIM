@@ -1,15 +1,8 @@
-print('sys glob os')
-import sys
-import glob, os
-#import datetime
 print('numpy')
 import numpy as np
-print('netcdf')
-from netCDF4 import Dataset, num2date
-#print('ipdb')
-#from ipdb import set_trace as mybreak  
 print('xarray')
 import xarray as xr
+from itertools import product
 print('Done modules calc.')
 
 def convert_tgrid_data(ds_tg, check_previous_conversion=True, set_dim_order=True):
@@ -123,12 +116,10 @@ def convert_tgrid_data(ds_tg, check_previous_conversion=True, set_dim_order=True
         ds_tg['edge_primal_normal_cartesian_z'],
     ], dim='cart').transpose()
     
-    ds_IcD['clon'] *= 180./np.pi
-    ds_IcD['clat'] *= 180./np.pi
-    ds_IcD['elon'] *= 180./np.pi
-    ds_IcD['elat'] *= 180./np.pi
-    ds_IcD['vlon'] *= 180./np.pi
-    ds_IcD['vlat'] *= 180./np.pi
+    for point, dim in product("ecv", ("lat", "lon")):
+        coord = point + dim
+        ds_IcD[coord] *= 180./np.pi
+        ds_IcD[coord].attrs["units"] = "degrees"
 
     ds_IcD['fc'] = 2.* ds_IcD.earth_angular_velocity * np.sin(ds_IcD.clat*np.pi/180.)
     ds_IcD['fe'] = 2.* ds_IcD.earth_angular_velocity * np.sin(ds_IcD.elat*np.pi/180.)

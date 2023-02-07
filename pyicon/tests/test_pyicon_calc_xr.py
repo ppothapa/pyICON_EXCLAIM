@@ -31,6 +31,11 @@ def test_convert_tgrid_data(raw_grid):
             assert converted_tgrid[info].max().values == \
                 converted_tgrid.dims["cell"] - 1
 
+    # Conversion of ecv lat and lon to degrees
+    for point, dim in product("ecv", ("lat", "lon")):
+        coord = point + dim
+        assert converted_tgrid[coord].attrs["units"] == "degrees"
+
     # Converted tgrid attribute is there
     assert converted_tgrid.attrs["converted_tgrid"]
 
