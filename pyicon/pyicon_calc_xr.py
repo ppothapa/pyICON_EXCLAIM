@@ -133,11 +133,13 @@ def convert_tgrid_data(ds_tg, check_previous_conversion=True, set_dim_order=True
     ds_IcD['fc'] = 2.* ds_IcD.earth_angular_velocity * np.sin(ds_IcD.clat*np.pi/180.)
     ds_IcD['fe'] = 2.* ds_IcD.earth_angular_velocity * np.sin(ds_IcD.elat*np.pi/180.)
     ds_IcD['fv'] = 2.* ds_IcD.earth_angular_velocity * np.sin(ds_IcD.vlat*np.pi/180.)
-    
+
     try:
         ds_IcD = ds_IcD.rename({'ncells': 'cell'})
     except:
         pass
+
+    ds_IcD.attrs["converted_tgrid"] = True
 
     return ds_IcD
 

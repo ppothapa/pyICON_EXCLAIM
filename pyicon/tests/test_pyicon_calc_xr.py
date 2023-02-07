@@ -31,6 +31,13 @@ def test_convert_tgrid_data(raw_grid):
             assert converted_tgrid[info].max().values == \
                 converted_tgrid.dims["cell"] - 1
 
+    # Converted tgrid attribute is there
+    assert converted_tgrid.attrs["converted_tgrid"]
+
+    # Check we can't convert a converted grid
+    with pytest.raises(ValueError):
+        pyic.convert_tgrid_data(converted_tgrid)
+
     # Dimension ncells is not present and cell is
     assert "ncells" not in converted_tgrid.dims
     assert "cell" in converted_tgrid.dims
