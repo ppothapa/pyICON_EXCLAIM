@@ -12,18 +12,43 @@ print('xarray')
 import xarray as xr
 print('Done modules calc.')
 
-def convert_tgrid_data(ds_tg):
-
+def convert_tgrid_data(ds_tg, check_previous_conversion=True, set_dim_order=True):
     """ Convert xarray grid file to grid file compatible with pyicon function.
 
-Open classical ICON grid file by:
-ds_tg = xr.open_dataset(fpath_tg, chunks=dict())
+    Parameters
+    ----------
+    ds_tg : xr.Dataset
+        raw, unprocessed tgrid
 
-Then convert by:
-ds_IcD = pyic.convert_tgrid_data(ds_tg)
+    check_previous_conversion : bool
+        check whether the dataset has already been converted and raise an error
+        if so
 
-ds_tg and ds_IcD are both lazy xarray data sets containing dask arrays.
+    set_dim_order : bool or list
+        Transpose the dataset so dimensions appear in the standard pyicon
+        order, or the order listed
+
+    Returns
+    -------
+    ds_icd : xr.Dataset
+        A tgrid dataset compatible with pyicon functions
+
+    Notes
+    -----
+    Open classical ICON grid file by:
+    ds_tg = xr.open_dataset(fpath_tg, chunks=dict())
+
+    Then convert by:
+    ds_IcD = pyic.convert_tgrid_data(ds_tg)
     """
+    if check_previous_conversion:
+        if "converted_tgrid" in ds_tg.attrs:
+            raise ValueError(
+                "ds_tg has previously been converted by this function, \
+                 applying the function again will lead to undocumented \
+                 behaviour. To proceed, set 'check_previous_conversion=False'"
+                )
+
     ds_IcD = xr.Dataset()
 
     # --- constants (from src/shared/mo_physical_constants.f90)
