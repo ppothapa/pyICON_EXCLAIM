@@ -5,7 +5,7 @@ import xarray as xr
 from itertools import product
 print('Done modules calc.')
 
-def convert_tgrid_data(ds_tg, check_previous_conversion=True, set_dim_order=True):
+def convert_tgrid_data(ds_tg, check_previous_conversion=True, set_dim_order=None):
     """ Convert xarray grid file to grid file compatible with pyicon function.
 
     Parameters
@@ -127,10 +127,16 @@ def convert_tgrid_data(ds_tg, check_previous_conversion=True, set_dim_order=True
 
     try:
         ds_IcD = ds_IcD.rename({'ncells': 'cell'})
-    except:
+    except ValueError:
         pass
 
     ds_IcD.attrs["converted_tgrid"] = True
+
+    if set_dim_order is None:
+        standard_order = ["cell", "vertex", "edge", "nc", "nv", "ne", "cart", ...]
+        ds_IcD = ds_IcD.transpose(*standard_order, missing_dims="ignore")
+    elif set_dim_order:
+        ds_IcD = ds_IcD.transpose(*set_dim_order, missing_dims="ignore")
 
     return ds_IcD
 
