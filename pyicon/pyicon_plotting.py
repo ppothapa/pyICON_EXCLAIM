@@ -27,6 +27,7 @@ from .pyicon_tb import write_dataarray_to_nc
 from .pyicon_tb import identify_grid
 from .pyicon_tb import interp_to_rectgrid_xr
 from .pyicon_tb import triangulation
+from .pyicon_tb import calc_grid_area_rectgrid
 
 def hplot_base(IcD, IaV, clim='auto', cmap='viridis', cincr=-1.,
                clevs=None,
@@ -1118,7 +1119,7 @@ last change:
     #plotsettings(hca,hcb)
     return hca, hcb
 
-def arrange_axes(nx,ny,
+def arrange_axes(nx=1,ny=1,
                  sharex = True,
                  sharey = False,
                  xlabel = '',
@@ -1131,7 +1132,7 @@ def arrange_axes(nx,ny,
                  # projection (e.g. for cartopy)
                  projection = None,
                  # aspect ratio of axes
-                 asp = 1.,
+                 asp = 0.5,
                  sasp = 0.,  # for compability with older version of arrange_axes
                  # width and height of axes
                  wax = 'auto',
@@ -1155,7 +1156,7 @@ def arrange_axes(nx,ny,
                  wcb = 0.5,
                  hcb = 'auto',
                  # factors to increase widths and heights of axes and colorbars
-                 fig_size_fac = 1.,
+                 fig_size_fac = 1.5,
                  f_wax = 1.,
                  f_hax = 1.,
                  f_wcb = 1.,
@@ -1833,7 +1834,6 @@ def plot(data,
          # --- ckdtree interpolation
          res=0.3, fpath_ckdtree='auto',
          coordinates='clat clon',
-         fpath_ckdgree='auto',
          # --- original grid
          lonlat_for_mask=False,
          ):
@@ -1899,7 +1899,9 @@ def plot(data,
       fpath_tgrid = 'from_file'
   #fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.npz'
   if fpath_ckdtree=='auto':
-    fpath_ckdtree = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.nc'
+    path_grid = '/work/mh0033/m300602/icon/grids/'
+    Dgrid = identify_grid(path_grid, data) 
+    fpath_ckdtree = Dgrid['Drectgrids']['res0.30_180W-180E_90S-90N']
   
 ####  # --- open dataset
 ####  mfdset_kwargs = dict(combine='nested', concat_dim='time', 
@@ -1912,6 +1914,10 @@ def plot(data,
     depth_name = 'depth'
   elif 'depth_2' in data.coords:
     depth_name = 'depth_2'
+  elif 'depthc' in data.coords:
+    depth_name = 'depthc'
+  elif 'depthi' in data.coords:
+    depth_name = 'depthi'
   elif 'lev' in data.coords:
     depth_name = 'lev'
   elif 'lev_2' in data.coords:
@@ -1996,7 +2002,10 @@ def plot(data,
     except:
       units = 'NA'
     if logplot:
-      cbar_str = f'log_10({data.long_name}) [{units}]'
+      try:
+        cbar_str = f'log_10({data.long_name}) [{units}]'
+      except: 
+        cbar_str = f'log_10'
     else:
       try:
         cbar_str = f'{data.long_name} [{units}]'
@@ -2007,6 +2016,8 @@ def plot(data,
     #tstr = tstr.split('T')[0].replace('-', '')+'T'+tstr.split('T')[1].split('.')[0].replace(':','')+'Z'
     tstr = tstr.split('.')[0]
     title_right = tstr
+  elif title_right=='auto':
+    title_right = ''
   if (title_center=='auto'):
     title_center = ''
   if (title_left=='auto') and (depth_name!='none'):
@@ -2076,6 +2087,7 @@ def plot(data,
 
 def plot_sec(data, 
          # --- axes settings
+         Plot=None,
          ax=None, cax=None, 
          asp=None,
          # --- data manipulations
@@ -2101,7 +2113,6 @@ def plot_sec(data,
          # --- ckdtree interpolation
          res=0.3, fpath_ckdtree='auto',
          coordinates='clat clon',
-         fpath_ckdgree='auto',
          # --- original grid
          lonlat_for_mask=False,
 
@@ -2116,22 +2127,6 @@ def plot_sec(data,
          fpath_fx='auto',
          ):
 
-  # --- limits
-  if clim!='auto':
-    clim = str_to_array(clim)
-  if xlim:
-    xlim = str_to_array(xlim)
-  if ylim:
-    ylim = str_to_array(ylim)
-  
-  # --- contour values
-  if conts and conts!='auto':
-    conts = str_to_array(conts)
-  if contfs and contfs!='auto':
-    contfs = str_to_array(contfs)
-  if clevs:
-    clevs = str_to_array(clevs)
-  
   # --- grid files and interpolation
   path_grid = '/work/mh0033/m300602/icon/grids/'
   #path_grid = '/home/m/m300602/icon/grids/'
@@ -2158,8 +2153,16 @@ def plot_sec(data,
   else:
     depth_name = 'none'
   
-  if 'ncells' in data.dims:
+  if 'cell' in data.dims:
+    data = data.rename(cell='ncells')
     coordinates = 'clat clon'
+    interp = True
+  elif 'ncells' in data.dims:
+    coordinates = 'clat clon'
+    interp = True
+  elif 'vertex' in data.dims:
+    data = data.rename(vertex='ncells') 
+    coordinates = 'vlat vlon'
     interp = True
   elif 'ncells_2' in data.dims:
     data = data.rename(ncells_2='ncells') 
@@ -2183,7 +2186,7 @@ def plot_sec(data,
     #if fpath_fx=='auto':
       #fpath_fx = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.nc'
     ds_fx = xr.open_dataset(fpath_fx)
-    clat = data.clat * 180./np.pi
+    clat = ds_fx.clat * 180./np.pi
     lat_group = np.round(clat/res)*res
     data = data.where(data!=0)
     if section=='gzave':
@@ -2236,6 +2239,8 @@ def plot_sec(data,
     #tstr = tstr.split('T')[0].replace('-', '')+'T'+tstr.split('T')[1].split('.')[0].replace(':','')+'Z'
     tstr = tstr.split('.')[0]
     title_right = tstr
+  elif title_right=='auto':
+    title_right = ''
   if (title_center=='auto'):
     title_center = ''
   if (xlabel=='auto'):
@@ -2250,14 +2255,17 @@ def plot_sec(data,
   #  iopts.title_left = ''
   
   # -- start plotting
-  plt.close('all')
-  hca, hcb = arrange_axes(1,1, plot_cb=cbar_pos, asp=asp, fig_size_fac=2,
-                               sharex=True, sharey=True, xlabel="", ylabel="",
-                               axlab_kw=None, dfigr=0.5,
-                              )
-  ii=-1
-  
-  ii+=1; ax=hca[ii]; cax=hcb[ii]
+  if ax is None and Plot is None:
+    hca, hcb = arrange_axes(1,1, plot_cb=cbar_pos, asp=asp, fig_size_fac=2,
+                                 sharex=True, sharey=True, xlabel="", ylabel="",
+                                 axlab_kw=None, dfigr=0.5,
+                                )
+    ii=-1
+    
+    ii+=1; ax=hca[ii]; cax=hcb[ii]
+  elif Plot is not None:
+    ax = Plot.ax
+    cax = Plot.cax
   shade_kwargs = dict(ax=ax, cax=cax, 
                       logplot=logplot, 
                       clim=clim, 
@@ -2298,13 +2306,8 @@ def plot_sec(data,
   return
 
 class Plot(object):
-    def __init__(self, nx=1, ny=1, cb=True, sharex=False, sharey=False, fig_size_fac=1.5, asp=0.5, projection=None):
-        self.hca, self.hcb = arrange_axes(nx, ny, 
-                          plot_cb=cb, 
-                          sharex=sharex, sharey=sharey, 
-                          asp=asp, fig_size_fac=fig_size_fac,
-                          projection=projection,
-                         )
+    def __init__(self, *args, **kwargs):
+        self.hca, self.hcb = arrange_axes(*args, **kwargs)
         self.nca = -1
         self.ax = self.hca[self.nca]
         self.cax = self.hcb[self.nca]
@@ -2329,21 +2332,9 @@ class Plot(object):
         kwargs['cax'] = self.cax
         hm = plot(*args, **kwargs)
         return hm
+    def plot_sec(self, *args, **kwargs):
+        kwargs['ax'] = self.ax
+        kwargs['cax'] = self.cax
+        hm = plot_sec(*args, **kwargs)
+        return hm
 
-def calc_grid_area_rectgrid(lon, lat):
-  # FIXME: Optimize by getting rid of loops
-  radius = 6371000.
-  dlon = np.radians(lon[2] - lon[1])
-  area = np.zeros((lat.size,lon.size))
-  for j in np.arange(1,np.size(lat)-1):
-    lat1 = (lat[j-1] +  lat[j]  )*0.5
-    lat2 = (lat[j]   +  lat[j+1])*0.5
-    lat1 = np.radians(lat1)
-    lat2 = np.radians(lat2)
-    for i in np.arange(1,np.size(lon)-1):
-      # A = R^2 |sin(lat1)-sin(lat2)| |lon1-lon2| where R is earth radius (6378 kms)
-      area[j,i] = np.square(radius)*(np.sin(lat2)-np.sin(lat1))*dlon
-  # area fraction w.r.t. Earth's surface area
-  area_e = 4. * np.pi * np.square(radius)
-  area = area / area_e
-  return area
