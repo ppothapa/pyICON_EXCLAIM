@@ -450,19 +450,54 @@ def xr_calc_grad(ds_IcD, scalar, grad_coeff=None):
     ) * grad_coeff
     return grad_of_scalar
 
-## Curl
+
+# Curl
+
 
 def xr_calc_rot_coeff(ds_IcD):
-    raise NotImplementedError("")
-    rot_coeff = ()
+    curl_coeffs = ds_IcD["edge_orientation"] * ds_IcD["dual_edge_length"].isel(edge=ds_IcD["edges_of_vertex"]) / ds_IcD["dual_area"]
+    return curl_coeffs
+
 
 def xr_calc_curl(ds_IcD, vector, rot_coeff=None):
-    raise NotImplementedError("")
+    """ Calculates the vertical component of the curl
+
+    Parameters
+    ----------
+    ds_IcD : xr.Dataset
+        pyicon dataset containing coordinate info
+
+    vector : xr.DataArray
+        Dataarray containing vector variable on cell edges.
+
+    rot_coeff : xr.DataArray or None
+        Array with dims ("vertex", "ne")
+
+    Returns
+    -------
+    curl_vec : xr.DataArray
+        vertical component of the curl of the vector
+
+    Notes
+    -----
+    We calculate the curl through the use of Stokes' theorem (technically
+    Green's theorem as we're working with 2D velocity!), however, only the
+    vertical component is calculated. A similar procedure can be used to
+    calculate the horizontal components of the curl (oriented along cell edges
+    and defined at intermediate Z levels.) This will be implemented in a future
+    release.
+
+    If you're using this function on large datasets, performance gains may be
+    made if you play around with the dimension order.
+
+    When applying to a gradient we get identically zero. Should add this as a
+    test to the testing suite
+
+    """
+    assert "edge" in vector.dims
+
     if rot_coeff is None:
         rot_coeff = xr_calc_rot_coeff(ds_IcD)
-    # curl_of_vector = (
-    #     curl_v = (
-    #         vector.isel(edge=ds_IcD.edges_of_vertex) 
-    #         * rot_coeff)
-    #         ).sum(dim=2)
-    return curl_of_vector
+
+    curl_vec = (vector.isel(edge=ds_IcD["edges_of_vertex"]) * rot_coeff).sum(dim="ne")
+    return curl_vec
