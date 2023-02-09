@@ -480,9 +480,10 @@ def xr_calc_curl(ds_IcD, vector, rot_coeff=None):
 
     Notes
     -----
-    We calculate the curl through the use of Stokes'/Green's theorem
-    Green's theorem as we're working with 2D velocity!), A similar procedure can be used to calculate the horizontal components of the curl (oriented
-    along cell edges and defined at intermediate Z levels.) This will be implemented in a future release.
+    We calculate the curl through the use of Stokes'/Green's theorem. A similar
+    procedure can be used to calculate the horizontal components of the curl
+    (oriented along cell edges and defined at intermediate Z levels.) This will
+    be implemented in a future release.
 
     If you're using this function on large datasets, performance gains may be
     made if you play around with the dimension order.
