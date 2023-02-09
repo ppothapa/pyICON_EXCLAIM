@@ -471,27 +471,21 @@ def xr_calc_curl(ds_IcD, vector, rot_coeff=None):
         Dataarray containing vector variable on cell edges.
 
     rot_coeff : xr.DataArray or None
-        Array with dims ("vertex", "ne")
+        Array containing dims ("vertex", "ne")
 
     Returns
     -------
     curl_vec : xr.DataArray
-        vertical component of the curl of the vector
+        vertical component of the curl of the vector defined on vertex points
 
     Notes
     -----
-    We calculate the curl through the use of Stokes' theorem (technically
-    Green's theorem as we're working with 2D velocity!), however, only the
-    vertical component is calculated. A similar procedure can be used to
-    calculate the horizontal components of the curl (oriented along cell edges
-    and defined at intermediate Z levels.) This will be implemented in a future
-    release.
+    We calculate the curl through the use of Stokes'/Green's theorem
+    Green's theorem as we're working with 2D velocity!), A similar procedure can be used to calculate the horizontal components of the curl (oriented
+    along cell edges and defined at intermediate Z levels.) This will be implemented in a future release.
 
     If you're using this function on large datasets, performance gains may be
     made if you play around with the dimension order.
-
-    When applying to a gradient we get identically zero. Should add this as a
-    test to the testing suite
 
     """
     assert "edge" in vector.dims

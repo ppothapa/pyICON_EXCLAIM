@@ -86,3 +86,12 @@ def test_xr_crop_tgrid(tgrid, request):
 
     assert cropped_tgrid["ireg_v"].sum() == 135385
     assert cropped_tgrid["ireg_v"].prod() == -1427286351937536000
+
+
+def test_nabla_funcs(processed_tgrid):
+    # Want to check curl of a gradient
+    gradient = pyic.xr_calc_grad(processed_tgrid, processed_tgrid["clon"])
+    curl_of_grad = pyic.xr_calc_curl(processed_tgrid, gradient)
+    assert np.allclose(curl_of_grad, 0)
+
+    # Should include other tests in the future if any refactoring is done
