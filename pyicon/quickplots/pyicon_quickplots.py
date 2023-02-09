@@ -407,10 +407,28 @@ def qp_timeseries(IcD, fname, vars_plot,
   times, flist_ts, its = pyic.get_timesteps(flist)
   # end: not needed if IcD.load_timeseries is used
 
+  # calculate rstart, rend in case of t1, t2 are used as time 
+  # bounds for the times series
+  if use_tave_int_for_ts:
+    tstart = np.datetime64(str(t1)+'T00:00:00')
+    tend   = np.datetime64(str(t2)+'T00:00:00')
+    rstart = 0
+    rend = len(times)-1
+    for i in np.arange(len(times)):
+       if times[i]<tstart:
+         rstart = i+1
+       if times[i]>=tend:
+         rend = i
+         break
+    times = times[slice(rstart,rend)]
+  else:
+    rstart = 0
+    rend = len(times)
+
   # --- prepare time averaging
   times_plot = np.copy(times)
   if fpath_ref_data_atm != '':
-    # save times for validation with ERA5
+    # save times for validation with ERA5/CERES/GPM
     times_exp = np.copy(times)
   if ave_freq>0:
     # skip all time points which do not fit in final year
@@ -418,7 +436,7 @@ def qp_timeseries(IcD, fname, vars_plot,
     if nskip>0:
       times = times[:-nskip]
       if fpath_ref_data_atm != '':
-        # save times for validation with ERA5
+        # save times for validation with ERA5/CERES/GPM
         times_exp = times_exp[:-nskip]
     # define time bounds for correct time averaging
     dt = pyic.get_averaging_interval(times, IcD.output_freq, end_of_interval=IcD.time_at_end_of_interval)
@@ -426,22 +444,6 @@ def qp_timeseries(IcD, fname, vars_plot,
     times = np.reshape(times, (nresh, ave_freq)).transpose()
     # finally define times_plot as center or averaging time intervall
     times_plot = times[int(ave_freq/2),:] # get middle of ave_freq
-
-  # calculate lstart, lend in case of t1, t2 are used as time 
-  # bounds for the times series
-  if use_tave_int_for_ts:
-    tstart = np.datetime64(str(t1)+'T00:00:00')
-    tend   = np.datetime64(str(t2)+'T00:00:00')
-    lstart = 0
-    lend = len(times_plot)-1
-    for i in np.arange(len(times_plot)):
-       if times_plot[i]<tstart:
-         lstart = i+1
-       if times_plot[i]>=tend:
-         lend = i
-         break
-    # also save times_plot for the loop over vars_plot
-    times_plot_save = times_plot
 
   # --- make axes if they are not given as arguement
   if isinstance(ax, str) and ax=='none':
@@ -464,10 +466,6 @@ def qp_timeseries(IcD, fname, vars_plot,
 
   # --- loop over all variables which should be plotted
   for mm, var in enumerate(vars_plot):
-    if use_tave_int_for_ts:
-      # times_plot has to be redefined in the loop otherwise 
-      # times_plot[slice(lstart,lend)] does it wrong
-      times_plot = times_plot_save
     # --- load the data
     # start: not needed if IcD.load_timeseries is used
     data = np.array([])
@@ -487,6 +485,9 @@ def qp_timeseries(IcD, fname, vars_plot,
       f.close()
     # end: not needed if IcD.load_timeseries is used
 
+    # slice according to rsart, rend
+    data = data[slice(rstart,rend)]
+
     # --- time averaging
     dtsum = np.ones((times.size))
     if ave_freq>0:
@@ -502,48 +503,117 @@ def qp_timeseries(IcD, fname, vars_plot,
       elif mode_ave[mm]=='max':
         data = data.max(axis=0)
 
-    # --- read corresponding ERA5 data
+    # --- read corresponding ERA5/CERES/GPM data
     if fpath_ref_data_atm != '':
+      # get name of reference data set
+      if 'era5' in fpath_ref_data_atm:
+        refname = 'ERA5'
+      elif 'ceres' in fpath_ref_data_atm:
+        refname = 'CERES'
+      elif 'gpm' in fpath_ref_data_atm:
+        refname = 'GPM'
+      # open data
       f = Dataset(fpath_ref_data_atm, 'r')
       # read time
       times_ref_tot = f.variables['time']
       # relative to absolute time axis
       times_ref_tot= num2date(times_ref_tot[:], units=times_ref_tot.units, calendar=times_ref_tot.calendar
                   ).astype("datetime64[s]")
-      # check if experiment falls within the ERA5 period
-      if times_exp[0] < times_ref_tot[0] or times_exp[len(times_exp)-1] > times_ref_tot[len(times_ref_tot)-1]:
-        print('Experiment period not included in ERA5 period!')
-        sys.exit()
+      for i in np.arange(len(times_ref_tot)):
+        day_validity = int(str(times_ref_tot[i].astype('datetime64[D]'))[8:10])
+        times_ref_tot[i] = times_ref_tot[i] - np.timedelta64(day_validity-1, 'D')
+      # check if experiment falls within the ERA5/CERES/GPM period
+      if use_tave_int_for_ts:
+        if tstart < times_ref_tot[0] or tend > times_ref_tot[len(times_ref_tot)-1]:
+          print('')
+          print('Variable:', var)
+          print('Experiment period not included in reference data period!')
+          print('Data: '+refname+', Period: '+str(times_ref_tot[0])+' --- '+str(times_ref_tot[len(times_ref_tot)-1]))
+          if refname == 'ERA5':
+            print('You can still plot times-series without reference curves by setting fpath_ref_data_atm='' in tools/run_qp*...')
+          else:
+            print('Specify ERA5 as reference data instead (1959-2021)!')
+            print('You can do this by setting fpath_ref_data_atm_rad, fpath_ref_data_atm_prec pointing to ERA5 in tools/run_qp*...')
+            print('Or you can plot times-series without reference curves by setting fpath_ref_data_atm='' in tools/run_qp*...')
+          sys.exit()
+      else:
+        if times_exp[0] < times_ref_tot[0] or times_exp[len(times_exp)-1] > times_ref_tot[len(times_ref_tot)-1]:
+          print('')
+          print('Variable:', var)
+          print('Experiment period not included in reference data period!')
+          print('Data: '+refname+', Period: '+str(times_ref_tot[0])+' --- '+str(times_ref_tot[len(times_ref_tot)-1]))
+          if refname == 'ERA5':
+            print('You can still plot times-series without reference curves by setting fpath_ref_data_atm='' in tools/run_qp*...')
+          else:
+            print('Specify ERA5 as reference data instead (1959-2021)!')
+            print('You can do this by setting fpath_ref_data_atm_rad, fpath_ref_data_atm_prec pointing to ERA5 in tools/run_qp*...')
+            print('Or you can plot times-series without reference curves by setting fpath_ref_data_atm='' in tools/run_qp*...')
+          sys.exit()
       # check whether experiment has monthly outputs
       if times_exp[1]-times_exp[0] > 2678400: # 31 days (in seconds)
-        print('Experiment output frequency should be monthly in order to use ERA5 as reference!')
+        print('Experiment output frequency should be monthly in order to use ERA5/CERES/GPM as reference!')
         sys.exit()
-      # calculate rstart and rend for reading ERA5
+      # calculate rstart and rend for reading ERA5/CERES/GPM
+      rstart = 0
+      rend = len(times_ref_tot)-1
       for i in np.arange(len(times_ref_tot)):
         if times_ref_tot[i]==times_exp[0]:
           rstart = i
         if times_ref_tot[i]==times_exp[len(times_exp)-1]:
           rend = i+1
-      # read ERA5 data
+      # read ERA5/CERES/GPM data
       if vars_plot == ['tas_gmean']:
         data_ref = f.variables['t2m_gmts'][rstart:rend]
       elif vars_plot == ['radtop_gmean']:
-        data_ref = (f.variables['tsr_gmts'][rstart:rend] 
-                 +  f.variables['ttr_gmts'][rstart:rend]) / 86400
+        try:
+          # CERES
+          data_ref = f.variables['toa_net_all_mon_gmts'][rstart:rend] 
+        except:
+          # ERA5
+          data_ref = (f.variables['tsr_gmts'][rstart:rend] 
+                   +  f.variables['ttr_gmts'][rstart:rend]) / 86400
       elif vars_plot == ['rsdt_gmean']:
-        data_ref = f.variables['tisr_gmts'][rstart:rend]  / 86400
+        try:
+          # CERES
+          data_ref = f.variables['solar_mon_gmts'][rstart:rend]
+        except:
+          # ERA5
+          data_ref = f.variables['tisr_gmts'][rstart:rend]  / 86400
       elif vars_plot == ['rsut_gmean']:
-        data_ref = (f.variables['tisr_gmts'][rstart:rend] 
-                 -  f.variables['tsr_gmts'][rstart:rend]) / 86400
+        try:
+          # CERES
+          data_ref = f.variables['toa_sw_all_mon_gmts'][rstart:rend] 
+        except:
+          # ERA5
+          data_ref = (f.variables['tisr_gmts'][rstart:rend] 
+                   -  f.variables['tsr_gmts'][rstart:rend]) / 86400
       elif vars_plot == ['rlut_gmean']:
-        data_ref = f.variables['ttr_gmts'][rstart:rend]   / 86400
+        try:
+          # CERES
+          data_ref = - f.variables['toa_lw_all_mon_gmts'][rstart:rend]
+        except:
+          # ERA5
+          data_ref = f.variables['ttr_gmts'][rstart:rend]   / 86400
       elif vars_plot == ['prec_gmean']:
-        data_ref = f.variables['tp_gmts'][rstart:rend] * 1e3 / 86400
+        try:
+          # GPM
+          data_ref = f.variables['precipitation_gmts'][rstart:rend] * 24 / 86400
+          # division by 86400 is to revert the effect of var_fac=86400 in qp_driver.py 
+          # necessary for converting the units of ICON outputs: mm (kg m-2) --> mm/day
+        except:
+          # ERA5
+          data_ref = f.variables['tp_gmts'][rstart:rend] * 1e3 / 86400
+          # division by 86400 is to revert the effect of var_fac=86400 in qp_driver.py 
+          # necessary for converting the units of ICON outputs: mm (kg m-2) --> mm/day
       elif vars_plot == ['evap_gmean']:
         data_ref = f.variables['e_gmts'][rstart:rend]  * 1e3 / 86400
+        # division by 86400 is to revert the effect of var_fac=86400 in qp_driver.py 
+        # necessary for converting the units of ICON outputs: mm (kg m-2) --> mm/day
       elif vars_plot == ['pme_gmean']:
         data_ref = (f.variables['tp_gmts'][rstart:rend] 
                  +  f.variables['e_gmts'][rstart:rend]) * 1e3 / 86400
+        # division by 86400 is to revert the effect of var_fac=86400 in qp_driver.py 
+        # necessary for converting the units of ICON outputs: mm (kg m-2) --> mm/day
       # --- time averaging
       if ave_freq>0:
         data_ref = np.reshape(data_ref, (nresh, ave_freq)).transpose()
@@ -572,6 +642,10 @@ def qp_timeseries(IcD, fname, vars_plot,
     if fpath_ref_data_atm != '':
         label1 = 'exp'
         label2 = 'era5'
+        if 'ceres' in fpath_ref_data_atm:
+          label2 = 'ceres'
+        if 'gpm' in fpath_ref_data_atm:
+          label2 = 'gpm'
     else:
       if labels is None:
         label = var
@@ -625,8 +699,13 @@ def qp_timeseries(IcD, fname, vars_plot,
     if fpath_ref_data_atm != '':
       data_ref_mean = (data_ref[ind]*dtsum[ind]).sum()/dtsum[ind].sum()
       try:
+        refname = 'era5'
+        if 'ceres' in fpath_ref_data_atm:
+          refname = 'ceres'
+        if 'gpm' in fpath_ref_data_atm:
+          refname = 'gpm'
         info_str1 = 'for exp in timeframe:  min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data[ind].min(), data_mean, data[ind].std(), data[ind].max())
-        info_str2 = 'for era5 in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data_ref[ind].min(), data_ref_mean, data_ref[ind].std(), data_ref[ind].max())
+        info_str2 = 'for '+refname+' in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data_ref[ind].min(), data_ref_mean, data_ref[ind].std(), data_ref[ind].max())
         ax.text(0.5, -0.14, info_str1, ha='center', va='top', transform=ax.transAxes, fontsize=8)
         ax.text(0.5, -0.24, info_str2, ha='center', va='bottom', transform=ax.transAxes, fontsize=8)
       except:
@@ -697,18 +776,36 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
      sys.exit()
   # end: not needed if IcD.load_timeseries is used
 
+  # calculate rstart, rend in case of t1, t2 are used as time 
+  # bounds for the times series
+  if use_tave_int_for_ts:
+    tstart = np.datetime64(str(t1)+'T00:00:00')
+    tend   = np.datetime64(str(t2)+'T00:00:00')
+    rstart = 0
+    rend = len(times)-1
+    for i in np.arange(len(times)):
+       if times[i]<tstart:
+         rstart = i+1
+       if times[i]>=tend:
+         rend = i
+         break
+    times = times[slice(rstart,rend)]
+  else:
+    rstart = 0
+    rend = len(times)
+
   # --- prepare time averaging
   times_plot = np.copy(times)
   if fpath_ref_data_atm != '':
-    # save times for validation with ERA5
+    # save times for validation with ERA5/CERES/GPM
     times_exp = np.copy(times)
   if ave_freq>0:
     # skip all time points which do not fit in final year
     nskip = times.size%ave_freq
     if nskip>0:
       times = times[:-nskip]
-    if fpath_ref_data_atm != '':
-        # save times for validation with ERA5
+      if fpath_ref_data_atm != '':
+        # save times for validation with ERA5/CERES/GPM
         times_exp = times_exp[:-nskip]
     # define time bounds for correct time averaging
     dt = pyic.get_averaging_interval(times, IcD1.output_freq, end_of_interval=IcD1.time_at_end_of_interval)
@@ -716,22 +813,6 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
     times = np.reshape(times, (nresh, ave_freq)).transpose()
     # finally define times_plot as center or averaging time intervall
     times_plot = times[int(ave_freq/2),:] # get middle of ave_freq
-
-  # calculate lstart, lend in case of t1, t2 are used as time 
-  # bounds for the times series
-  if use_tave_int_for_ts:
-    tstart = np.datetime64(str(t1)+'T00:00:00')
-    tend   = np.datetime64(str(t2)+'T00:00:00')
-    lstart = 0
-    lend = len(times_plot)-1
-    for i in np.arange(len(times_plot)):
-       if times_plot[i]<tstart:
-         lstart = i+1
-       if times_plot[i]>=tend:
-         lend = i
-         break
-    # also save times_plot for the loop over vars_plot
-    times_plot_save = times_plot
 
   # --- make axes if they are not given as arguement
   if isinstance(ax, str) and ax=='none':
@@ -753,10 +834,6 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
 
   # --- loop over all variables which should be plotted
   for mm, var in enumerate(vars_plot):
-    if use_tave_int_for_ts:
-      # times_plot has to be redefined in the loop otherwise 
-      # times_plot[slice(lstart,lend)] does it wrong
-      times_plot = times_plot_save
     # --- load data 1
     # start: not needed if IcD.load_timeseries is used
     data1 = np.array([])
@@ -794,6 +871,10 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
       f.close()
     # end: not needed if IcD.load_timeseries is used
 
+    # slice according to rsart, rend
+    data1 = data1[slice(rstart,rend)]
+    data2 = data2[slice(rstart,rend)]
+
     # --- time averaging
     dtsum = np.ones((times.size))
     if ave_freq>0:
@@ -814,48 +895,117 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
         data1 = data1.max(axis=0)
         data2 = data2.max(axis=0)
 
-    # --- read corresponding ERA5 data
+    # --- read corresponding ERA5/CERES/GPM data
     if fpath_ref_data_atm != '':
+      # get name of reference data set
+      if 'era5' in fpath_ref_data_atm:
+        refname = 'ERA5'
+      elif 'ceres' in fpath_ref_data_atm:
+        refname = 'CERES'
+      elif 'gpm' in fpath_ref_data_atm:
+        refname = 'GPM'
+      # open data
       f = Dataset(fpath_ref_data_atm, 'r')
       # read time
       times_ref_tot = f.variables['time']
       # relative to absolute time axis
       times_ref_tot= num2date(times_ref_tot[:], units=times_ref_tot.units, calendar=times_ref_tot.calendar
                   ).astype("datetime64[s]")
-      # check if experiment falls within the ERA5 period
-      if times_exp[0] < times_ref_tot[0] or times_exp[len(times_exp)-1] > times_ref_tot[len(times_ref_tot)-1]:
-        print('Experiment period not included in ERA5 period!')
-        sys.exit()
+      for i in np.arange(len(times_ref_tot)):
+        day_validity = int(str(times_ref_tot[i].astype('datetime64[D]'))[8:10])
+        times_ref_tot[i] = times_ref_tot[i] - np.timedelta64(day_validity-1, 'D')
+      # check if experiment falls within the ERA5/CERES/GPM period
+      if use_tave_int_for_ts:
+        if tstart < times_ref_tot[0] or tend > times_ref_tot[len(times_ref_tot)-1]:
+          print('')
+          print('Variable:', var)
+          print('Experiment period not included in reference data period!')
+          print('Data: '+refname+', Period: '+str(times_ref_tot[0])+' --- '+str(times_ref_tot[len(times_ref_tot)-1]))
+          if refname == 'ERA5':
+            print('You can still plot times-series without reference curves by setting fpath_ref_data_atm='' in tools/run_qp*...')
+          else:
+            print('Specify ERA5 as reference data instead (1959-2021)!')
+            print('You can do this by setting fpath_ref_data_atm_rad, fpath_ref_data_atm_prec pointing to ERA5 in tools/run_qp*...')
+            print('Or you can plot times-series without reference curves by setting fpath_ref_data_atm='' in tools/run_qp*...')
+          sys.exit()
+      else:
+        if times_exp[0] < times_ref_tot[0] or times_exp[len(times_exp)-1] > times_ref_tot[len(times_ref_tot)-1]:
+          print('')
+          print('Variable:', var)
+          print('Experiment period not included in reference data period!')
+          print('Data: '+refname+', Period: '+str(times_ref_tot[0])+' --- '+str(times_ref_tot[len(times_ref_tot)-1]))
+          if refname == 'ERA5':
+            print('You can still plot times-series without reference curves by setting fpath_ref_data_atm='' in tools/run_qp*...')
+          else:
+            print('Specify ERA5 as reference data instead (1959-2021)!')
+            print('You can do this by setting fpath_ref_data_atm_rad, fpath_ref_data_atm_prec pointing to ERA5 in tools/run_qp*...')
+            print('Or you can plot times-series without reference curves by setting fpath_ref_data_atm='' in tools/run_qp*...')
+          sys.exit()
       # check whether experiment has monthly outputs
       if times_exp[1]-times_exp[0] > 2678400: # 31 days (in seconds)
-        print('Experiment output frequency should be monthly in order to use ERA5 as reference!')
+        print('Experiment output frequency should be monthly in order to use ERA5/CERES/GPM as reference!')
         sys.exit()
-      # calculate rstart and rend for reading ERA5
+      # calculate rstart and rend for reading ERA5/CERES/GPM
+      rstart = 0
+      rend = len(times_ref_tot)-1
       for i in np.arange(len(times_ref_tot)):
         if times_ref_tot[i]==times_exp[0]:
           rstart = i
         if times_ref_tot[i]==times_exp[len(times_exp)-1]:
           rend = i+1
-      # read ERA5 data
+      # read ERA5/CERES/GPM data
       if vars_plot == ['tas_gmean']:
         data_ref = f.variables['t2m_gmts'][rstart:rend]
       elif vars_plot == ['radtop_gmean']:
-        data_ref = (f.variables['tsr_gmts'][rstart:rend] 
-                 +  f.variables['ttr_gmts'][rstart:rend]) / 86400
+        try:
+          # CERES
+          data_ref = f.variables['toa_net_all_mon_gmts'][rstart:rend] 
+        except:
+          # ERA5
+          data_ref = (f.variables['tsr_gmts'][rstart:rend] 
+                   +  f.variables['ttr_gmts'][rstart:rend]) / 86400
       elif vars_plot == ['rsdt_gmean']:
-        data_ref = f.variables['tisr_gmts'][rstart:rend]  / 86400
+        try:
+          # CERES
+          data_ref = f.variables['solar_mon_gmts'][rstart:rend]
+        except:
+          # ERA5
+          data_ref = f.variables['tisr_gmts'][rstart:rend]  / 86400
       elif vars_plot == ['rsut_gmean']:
-        data_ref = (f.variables['tisr_gmts'][rstart:rend] 
-                 -  f.variables['tsr_gmts'][rstart:rend]) / 86400
+        try:
+          # CERES
+          data_ref = f.variables['toa_sw_all_mon_gmts'][rstart:rend] 
+        except:
+          # ERA5
+          data_ref = (f.variables['tisr_gmts'][rstart:rend] 
+                   -  f.variables['tsr_gmts'][rstart:rend]) / 86400
       elif vars_plot == ['rlut_gmean']:
-        data_ref = f.variables['ttr_gmts'][rstart:rend]   / 86400
+        try:
+          # CERES
+          data_ref = - f.variables['toa_lw_all_mon_gmts'][rstart:rend]
+        except:
+          # ERA5
+          data_ref = f.variables['ttr_gmts'][rstart:rend]   / 86400
       elif vars_plot == ['prec_gmean']:
-        data_ref = f.variables['tp_gmts'][rstart:rend] * 1e3 / 86400
+        try:
+          # GPM
+          data_ref = f.variables['precipitation_gmts'][rstart:rend] * 24 / 86400
+          # division by 86400 is to revert the effect of var_fac=86400 in qp_driver.py 
+          # necessary for converting the units of ICON outputs: mm (kg m-2) --> mm/day
+        except:
+          # ERA5
+          data_ref = f.variables['tp_gmts'][rstart:rend] * 1e3 / 86400
+          # division by 86400 is to revert the effect of var_fac=86400 in qp_driver.py 
+          # necessary for converting the units of ICON outputs: mm (kg m-2) --> mm/day
       elif vars_plot == ['evap_gmean']:
         data_ref = f.variables['e_gmts'][rstart:rend]  * 1e3 / 86400
+        # division by 86400 is to revert the effect of var_fac=86400 in qp_driver.py 
+        # necessary for converting the units of ICON outputs: mm (kg m-2) --> mm/day
       elif vars_plot == ['pme_gmean']:
         data_ref = (f.variables['tp_gmts'][rstart:rend] 
                  +  f.variables['e_gmts'][rstart:rend]) * 1e3 / 86400
+        # division by 86400 is to revert the effect of var_fac=86400 in qp_driver.py 
+        # necessary for converting the units of ICON outputs: mm (kg m-2) --> mm/day
       # --- time averaging
       if ave_freq>0:
         data_ref = np.reshape(data_ref, (nresh, ave_freq)).transpose()
@@ -880,7 +1030,7 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
     data1  = data1[slice(lstart,lend)]
     data2  = data2[slice(lstart,lend)]
     dtsum = dtsum[slice(lstart,lend)]
-    if fpath_ref_data_atm != '' and  use_tave_int_for_ts:
+    if fpath_ref_data_atm != '':
       data_ref  = data_ref[slice(lstart,lend)]
 
     # --- define labels
@@ -889,6 +1039,10 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
         label1 = run1
         label2 = run2
         label3 = 'era5'
+        if 'ceres' in fpath_ref_data_atm:
+          label3 = 'ceres'
+        if 'gpm' in fpath_ref_data_atm:
+          label3 = 'gpm'
       else:
         label1 = labels[mm]
         label2 = labels[mm]
@@ -950,9 +1104,14 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
     if fpath_ref_data_atm != '':
       data_ref_mean = (data_ref[ind]*dtsum[ind]).sum()/dtsum[ind].sum()
       try:
+        refname = 'era5'
+        if 'ceres' in fpath_ref_data_atm:
+          refname = 'ceres'
+        if 'gpm' in fpath_ref_data_atm:
+          refname = 'gpm'
         info_str1 = 'for '+run1+' in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data1[ind].min(), data1_mean, data1[ind].std(), data1[ind].max())
         info_str2 = 'for '+run2+' in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data2[ind].min(), data2_mean, data2[ind].std(), data2[ind].max())
-        info_str3 = 'for era5 in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data_ref[ind].min(), data_ref_mean, data_ref[ind].std(), data_ref[ind].max())
+        info_str3 = 'for '+refname+' in timeframe: min: %.4g;        mean: %.4g;        std: %.4g;        max: %.4g' % (data_ref[ind].min(), data_ref_mean, data_ref[ind].std(), data_ref[ind].max())
         ax.text(0.5, -0.16, info_str1, ha='center', va='bottom', transform=ax.transAxes, fontsize=7)
         ax.text(0.5, -0.20, info_str2, ha='center', va='bottom', transform=ax.transAxes, fontsize=7)
         ax.text(0.5, -0.24, info_str3, ha='center', va='bottom', transform=ax.transAxes, fontsize=7)

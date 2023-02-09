@@ -376,7 +376,7 @@ def prepgmts():
     dsIn = dsIn.rename_dims({'longitude': 'lon', 'latitude': 'lat'})
     dsIn = dsIn.rename_vars({'longitude': 'lon', 'latitude': 'lat'})
 
-    # rename variable to represent zonal-mean
+    # rename variable to represent global mean ts
     varName=list(dsIn.data_vars)[0]
     dsIn = dsIn.rename_vars({varName: varName+'_gmts'})
 

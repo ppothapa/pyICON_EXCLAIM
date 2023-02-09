@@ -38,11 +38,13 @@ path_ckdtree     = ''
 path_ckdtree_atm = 'auto'
 
 # --- grid files and reference data
-fpath_tgrid         = 'auto'
-fpath_tgrid_atm     = 'auto' 
-fpath_ref_data_oce  = '' 
-fpath_ref_data_atm  = '' 
-fpath_fx            = '' 
+fpath_tgrid             = 'auto'
+fpath_tgrid_atm         = 'auto' 
+fpath_ref_data_oce      = '' 
+fpath_ref_data_atm      = '' # meant for ERA5 if defined
+fpath_ref_data_atm_rad  = '' # meant for CERES if defined
+fpath_ref_data_atm_prec = '' # meant for GPM if defined
+fpath_fx                = '' 
 
 # --- nc file prefixes
 D_variable_container = dict(
@@ -253,11 +255,13 @@ path_ckdtree     = \'{path_ckdtree}\'
 path_ckdtree_atm = \'{path_ckdtree_atm}\'
 
 # --- grid files and reference data
-fpath_tgrid         = \'{fpath_tgrid}\'
-fpath_tgrid_atm     = \'{fpath_tgrid_atm}\'
-fpath_ref_data_oce  = \'{fpath_ref_data_oce}\'
-fpath_ref_data_atm  = \'{fpath_ref_data_atm}\'
-fpath_fx            = \'{fpath_fx}\'
+fpath_tgrid             = \'{fpath_tgrid}\'
+fpath_tgrid_atm         = \'{fpath_tgrid_atm}\'
+fpath_ref_data_oce      = \'{fpath_ref_data_oce}\'
+fpath_ref_data_atm      = \'{fpath_ref_data_atm}\'
+fpath_ref_data_atm_rad  = \'{fpath_ref_data_atm_rad}\'
+fpath_ref_data_atm_prec = \'{fpath_ref_data_atm_prec}\'
+fpath_fx                = \'{fpath_fx}\'
 
 # --- nc file prefixes
 D_variable_container = \'{D_variable_container}\'
@@ -320,6 +324,14 @@ if do_write_final_config:
 # -------------------------------------------------------------------------------- 
 projection = 'PlateCarree'
 #projection = 'none'
+
+# check if CERES & GPM reference data exist and fall back to ERA5 if not
+if fpath_ref_data_atm_rad == '' or not os.path.isfile(fpath_ref_data_atm_rad):
+  fpath_ref_data_atm_rad = fpath_ref_data_atm
+if fpath_ref_data_atm_prec == '' or not os.path.isfile(fpath_ref_data_atm_prec):
+  fpath_ref_data_atm_prec = fpath_ref_data_atm
+use_ceres = fpath_ref_data_atm_rad != fpath_ref_data_atm and os.path.isfile(fpath_ref_data_atm_rad)
+use_gpm = fpath_ref_data_atm_prec != fpath_ref_data_atm and os.path.isfile(fpath_ref_data_atm_prec)
 
 # --- structure of web page
 fig_names = []
@@ -2063,7 +2075,7 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['tas_gmean'],
         t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file,
-        var_add=-273.15, units='$^o$C', lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+        var_add=-273.15, units='$^o$C', use_tave_int_for_ts=use_tave_int_for_ts,
         fpath_ref_data_atm=fpath_ref_data_atm,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
@@ -2071,32 +2083,33 @@ for tave_int in tave_ints:
     fig_name = 'ts_radtop_gmean'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['radtop_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
-        fpath_ref_data_atm=fpath_ref_data_atm,
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts,
+        fpath_ref_data_atm=fpath_ref_data_atm_rad,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rsdt_gmean'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsdt_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
-        fpath_ref_data_atm=fpath_ref_data_atm,
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts,
+        fpath_ref_data_atm=fpath_ref_data_atm_rad,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rsut_gmean'
     if fig_name in fig_names:
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rsut_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
-        fpath_ref_data_atm=fpath_ref_data_atm,
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts,
+        fpath_ref_data_atm=fpath_ref_data_atm_rad,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
     fig_name = 'ts_rlut_gmean'
     if fig_name in fig_names:
+      vfc = -1.
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['rlut_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
-        fpath_ref_data_atm=fpath_ref_data_atm,
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, use_tave_int_for_ts=use_tave_int_for_ts,
+        fpath_ref_data_atm=fpath_ref_data_atm_rad,
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2104,8 +2117,8 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       vfc = 86400. #  convert mm (kg m-2) --> mm/day
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['prec_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
-        fpath_ref_data_atm=fpath_ref_data_atm, units='mm/day',
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, use_tave_int_for_ts=use_tave_int_for_ts,
+        fpath_ref_data_atm=fpath_ref_data_atm_prec, units='mm/day',
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
       save_fig(fig_name, path_pics, fig_name)
@@ -2113,7 +2126,7 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       vfc = 86400. #  convert mm (kg m-2) --> mm/day
       FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['evap_gmean'], 
-        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+        t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, use_tave_int_for_ts=use_tave_int_for_ts,
         fpath_ref_data_atm=fpath_ref_data_atm, units='mm/day',
         save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
       )
@@ -2123,7 +2136,7 @@ for tave_int in tave_ints:
       if do_conf_dwd:
          vfc = 86400. #  convert mm (kg m-2) --> mm/day
          FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['pme_gmean'], 
-           t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+           t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, var_fac=vfc, use_tave_int_for_ts=use_tave_int_for_ts,
            fpath_ref_data_atm=fpath_ref_data_atm, units='mm/day',
            save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
          )
@@ -2134,7 +2147,7 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       if not do_conf_dwd:
          FigInf, Dhandles = pyicqp.qp_timeseries(IcD_atm_mon, fname_atm_mon, ['fwfoce_gmean'], 
-           t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, lstart=1, use_tave_int_for_ts=use_tave_int_for_ts,
+           t1=t1, t2=t2, ave_freq=ave_freq, omit_last_file=omit_last_file, use_tave_int_for_ts=use_tave_int_for_ts,
            fpath_ref_data_atm=fpath_ref_data_atm,
            save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
          )
@@ -2490,14 +2503,24 @@ for tave_int in tave_ints:
     fig_name = 'atm_toa_sob_bias'
     if fig_name in fig_names:
       var = vsob_t
-      var_ref = 'tsr'
+      var_ref = 'tsr' # ERA5 name
+      fpath_ref = fpath_ref_data_atm
+      vfc = 1./86400. # J/m^2 --> W/m^2 (with daily accumulation)
+      if use_ceres:
+        fpath_ref = fpath_ref_data_atm_rad
+        var_ref = 'solar_mon'       # CERES name sw in
+        var_ref2 = 'toa_sw_all_mon' # CERES name sw out
+        vfc = 1. # already in W/m^2
       # --- interpolate data
       data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
       datai = data2di
       # --- reference
-      f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref = f.variables[var_ref][:,:] / 86400 # J/m^2 --> W/m^2 (with daily accumulation)
+      f = Dataset(fpath_ref, 'r')
+      data_ref = f.variables[var_ref][:,:] * vfc
+      if use_ceres:
+        data_ref2 = f.variables[var_ref2][:,:] * vfc
+        data_ref = data_ref-data_ref2
       f.close()
       # --- calculate bias
       data_bias = datai-data_ref
@@ -2531,14 +2554,20 @@ for tave_int in tave_ints:
     fig_name = 'atm_toa_thb_bias'
     if fig_name in fig_names:
       var = vthb_t
-      var_ref = 'ttr'
+      var_ref = 'ttr' # ERA5 name
+      fpath_ref = fpath_ref_data_atm
+      vfc = 1./86400. # J/m^2 --> W/m^2 (with daily accumulation)
+      if use_ceres:
+        fpath_ref = fpath_ref_data_atm_rad
+        var_ref = 'toa_lw_all_mon' # CERES name
+        vfc = -1. # already in W/m^2 (but with negative sign)
       # --- interpolate data
       data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
       datai = data2di
       # --- reference
-      f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref = f.variables[var_ref][:,:] / 86400 # J/m^2 --> W/m^2 (with daily accumulation)
+      f = Dataset(fpath_ref, 'r')
+      data_ref = f.variables[var_ref][:,:] * vfc
       f.close()
       # --- calculate bias
       data_bias = datai-data_ref
@@ -2811,7 +2840,13 @@ for tave_int in tave_ints:
     fig_name = 'atm_tcc_bias'
     if fig_name in fig_names:
       var = vclt
-      var_ref = 'tcc'
+      var_ref = 'tcc' # ERA5 name
+      fpath_ref = fpath_ref_data_atm
+      vfc = 100.
+      if use_ceres:
+        fpath_ref = fpath_ref_data_atm_rad
+        var_ref = 'cldarea_total_daynight_mon' # CERES name
+        vfc = 1. # already in %
       # --- interpolate data
       data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
@@ -2820,8 +2855,8 @@ for tave_int in tave_ints:
       else:
         datai = data2di
       # --- reference
-      f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref = f.variables[var_ref][:,:] * 100.
+      f = Dataset(fpath_ref, 'r')
+      data_ref = f.variables[var_ref][:,:] * vfc
       f.close()
       # --- calculate bias
       data_bias = datai-data_ref
@@ -2873,14 +2908,20 @@ for tave_int in tave_ints:
     fig_name = 'atm_tp_bias'
     if fig_name in fig_names:
       var = vpr
-      var_ref = 'tp'
+      var_ref = 'tp' # ERA5 name
+      fpath_ref = fpath_ref_data_atm
+      vfc = 1000 # m/day --> mm/day
+      if use_gpm:
+        fpath_ref = fpath_ref_data_atm_prec
+        var_ref = 'precipitation' # GPM name sw in
+        vfc = 24 # mm/h --> mm/day
       # --- interpolate data
       data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
       datai = data2di * 86400
       # --- reference
-      f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref = f.variables[var_ref][:,:] * 1000 # m/day --> mm/day
+      f = Dataset(fpath_ref, 'r')
+      data_ref = f.variables[var_ref][:,:] * vfc
       f.close()
       # --- calculate bias
       data_bias = datai-data_ref
@@ -3448,7 +3489,8 @@ for tave_int in tave_ints:
       data, it_ave = pyic.time_average(IcD_atm3d, vclw, t1, t2, iz='all')
       IaV = pyic.IconVariable('clw', 'mg/kg', 'zon. ave. cloud water')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      IaV.data = data_zave * 1e6
+      data_zave *= 1e6
+      IaV.data = data_zave
       clw = IaV.data # save it for the plot clw+cli
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, clim=[0,40.], cincr=2., contfs='auto',
@@ -3467,7 +3509,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, 
-                      clim=40., cincr=5., contfs='auto', cmap='RdBu_r',
+                      clim=20., cincr=2., contfs='auto', cmap='RdBu_r',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -3479,7 +3521,8 @@ for tave_int in tave_ints:
       data, it_ave = pyic.time_average(IcD_atm3d, vcli, t1, t2, iz='all')
       IaV = pyic.IconVariable('cli', 'mg/kg', 'zon. ave. cloud ice')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      IaV.data = data_zave *  1e6
+      data_zave *= 1e6
+      IaV.data = data_zave
       cli = IaV.data # save it for the plot clw+cli
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, clim=[0,15.], cincr=1., contfs='auto',
@@ -3498,7 +3541,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, 
-                      clim=15., cincr=3., contfs='auto', cmap='RdBu_r',
+                      clim=10., cincr=2., contfs='auto', cmap='RdBu_r',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )

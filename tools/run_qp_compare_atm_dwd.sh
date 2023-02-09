@@ -44,11 +44,13 @@ path_ckdtree_atm = path_grid_atm+'/ckdtree/'
 # --- grid files and reference data
 path_pool_oce       = '/hpc/uwork/icon-sml/pyICON/grids/'
 gnameu = gname.split('_')[0].upper()
-fpath_tgrid         = path_grid + gname+'_tgrid.nc'
-fpath_tgrid_atm     = path_grid_atm + gname_atm+'_tgrid.nc'
-fpath_ref_data_oce  = path_grid + 'ts_phc3.0_annual_icon_grid_0043_R02B04_G_L40.nc'
-fpath_ref_data_atm  = path_grid_atm + 'era5_pyicon_2000-2010_1.5x1.5deg.nc'
-fpath_fx            = path_grid + 'oce_fx.19600102T000000Z.nc'
+fpath_tgrid             = path_grid + gname+'_tgrid.nc'
+fpath_tgrid_atm         = path_grid_atm + gname_atm+'_tgrid.nc'
+fpath_ref_data_oce      = path_grid + 'ts_phc3.0_annual_icon_grid_0043_R02B04_G_L40.nc'
+fpath_ref_data_atm      = path_grid_atm + 'era5_pyicon_2001-2010_1.5x1.5deg.nc'
+fpath_ref_data_atm_rad  = path_grid_atm + 'ceres_pyicon_2001-2010_1.5x1.5deg.nc'
+fpath_ref_data_atm_prec = path_grid_atm + 'gpm_pyicon_2001-2010_1.5x1.5deg.nc'
+fpath_fx                = path_grid + 'oce_fx.19600102T000000Z.nc'
 
 # --- nc file prefixes ocean
 oce_def     = '_oce_def'
@@ -91,7 +93,7 @@ run1="terra"
 run2="sen04"
 path_data1="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run1}/output/icon/"
 path_data2="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run2}/output/icon/"
-python -u ${qp_compare} --batch=True ${config_file} --path_data1=$path_data1 --path_data2=$path_data2 --run1=$run1 --run2=$run2 --tave_int='2000-01-01,2011-01-01'
+python -W ignore -u ${qp_compare} --batch=True ${config_file} --path_data1=$path_data1 --path_data2=$path_data2 --run1=$run1 --run2=$run2 --tave_int='2001-01-01,2011-01-01'
 
 enddate=`date +%Y-%m-%d\ %H:%M:%S`
 
