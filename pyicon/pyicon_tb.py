@@ -1794,3 +1794,65 @@ def calc_grid_area_rectgrid(lon, lat):
   area = area / area_e
   return area
 
+def rename_dimension_names(ds, rename_dict=None, verbose=False):
+    """ Rename dimension names of ICON output files to match name convention in grid files.
+    
+    ds: Xarray dataset which should be renamed
+    rename_dict: Dictionary. which contains renaming instruction. If left None, default convention is used.
+    verbose: Bool. If set to true rename_dict is printed.
+    """
+    if rename_dict is None:
+        # rename horizontal dimensions
+        rename_dict = dict()
+        try:
+            rename_dict[ds.clon.dims[0]] = 'cell'
+        except:
+            pass
+        try:
+            rename_dict[ds.elon.dims[0]] = 'edge'
+        except:
+            pass
+        try:
+            rename_dict[ds.vlon.dims[0]] = 'vertex'
+        except:
+            pass
+        
+        # rename vertical dimensions
+        # !!! Renaming vertical dimensions is problematic since it cannot capture all potential cases. !!!
+
+        # rename ocean depth dimension
+        depth_dims = [(dim) for dim in ds.dims if dim.startswith('depth')]
+        if len(depth_dims)==0:
+            pass
+        elif len(depth_dims)==1:
+            # assume dimension pointing to center if only one depth dim is in ds 
+            # (this case is more likely but other cases are possible as well)
+            rename_dict[depth_dims[0]] = 'depthc'
+        elif ds[depth_dims[0]].size<ds[depth_dims[1]].size:
+            # assume that interface dimension is (by 1) larger than cell dimension
+            # (this should always be the case)
+            rename_dict[depth_dims[0]] = 'depthc'
+            rename_dict[depth_dims[1]] = 'depthi'
+        else:
+            rename_dict[depth_dims[0]] = 'depthi'
+            rename_dict[depth_dims[1]] = 'depthc'
+            
+        # rename atm height dimension
+        height_dims = [(dim) for dim in ds.dims if dim.startswith('height')]
+        if len(height_dims)==0:
+            pass
+        elif len(height_dims)==1:
+            rename_dict[height_dims[0]] = 'heightc'
+        elif ds[height_dims[0]].size<ds[height_dims[1]].size: # this will break if ds does not contain height, height_2... not sure whether it does
+            rename_dict[height_dims[0]] = 'heightc'
+            rename_dict[height_dims[1]] = 'heighti'
+        else:
+            rename_dict[height_dims[0]] = 'heighti'
+            rename_dict[height_dims[1]] = 'heightc'
+
+    if verbose:
+        print(rename_dict)
+        
+    # finally rename dataset
+    ds = ds.rename(rename_dict)
+    return ds
