@@ -1221,7 +1221,7 @@ def identify_grid(path_grid, fpath_data):
       gsize = fpath_data.ncells.size
     except:
       try:
-        gsize = fpath_data.cells.size
+        gsize = fpath_data.cell.size
       except:
         raise ValueError('::: Error: Could not read numer of cells from fpath_data! :::')
 
@@ -1775,3 +1775,22 @@ def patch_plot_derive_bnds(ds_tgrid, lon_reg=[-180, 180], lat_reg=[-90, 90]):
   clat_bnds = clat_bnds[ireg_c]
 
   return clon_bnds, clat_bnds, vlon_bnds_sorted, vlat_bnds_sorted, cells_of_vertex_sorted
+
+def calc_grid_area_rectgrid(lon, lat):
+  # FIXME: Optimize by getting rid of loops
+  radius = 6371000.
+  dlon = np.radians(lon[2] - lon[1])
+  area = np.zeros((lat.size,lon.size))
+  for j in np.arange(1,np.size(lat)-1):
+    lat1 = (lat[j-1] +  lat[j]  )*0.5
+    lat2 = (lat[j]   +  lat[j+1])*0.5
+    lat1 = np.radians(lat1)
+    lat2 = np.radians(lat2)
+    for i in np.arange(1,np.size(lon)-1):
+      # A = R^2 |sin(lat1)-sin(lat2)| |lon1-lon2| where R is earth radius (6378 kms)
+      area[j,i] = np.square(radius)*(np.sin(lat2)-np.sin(lat1))*dlon
+  # area fraction w.r.t. Earth's surface area
+  area_e = 4. * np.pi * np.square(radius)
+  area = area / area_e
+  return area
+
