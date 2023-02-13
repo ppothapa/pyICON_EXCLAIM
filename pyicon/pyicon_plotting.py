@@ -2130,7 +2130,7 @@ def plot_sec(data,
   # --- grid files and interpolation
   path_grid = '/work/mh0033/m300602/icon/grids/'
   #path_grid = '/home/m/m300602/icon/grids/'
-  if gname=='auto':
+  if gname=='auto' and section!="moc":
     Dgrid = identify_grid(path_grid, data)
     try:
       Dgrid = identify_grid(path_grid, data)
@@ -2185,8 +2185,12 @@ def plot_sec(data,
   if 'zave' in section:
     #if fpath_fx=='auto':
       #fpath_fx = f'{path_grid}/{gname}/ckdtree/rectgrids/{gname}_res{res:3.2f}_180W-180E_90S-90N.nc'
-    ds_fx = xr.open_dataset(fpath_fx)
-    clat = ds_fx.clat * 180./np.pi
+    if section=='gzave' and 'clat' in list(data.coords):
+      #clat = data.clat * 180./np.pi
+      clat = data.clat
+    else:
+      ds_fx = xr.open_dataset(fpath_fx)
+      clat = ds_fx.clat * 180./np.pi
     lat_group = np.round(clat/res)*res
     data = data.where(data!=0)
     if section=='gzave':
@@ -2202,6 +2206,11 @@ def plot_sec(data,
     xdim = data.clat
     xdim = xdim.assign_attrs(long_name='latitude')
     xdim = 'auto' # do not need this information, avoid redefinition of xdim
+  elif 'moc' in section:
+    xdim = data.clat
+    xdim = xdim.assign_attrs(long_name='latitude')
+    xdim = 'auto'
+    section = ''
   
   data = data.squeeze()
   
@@ -2325,7 +2334,7 @@ class Plot(object):
     def shade(self, *args, **kwargs):
         kwargs['ax'] = self.ax
         kwargs['cax'] = self.cax
-        hm = pyic.shade(*args, **kwargs)
+        hm = shade(*args, **kwargs)
         return hm
     def plot(self, *args, **kwargs):
         kwargs['ax'] = self.ax
