@@ -322,11 +322,11 @@ def xr_calc_edge2cell_coeff_cc(ds_IcD):
 
 def xr_edges2cell(ds_IcD, ve, dze, dzc, edge2cell_coeff_cc=None, fixed_vol_norm=None):
     if fixed_vol_norm is None:
-        fixed_vol_norm = xr_calc_fixed_vol_norm(ds_IcD)
+        fixed_vol_norm = xr_calc_fixed_volume_norm(ds_IcD)
     if edge2cell_coeff_cc is None:
         edge2cell_coeff_cc = xr_calc_edge2cell_coeff_cc(ds_IcD)
-    if ve.dims != dze.dims:
-      raise ValueError('::: Dims of ve and dze have to be the same!:::')
+    #if ve.dims != dze.dims:
+    #  raise ValueError('::: Dims of ve and dze have to be the same!:::')
     p_vn_c = (
         edge2cell_coeff_cc 
         * ve.isel(edge=ds_IcD.edge_of_cell) 
