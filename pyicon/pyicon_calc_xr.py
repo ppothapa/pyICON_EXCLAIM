@@ -1,31 +1,49 @@
-print('sys glob os')
-import sys
-import glob, os
-#import datetime
 print('numpy')
 import numpy as np
-print('netcdf')
-from netCDF4 import Dataset, num2date
-#print('ipdb')
-#from ipdb import set_trace as mybreak  
 print('xarray')
 import xarray as xr
+from itertools import product
 print('Done modules calc.')
 
-def convert_tgrid_data(ds_tg):
-
+def convert_tgrid_data(ds_tg, check_previous_conversion=True, set_dim_order=None):
     """ Convert xarray grid file to grid file compatible with pyicon function.
 
-Open classical ICON grid file by:
-ds_tg = xr.open_dataset(fpath_tg, chunks=dict())
+    Parameters
+    ----------
+    ds_tg : xr.Dataset
+        raw, unprocessed tgrid
 
-Then convert by:
-ds_IcD = pyic.convert_tgrid_data(ds_tg)
+    check_previous_conversion : bool
+        check whether the dataset has already been converted and raise an error
+        if so
 
-ds_tg and ds_IcD are both lazy xarray data sets containing dask arrays.
+    set_dim_order : bool or list
+        Transpose the dataset so dimensions appear in the standard pyicon
+        order, or the order listed
+
+    Returns
+    -------
+    ds_icd : xr.Dataset
+        A tgrid dataset compatible with pyicon functions
+
+    Notes
+    -----
+    Open classical ICON grid file by:
+    ds_tg = xr.open_dataset(fpath_tg, chunks=dict())
+
+    Then convert by:
+    ds_IcD = pyic.convert_tgrid_data(ds_tg)
     """
+    if check_previous_conversion:
+        if "converted_tgrid" in ds_tg.attrs:
+            raise ValueError(
+                "ds_tg has previously been converted by this function, \
+                 applying the function again will lead to undocumented \
+                 behaviour. To proceed, set 'check_previous_conversion=False'"
+                )
+
     ds_IcD = xr.Dataset()
-    
+
     # --- constants (from src/shared/mo_physical_constants.f90)
     ds_IcD['grid_sphere_radius'] = 6.371229e6
     ds_IcD['grav'] = 9.80665
@@ -98,139 +116,174 @@ ds_tg and ds_IcD are both lazy xarray data sets containing dask arrays.
         ds_tg['edge_primal_normal_cartesian_z'],
     ], dim='cart').transpose()
     
-    ds_IcD['clon'] *= 180./np.pi
-    ds_IcD['clat'] *= 180./np.pi
-    ds_IcD['elon'] *= 180./np.pi
-    ds_IcD['elat'] *= 180./np.pi
-    ds_IcD['vlon'] *= 180./np.pi
-    ds_IcD['vlat'] *= 180./np.pi
+    for point, dim in product("ecv", ("lat", "lon")):
+        coord = point + dim
+        ds_IcD[coord] *= 180./np.pi
+        ds_IcD[coord].attrs["units"] = "degrees"
 
     ds_IcD['fc'] = 2.* ds_IcD.earth_angular_velocity * np.sin(ds_IcD.clat*np.pi/180.)
     ds_IcD['fe'] = 2.* ds_IcD.earth_angular_velocity * np.sin(ds_IcD.elat*np.pi/180.)
     ds_IcD['fv'] = 2.* ds_IcD.earth_angular_velocity * np.sin(ds_IcD.vlat*np.pi/180.)
-    
+
     try:
         ds_IcD = ds_IcD.rename({'ncells': 'cell'})
-    except:
+    except ValueError:
         pass
+
+    ds_IcD.attrs["converted_tgrid"] = True
+
+    if set_dim_order is None:
+        standard_order = ["cell", "vertex", "edge", "nc", "nv", "ne", "cart", ...]
+        ds_IcD = ds_IcD.transpose(*standard_order, missing_dims="ignore")
+    elif set_dim_order:
+        ds_IcD = ds_IcD.transpose(*set_dim_order, missing_dims="ignore")
 
     return ds_IcD
 
 def print_verbose(verbose=1, message="", verbose_stage=1):
-  if verbose>=verbose_stage:
-    print(message)
-  return
+    if verbose >= verbose_stage:
+        print(message)
+    return
 
 def xr_crop_tgrid(ds_tg, ireg_c, verbose=1):
-  """ Crop a grid file. 
+    """ Crop a grid file.
 
-  Input: 
-  ------
-  ds_tg: xarray Dataset, which contains the grid file
-  ireg_c: numpy index list of cell-points which should by in cropped domain
+    Input:
+    ------
+    ds_tg: xarray Dataset, which contains the grid file
+    ireg_c: numpy index list of cell-points which should by in cropped domain
 
-  Output:
-  ------
-  ds_tg_cut: xarray Dataset, which contains (most of) the cropped grid variables.
+    Output:
+    ------
+    ds_tg_cut: xarray Dataset, which contains (most of) the cropped grid variables.
 
-  Example usage:
-  --------------
-  ds_tg = xr.open_mfdataset(fpath_tgrid)
-  clon = ds_tg.clon.compute().data * 180./np.pi
-  clat = ds_tg.clat.compute().data * 180./np.pi
+    Example usage:
+    --------------
+    ds_tg = xr.open_mfdataset(fpath_tgrid)
+    clon = ds_tg.clon.compute().data * 180./np.pi
+    clat = ds_tg.clat.compute().data * 180./np.pi
 
-  lon_reg_3 = [6, 10]
-  lat_reg_3 = [-32, -30]
-  ireg_c = np.where(
-      (clon>lon_reg[0]) & (clon<=lon_reg[1]) & (clat>lat_reg[0]) & (clat<=lat_reg[1])
-  )[0]
+    lon_reg_3 = [6, 10]
+    lat_reg_3 = [-32, -30]
+    ireg_c = np.where(
+        (clon>lon_reg[0]) & (clon<=lon_reg[1]) & (clat>lat_reg[0]) & (clat<=lat_reg[1])
+    )[0]
 
-  ds_tg_cut = pyic.xr_crop_tgrid(ds_tg, ireg_c)
-  """
-  # --- find edges and vertices belonging to cells of cutted domain
-  print_verbose(verbose, "find edges")
-  #vertex_of_cell = ds_tg.vertex_of_cell[:,ireg_c].compute().data.transpose()-1
-  #edge_of_cell = ds_tg.edge_of_cell[:,ireg_c].compute().data.transpose()-1
-  vertex_of_cell = ds_tg.vertex_of_cell.compute().data[:,ireg_c].transpose()-1
-  edge_of_cell = ds_tg.edge_of_cell.compute().data[:,ireg_c].transpose()-1
-  ireg_e, inde = np.unique(edge_of_cell, return_index=True)
-  ireg_v, indv = np.unique(vertex_of_cell, return_index=True)
-  
-  # --- new dataset with cutted coordinates
-  print_verbose(verbose, "cut coordinates")
-  ds_tg_cut = xr.Dataset(coords=dict(
-      clon=ds_tg['clon'].data[ireg_c],
-      clat=ds_tg['clat'].data[ireg_c],
-      elon=ds_tg['elon'].data[ireg_e],
-      elat=ds_tg['elat'].data[ireg_e],
-      vlon=ds_tg['vlon'].data[ireg_v],
-      vlat=ds_tg['vlat'].data[ireg_v],
-  ))
-  ds_tg_cut['ireg_e'] = xr.DataArray(ireg_e, dims=['edge'])
-  ds_tg_cut['ireg_v'] = xr.DataArray(ireg_v, dims=['vertex'])
-  
-  # --- re-index
-  print_verbose(verbose, "reindex")
-  reindex_c = np.zeros_like(ds_tg.clon, dtype='int32')-1
-  reindex_c[ireg_c] = np.arange(ireg_c.size, dtype='int32')
-  reindex_e = np.zeros_like(ds_tg.elon, dtype='int32')-1
-  reindex_e[ireg_e] = np.arange(ireg_e.size, dtype='int32')
-  reindex_v = np.zeros_like(ds_tg.vlon, dtype='int32')-1
-  reindex_v[ireg_v] = np.arange(ireg_v.size, dtype='int32')
+    ds_tg_cut = pyic.xr_crop_tgrid(ds_tg, ireg_c)
+    """
 
-  var = 'vertex_of_cell'
-  da = ds_tg[var].data[:,ireg_c]-1
-  data = reindex_v[da.flatten()].reshape(da.shape)
-  ds_tg_cut[var] = xr.DataArray(data+1, dims=ds_tg[var].dims)
-  
-  var = 'vertices_of_vertex'
-  da = ds_tg[var].data[:,ireg_v]-1
-  data = reindex_v[da.flatten()].reshape(da.shape)
-  ds_tg_cut[var] = xr.DataArray(data+1, dims=ds_tg[var].dims)
-  
-  var = 'edge_of_cell'
-  da = ds_tg[var].data[:,ireg_c]-1
-  data = reindex_e[da.flatten()].reshape(da.shape)
-  ds_tg_cut[var] = xr.DataArray(data+1, dims=ds_tg[var].dims)
-  
-  var = 'edges_of_vertex'
-  da = ds_tg[var].data[:,ireg_v]-1
-  data = reindex_e[da.flatten()].reshape(da.shape)
-  ds_tg_cut[var] = xr.DataArray(data+1, dims=ds_tg[var].dims)
-  
-  var = 'adjacent_cell_of_edge'
-  da = ds_tg[var].data[:,ireg_e]-1
-  data = reindex_c[da.flatten()].reshape(da.shape)
-  ds_tg_cut[var] = xr.DataArray(data+1, dims=ds_tg[var].dims)
-  
-  var = 'cells_of_vertex'
-  da = ds_tg[var].data[:,ireg_v]-1
-  data = reindex_c[da.flatten()].reshape(da.shape)
-  ds_tg_cut[var] = xr.DataArray(data+1, dims=ds_tg[var].dims)
-  
-  # --- cut vertex variables
-  print_verbose(verbose, "cut vertex variables")
-  cvars = ['dual_area', 'edge_orientation',
-          'cartesian_x_vertices', 'cartesian_y_vertices', 'cartesian_z_vertices']
-  for var in cvars:
-      ds_tg_cut[var] = ds_tg[var].compute().isel(vertex=ireg_v)
-  # --- cut edge variables
-  print_verbose(verbose, "cut edge variables")
-  cvars = ['edge_length', 'dual_edge_length', 'edge_sea_land_mask', 'edge_cell_distance',
-          'edge_system_orientation',
-          'edge_middle_cartesian_x', 'edge_middle_cartesian_y', 'edge_middle_cartesian_z',
-          'edge_dual_middle_cartesian_x', 'edge_dual_middle_cartesian_y', 'edge_dual_middle_cartesian_z',
-          'edge_primal_normal_cartesian_x', 'edge_primal_normal_cartesian_y', 'edge_primal_normal_cartesian_z']
-  for var in cvars:
-      ds_tg_cut[var] = ds_tg[var].compute().isel(edge=ireg_e)
-  # --- cut cell variables
-  print_verbose(verbose, "cut cell variables")
-  cvars = ['cell_area', 'cell_area_p', 'cell_sea_land_mask', 'orientation_of_normal', 
-          'cell_circumcenter_cartesian_x', 'cell_circumcenter_cartesian_y', 'cell_circumcenter_cartesian_z']
-  for var in cvars:
-      ds_tg_cut[var] = ds_tg[var].compute().isel(cell=ireg_c) 
+    if "converted_tgrid" in ds_tg.attrs:
+        if ds_tg.attrs["converted_tgrid"]: offset = 0
+    else: offset = 1
 
-  return ds_tg_cut
+    # --- find edges and vertices belonging to cells of cutted domain
+    print_verbose(verbose, "find edges")
+    vertex_of_cell = ds_tg.vertex_of_cell.isel(cell=ireg_c).compute().data - offset
+    edge_of_cell = ds_tg.edge_of_cell.isel(cell=ireg_c).compute().data - offset
+    ireg_e, inde = np.unique(edge_of_cell, return_index=True)
+    ireg_v, indv = np.unique(vertex_of_cell, return_index=True)
+
+    # --- new dataset with cutted coordinates
+    print_verbose(verbose, "cut coordinates")
+    ds_tg_cut = xr.Dataset(coords=dict(
+        clon=ds_tg['clon'][ireg_c],
+        clat=ds_tg['clat'][ireg_c],
+        elon=ds_tg['elon'][ireg_e],
+        elat=ds_tg['elat'][ireg_e],
+        vlon=ds_tg['vlon'][ireg_v],
+        vlat=ds_tg['vlat'][ireg_v],
+    ))
+    ds_tg_cut["ireg_c"] = xr.DataArray(ireg_c, dims=["cell"])
+    ds_tg_cut['ireg_e'] = xr.DataArray(ireg_e, dims=['edge'])
+    ds_tg_cut['ireg_v'] = xr.DataArray(ireg_v, dims=['vertex'])
+
+    # --- re-index
+    print_verbose(verbose, "reindex")
+    reindex_c = np.zeros_like(ds_tg.clon, dtype='int32') - offset
+    reindex_c[ireg_c] = np.arange(ireg_c.size, dtype='int32')
+    reindex_e = np.zeros_like(ds_tg.elon, dtype='int32') - offset
+    reindex_e[ireg_e] = np.arange(ireg_e.size, dtype='int32')
+    reindex_v = np.zeros_like(ds_tg.vlon, dtype='int32') - offset
+    reindex_v[ireg_v] = np.arange(ireg_v.size, dtype='int32')
+
+    var = 'vertex_of_cell'
+    da = ds_tg[var].isel(cell=ireg_c) - offset
+    data = reindex_v[da.data.flatten()].reshape(da.shape)
+    ds_tg_cut[var] = xr.DataArray(data + offset, dims=da.dims)
+
+    var = "edge_vertices"
+    da = ds_tg[var].isel(edge=ireg_e) - offset
+    data = reindex_v[da.data.flatten()].reshape(da.shape)
+    ds_tg_cut[var] = xr.DataArray(data + offset, dims=da.dims)
+
+    var = 'vertices_of_vertex'
+    da = ds_tg[var].isel(vertex=ireg_v) - offset
+    data = reindex_v[da.data.flatten()].reshape(da.shape)
+    ds_tg_cut[var] = xr.DataArray(data + offset, dims=da.dims)
+
+    var = 'edge_of_cell'
+    da = ds_tg[var].isel(cell=ireg_c) - offset
+    data = reindex_e[da.data.flatten()].reshape(da.shape)
+    ds_tg_cut[var] = xr.DataArray(data + offset, dims=da.dims)
+
+    var = 'edges_of_vertex'
+    da = ds_tg[var].isel(vertex=ireg_v) - offset
+    data = reindex_e[da.data.flatten()].reshape(da.shape)
+    ds_tg_cut[var] = xr.DataArray(data + offset, dims=da.dims)
+
+    var = 'adjacent_cell_of_edge'
+    da = ds_tg[var].isel(edge=ireg_e) - offset
+    data = reindex_c[da.data.flatten()].reshape(da.shape)
+    ds_tg_cut[var] = xr.DataArray(data + offset, dims=da.dims)
+
+    var = 'cells_of_vertex'
+    da = ds_tg[var].isel(vertex=ireg_v) - offset
+    data = reindex_c[da.data.flatten()].reshape(da.shape)
+    ds_tg_cut[var] = xr.DataArray(data + offset, dims=da.dims)
+
+    reindex_vars = [
+        "vertex_of_cell",
+        "vertices_of_vertex",
+        "edge_of_cell",
+        "edges_of_vertex",
+        "adjacent_cell_of_edge",
+        "cells_of_vertex",
+        "edge_vertices"
+                    ]
+
+    reindex_dict = {
+        "vertex_of_cell": {
+            "from": "c", "to": "v"},
+        "vertices_of_vertex": {
+            "from": "v", "to": "v"},
+        "edge_of_cell": {
+            "from": "c", "to": "e"},
+        "edges_of_vertex": {
+            "from": "v", "to": "e"},
+        "adjacent_cell_of_edge": {
+            "from": "e", "to": "c"},
+        "cells_of_vertex": {
+            "from": "v", "to": "c"},
+        "edge_vertices": {
+            "from": "e", "to": "v"}
+    }
+
+    # --- cut all variables remaining
+    for var in ds_tg.keys():
+        if var not in reindex_vars:
+            var_cut = False
+            if "vertex" in ds_tg[var].dims:
+                ds_tg_cut[var] = ds_tg[var].isel(vertex=ireg_v)
+                var_cut = True
+            if "cell" in ds_tg[var].dims:
+                ds_tg_cut[var] = ds_tg[var].isel(cell=ireg_c)
+                var_cut = True
+            if "edge" in ds_tg[var].dims:
+                ds_tg_cut[var] = ds_tg[var].isel(edge=ireg_e)
+                var_cut = True
+            if not var_cut:
+                ds_tg_cut[var] = ds_tg[var]
+    return ds_tg_cut
 
 ## Functions to map between 3D Cartesian and 2D local vectors
 def xr_calc_2dlocal_from_3d(ds_IcD, p_vn_c):
@@ -346,16 +399,19 @@ def xr_edges2cell(ds_IcD, ve, dze, dzc, edge2cell_coeff_cc=None, fixed_vol_norm=
 ## Mapping between edges and edges
 
 def xr_calc_edge2edge_viacell_coeff(ds_IcD):
+    raise NotImplementedError("")
     # FIXME: Continue here
     edge2edge_viacell_coeff = ()
     return edge2edge_viacell_coeff
 
 def xr_edges2edges_via_cell(ds_IcD, vn_e, dze='const'):
+    raise NotImplementedError("")
     # FIXME: Continue here
     out_vn_e = ()
     return out_vn_e
 
 def xr_edges2edges_via_cell(ds_IcD, vn_e, scalar, dze='const'):
+    raise NotImplementedError("")
     # FIXME: Continue here
     out_vn_e = ()
     return out_vn_e
@@ -394,17 +450,49 @@ def xr_calc_grad(ds_IcD, scalar, grad_coeff=None):
     ) * grad_coeff
     return grad_of_scalar
 
-## Curl
 
-#def xr_calc_rot_coeff(ds_IcD):
-#    rot_coeff = (
-#
-#def xr_calc_curl(ds_IcD, vector, rot_coeff=None):
-#    if rot_coeff is None:
-#        rot_coeff = xr_calc_rot_coeff(ds_IcD)
-#    curl_of_vector = (
-#        curl_v = (
-#            vector.isel(edge=ds_IcD.edges_of_vertex) 
-#            * rot_coeff)
-#            ).sum(dim=2)
-#    return curl_of_vector
+# Curl
+
+
+def xr_calc_rot_coeff(ds_IcD):
+    curl_coeffs = ds_IcD["edge_orientation"] * ds_IcD["dual_edge_length"].isel(edge=ds_IcD["edges_of_vertex"]) / ds_IcD["dual_area"]
+    return curl_coeffs
+
+
+def xr_calc_curl(ds_IcD, vector, rot_coeff=None):
+    """ Calculates the vertical component of the curl
+
+    Parameters
+    ----------
+    ds_IcD : xr.Dataset
+        pyicon dataset containing coordinate info
+
+    vector : xr.DataArray
+        Dataarray containing vector variable on cell edges.
+
+    rot_coeff : xr.DataArray or None
+        Array containing dims ("vertex", "ne")
+
+    Returns
+    -------
+    curl_vec : xr.DataArray
+        vertical component of the curl of the vector defined on vertex points
+
+    Notes
+    -----
+    We calculate the curl through the use of Stokes'/Green's theorem. A similar
+    procedure can be used to calculate the horizontal components of the curl
+    (oriented along cell edges and defined at intermediate Z levels.) This will
+    be implemented in a future release.
+
+    If you're using this function on large datasets, performance gains may be
+    made if you play around with the dimension order.
+
+    """
+    assert "edge" in vector.dims
+
+    if rot_coeff is None:
+        rot_coeff = xr_calc_rot_coeff(ds_IcD)
+
+    curl_vec = (vector.isel(edge=ds_IcD["edges_of_vertex"]) * rot_coeff).sum(dim="ne")
+    return curl_vec
