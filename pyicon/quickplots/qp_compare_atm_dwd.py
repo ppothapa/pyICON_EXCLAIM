@@ -2329,17 +2329,14 @@ for tave_int in tave_ints:
     fig_name = 'atm_tauu_bias1'
     if fig_name in fig_names:
       var = vtauu
-      var_ref1 = 'ewss' # eastward turbulent stress
-      var_ref2 = 'lgws' # eastward gravity wave stress
+      var_ref = 'ewss' # eastward turbulent stress
       # --- time averaging
       data2d_1, it_ave = pyic.time_average(IcD_atm2d_1, var, t1, t2, iz=0)
       # --- interpolate data
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d_1, fpath_ckdtree_atm, coordinates='clat clon')
       # --- read reference
       f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref1 = f.variables[var_ref1][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref2 = f.variables[var_ref2][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref = data_ref1 + data_ref2
+      data_ref = f.variables[var_ref][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
       f.close()
       # --- calculate bias
       data_bias = data2di-data_ref
@@ -2359,17 +2356,14 @@ for tave_int in tave_ints:
     fig_name = 'atm_tauu_bias2'
     if fig_name in fig_names:
       var = vtauu
-      var_ref1 = 'ewss' # eastward turbulent stress
-      var_ref2 = 'lgws' # eastward gravity wave stress
+      var_ref = 'ewss' # eastward turbulent stress
       # --- time averaging
       data2d_2, it_ave = pyic.time_average(IcD_atm2d_2, var, t1, t2, iz=0)
       # --- interpolate data
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d_2, fpath_ckdtree_atm, coordinates='clat clon')
       # --- read reference
       f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref1 = f.variables[var_ref1][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref2 = f.variables[var_ref2][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref = data_ref1 + data_ref2
+      data_ref = f.variables[var_ref][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
       f.close()
       # --- calculate bias
       data_bias = data2di-data_ref
@@ -2390,17 +2384,14 @@ for tave_int in tave_ints:
     fig_name = 'atm_tauu_rmse1'
     if fig_name in fig_names:
       var = vtauu
-      var_ref1 = 'ewss' # eastward turbulent stress
-      var_ref2 = 'lgws' # eastward gravity wave stress
+      var_ref = 'ewss' # eastward turbulent stress
       # --- time averaging
       data2d_1, it_ave = pyic.time_average(IcD_atm2d_1, var, t1, t2, iz=0)
       # --- interpolate data
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d_1, fpath_ckdtree_atm, coordinates='clat clon')
       # --- read reference
       f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref1 = f.variables[var_ref1][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref2 = f.variables[var_ref2][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref = data_ref1 + data_ref2
+      data_ref = f.variables[var_ref][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
       f.close()
       # --- calculate rmse
       data_ref *= 1000
@@ -2423,17 +2414,14 @@ for tave_int in tave_ints:
     fig_name = 'atm_tauu_rmse2'
     if fig_name in fig_names:
       var = vtauu
-      var_ref1 = 'ewss' # eastward turbulent stress
-      var_ref2 = 'lgws' # eastward gravity wave stress
+      var_ref = 'ewss' # eastward turbulent stress
       # --- time averaging
       data2d_2, it_ave = pyic.time_average(IcD_atm2d_2, var, t1, t2, iz=0)
       # --- interpolate data
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d_2, fpath_ckdtree_atm, coordinates='clat clon')
       # --- read reference
       f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref1 = f.variables[var_ref1][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref2 = f.variables[var_ref2][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref = data_ref1 + data_ref2
+      data_ref = f.variables[var_ref][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
       f.close()
       # --- calculate rmse
       data_ref *= 1000
@@ -2498,17 +2486,14 @@ for tave_int in tave_ints:
     fig_name = 'atm_tauv_bias1'
     if fig_name in fig_names:
       var = vtauv
-      var_ref1 = 'nsss' # northward turbulent stress
-      var_ref2 = 'mgws' # northward gravity wave stress
+      var_ref = 'nsss' # northward turbulent stress
       # --- time averaging
       data2d_1, it_ave = pyic.time_average(IcD_atm2d_1, var, t1, t2, iz=0)
       # --- interpolate data
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d_1, fpath_ckdtree_atm, coordinates='clat clon')
       # --- read reference
       f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref1 = f.variables[var_ref1][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref2 = f.variables[var_ref2][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref = data_ref1 + data_ref2
+      data_ref = f.variables[var_ref][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
       f.close()
       # --- calculate bias
       data_bias = data2di-data_ref
@@ -2528,17 +2513,14 @@ for tave_int in tave_ints:
     fig_name = 'atm_tauv_bias2'
     if fig_name in fig_names:
       var = vtauv
-      var_ref1 = 'nsss' # northward turbulent stress
-      var_ref2 = 'mgws' # northward gravity wave stress
+      var_ref = 'nsss' # northward turbulent stress
       # --- time averaging
       data2d_2, it_ave = pyic.time_average(IcD_atm2d_2, var, t1, t2, iz=0)
       # --- interpolate data
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d_2, fpath_ckdtree_atm, coordinates='clat clon')
       # --- read reference
       f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref1 = f.variables[var_ref1][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref2 = f.variables[var_ref2][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref = data_ref1 + data_ref2
+      data_ref = f.variables[var_ref][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
       f.close()
       # --- calculate bias
       data_bias = data2di-data_ref
@@ -2559,17 +2541,14 @@ for tave_int in tave_ints:
     fig_name = 'atm_tauv_rmse1'
     if fig_name in fig_names:
       var = vtauv
-      var_ref1 = 'nsss' # northward turbulent stress
-      var_ref2 = 'mgws' # northward gravity wave stress
+      var_ref = 'nsss' # northward turbulent stress
       # --- time averaging
       data2d_1, it_ave = pyic.time_average(IcD_atm2d_1, var, t1, t2, iz=0)
       # --- interpolate data
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d_1, fpath_ckdtree_atm, coordinates='clat clon')
       # --- read reference
       f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref1 = f.variables[var_ref1][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref2 = f.variables[var_ref2][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref = data_ref1 + data_ref2
+      data_ref = f.variables[var_ref][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
       f.close()
       # --- calculate rmse
       data_ref *= 1000.
@@ -2592,17 +2571,14 @@ for tave_int in tave_ints:
     fig_name = 'atm_tauv_rmse2'
     if fig_name in fig_names:
       var = vtauv
-      var_ref1 = 'nsss' # northward turbulent stress
-      var_ref2 = 'mgws' # northward gravity wave stress
+      var_ref = 'nsss' # northward turbulent stress
       # --- time averaging
       data2d_2, it_ave = pyic.time_average(IcD_atm2d_2, var, t1, t2, iz=0)
       # --- interpolate data
       lon, lat, data2di = pyic.interp_to_rectgrid(data2d_2, fpath_ckdtree_atm, coordinates='clat clon')
       # --- read reference
       f = Dataset(fpath_ref_data_atm, 'r')
-      data_ref1 = f.variables[var_ref1][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref2 = f.variables[var_ref2][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
-      data_ref = data_ref1 + data_ref2
+      data_ref = f.variables[var_ref][:,:] / 86400 # N/m^2*s --> N/m^2 (with daily accumulation)
       f.close()
       # --- calculate rmse
       data_ref *= 1000.
@@ -4059,7 +4035,7 @@ for tave_int in tave_ints:
       data_diff = data2di_2-data2di_1
       IaV = pyic.IconVariable('data_diff', '$kg m^{-2}$', 'column water vapour diff ('+run2+'-'+run1+')')
       IaV.data = data_diff
-      pyic.hplot_base(IcD_atm2d_1, IaV, clim=10., cincr=2., cmap='RdBu_r', 
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim=10., cincr=2., cmap='BrBG', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       land_facecolor='none', do_write_data_range=True,
@@ -4086,7 +4062,7 @@ for tave_int in tave_ints:
       data_bias = data2di-data_ref
       IaV = pyic.IconVariable('data_bias', '$kg m^{-2}$', 'column water vapour bias ('+run1+')')
       IaV.data = data_bias
-      pyic.hplot_base(IcD_atm2d_1, IaV, clim=20., cincr=4., cmap='RdBu_r', 
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim=20., cincr=4., cmap='BrBG', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       land_facecolor='none', do_write_data_range=True,
@@ -4112,7 +4088,7 @@ for tave_int in tave_ints:
       data_bias = data2di-data_ref
       IaV = pyic.IconVariable('data_bias', '$kg m^{-2}$', 'column water vapour bias ('+run2+')')
       IaV.data = data_bias
-      pyic.hplot_base(IcD_atm2d_2, IaV, clim=20., cincr=4., cmap='RdBu_r', 
+      pyic.hplot_base(IcD_atm2d_2, IaV, clim=20., cincr=4., cmap='BrBG', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       land_facecolor='none', do_write_data_range=True,
@@ -4183,7 +4159,7 @@ for tave_int in tave_ints:
       data_rmse = data_rmse_2-data_rmse_1
       IaV = pyic.IconVariable('data_rmse', '$kg m^{-2}$', 'column water vapour rmse diff ('+run2+'-'+run1+')')
       IaV.data = data_rmse
-      pyic.hplot_base(IcD_atm2d_2, IaV, clim=10., cincr=2., cmap='RdBu_r', 
+      pyic.hplot_base(IcD_atm2d_2, IaV, clim=10., cincr=2., cmap='BrBG', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       land_facecolor='none', do_write_data_range=True,
@@ -4209,7 +4185,7 @@ for tave_int in tave_ints:
       IaV.data = data_diff
       if not do_conf_dwd:
         IaV.data *= 100.
-      pyic.hplot_base(IcD_atm2d_1, IaV, clim=30., cincr=5., cmap='RdBu_r',
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim=30., cincr=5., cmap='BrBG',
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -4244,7 +4220,7 @@ for tave_int in tave_ints:
       data_bias = data2di-data_ref
       IaV = pyic.IconVariable('data_bias', '%', 'total cloud cover bias ('+run1+')')
       IaV.data = data_bias
-      pyic.hplot_base(IcD_atm2d_1, IaV, clim=60., cincr=10., cmap='RdBu_r',
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim=60., cincr=10., cmap='BrBG',
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -4279,7 +4255,7 @@ for tave_int in tave_ints:
       data_bias = data2di-data_ref
       IaV = pyic.IconVariable('data_bias', '%', 'total cloud cover bias ('+run2+')')
       IaV.data = data_bias
-      pyic.hplot_base(IcD_atm2d_2, IaV, clim=60., cincr=10., cmap='RdBu_r',
+      pyic.hplot_base(IcD_atm2d_2, IaV, clim=60., cincr=10., cmap='BrBG',
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -4366,7 +4342,7 @@ for tave_int in tave_ints:
       data_rmse = data_rmse_2-data_rmse_1
       IaV = pyic.IconVariable('data_rmse', '%', 'total cloud cover rmse diff ('+run2+'-'+run1+')')
       IaV.data = data_rmse
-      pyic.hplot_base(IcD_atm2d_2, IaV, clim=30., cincr=5., cmap='RdBu_r',
+      pyic.hplot_base(IcD_atm2d_2, IaV, clim=30., cincr=5., cmap='BrBG',
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -4390,7 +4366,7 @@ for tave_int in tave_ints:
       data_diff = data2di_2-data2di_1
       IaV = pyic.IconVariable('data_diff', 'mm/day', 'total precipitation diff ('+run2+'-'+run1+')')
       IaV.data = data_diff*86400.
-      pyic.hplot_base(IcD_atm2d_1, IaV, clim=8., cincr=1., cmap='RdBu_r', 
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim=8., cincr=1., cmap='RdBu', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       land_facecolor='none', do_write_data_range=True,
@@ -4424,7 +4400,7 @@ for tave_int in tave_ints:
       data_bias = data2di-data_ref
       IaV = pyic.IconVariable('data_bias', 'mm/day', 'total precipitation bias ('+run1+')')
       IaV.data = data_bias
-      pyic.hplot_base(IcD_atm2d_1, IaV, clim=8., cincr=1., cmap='RdBu_r',
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim=8., cincr=1., cmap='RdBu',
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -4458,7 +4434,7 @@ for tave_int in tave_ints:
       data_bias = data2di-data_ref
       IaV = pyic.IconVariable('data_bias', 'mm/day', 'total precipitation bias ('+run2+')')
       IaV.data = data_bias
-      pyic.hplot_base(IcD_atm2d_2, IaV, clim=8., cincr=1., cmap='RdBu_r',
+      pyic.hplot_base(IcD_atm2d_2, IaV, clim=8., cincr=1., cmap='RdBu',
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -4543,7 +4519,7 @@ for tave_int in tave_ints:
       data_rmse = data_rmse_2-data_rmse_1
       IaV = pyic.IconVariable('data_rmse', 'mm/day', 'total precipitation rmse diff ('+run2+'-'+run1+')')
       IaV.data = data_rmse
-      pyic.hplot_base(IcD_atm2d_2, IaV, clim=8., cincr=1., cmap='RdBu_r', 
+      pyic.hplot_base(IcD_atm2d_2, IaV, clim=8., cincr=1., cmap='RdBu', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -4573,7 +4549,7 @@ for tave_int in tave_ints:
       data_diff = ((data2d1i_2+data2d2i_2) - (data2d1i_1+data2d2i_1))*86400.
       IaV = pyic.IconVariable('data_diff', 'mm/day', 'P-E diff ('+run2+'-'+run1+')')
       IaV.data = data_diff
-      pyic.hplot_base(IcD_atm2d_1, IaV, clim=8., cincr=1., cmap='RdBu_r', 
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim=8., cincr=1., cmap='RdBu', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       land_facecolor='none', do_write_data_range=True,
@@ -4606,7 +4582,7 @@ for tave_int in tave_ints:
       data_bias = datai-data_ref
       IaV = pyic.IconVariable('data_bias', 'mm/day', 'P-E bias ('+run1+')')
       IaV.data = data_bias
-      pyic.hplot_base(IcD_atm2d_1, IaV, clim=8., cincr=1., cmap='RdBu_r',
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim=8., cincr=1., cmap='RdBu',
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -4639,7 +4615,7 @@ for tave_int in tave_ints:
       data_bias = datai-data_ref
       IaV = pyic.IconVariable('data_bias', 'mm/day', 'P-E bias ('+run2+')')
       IaV.data = data_bias
-      pyic.hplot_base(IcD_atm2d_2, IaV, clim=8., cincr=1., cmap='RdBu_r',
+      pyic.hplot_base(IcD_atm2d_2, IaV, clim=8., cincr=1., cmap='RdBu',
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -4726,7 +4702,7 @@ for tave_int in tave_ints:
       data_rmse = data_rmse_2-data_rmse_1
       IaV = pyic.IconVariable('data_rmse', 'mm/day', 'P-E rmse diff ('+run2+'-'+run1+')')
       IaV.data = data_rmse
-      pyic.hplot_base(IcD_atm2d_2, IaV, clim=8., cincr=1., cmap='RdBu_r',
+      pyic.hplot_base(IcD_atm2d_2, IaV, clim=8., cincr=1., cmap='RdBu',
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -5250,7 +5226,7 @@ for tave_int in tave_ints:
       data_diff = dataii_2 - dataii_1
       IaV = pyic.IconVariable('data_diff', '%', 'relative humidity @ 700 hPa diff ('+run2+'-'+run1+')')
       IaV.data = data_diff[ip700,:]
-      pyic.hplot_base(IcD_atm2d_2, IaV, clim=25., cincr=5., cmap='RdBu_r',
+      pyic.hplot_base(IcD_atm2d_2, IaV, clim=25., cincr=5., cmap='BrBG',
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -5278,7 +5254,7 @@ for tave_int in tave_ints:
       data_bias = datai-data_ref
       IaV = pyic.IconVariable('data_bias', '%', 'relative humidity @ 700 hPa bias ('+run1+')')
       IaV.data = data_bias
-      pyic.hplot_base(IcD_atm3d_1, IaV, clim=40., cincr=5., cmap='RdBu_r',
+      pyic.hplot_base(IcD_atm3d_1, IaV, clim=40., cincr=5., cmap='BrBG',
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -5307,7 +5283,7 @@ for tave_int in tave_ints:
       data_bias = datai-data_ref
       IaV = pyic.IconVariable('data_bias', '%', 'relative humidity @ 700 hPa bias ('+run2+')')
       IaV.data = data_bias
-      pyic.hplot_base(IcD_atm3d_2, IaV, clim=40., cincr=5., cmap='RdBu_r',
+      pyic.hplot_base(IcD_atm3d_2, IaV, clim=40., cincr=5., cmap='BrBG',
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -5380,7 +5356,7 @@ for tave_int in tave_ints:
       data_rmse = data_rmse_2-data_rmse_1
       IaV = pyic.IconVariable('data_rmse', '%', 'relative humidity @ 700 hPa rmse diff ('+run2+'-'+run1+')')
       IaV.data = data_rmse
-      pyic.hplot_base(IcD_atm3d_2, IaV, clim=40., cincr=5., cmap='RdBu_r',
+      pyic.hplot_base(IcD_atm3d_2, IaV, clim=40., cincr=5., cmap='BrBG',
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
                       land_facecolor='none', do_write_data_range=True,
@@ -6041,7 +6017,7 @@ for tave_int in tave_ints:
         IaV.data = 100.*data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
-                      clim=20., cincr=2., contfs='auto', cmap='RdBu_r',
+                      clim=20., cincr=2., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6059,7 +6035,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_1 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
-                      clim=50., cincr=10., contfs='auto', cmap='RdBu_r',
+                      clim=50., cincr=10., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6076,7 +6052,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_2 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_2, IaV,
-                      clim=50., cincr=10., contfs='auto', cmap='RdBu_r',
+                      clim=50., cincr=10., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6125,7 +6101,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_rmse_2 - data_zave_rmse_1
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
-                      clim=20., cincr=2., contfs='auto', cmap='RdBu_r',
+                      clim=20., cincr=2., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6148,7 +6124,7 @@ for tave_int in tave_ints:
         IaV.data = 100.*data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
-                      clim=10., cincr=2., contfs='auto', cmap='RdBu_r',
+                      clim=10., cincr=2., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6166,7 +6142,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_1 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
-                      clim=25., cincr=5., contfs='auto', cmap='RdBu_r',
+                      clim=25., cincr=5., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6183,7 +6159,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_2 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_2, IaV,
-                      clim=25., cincr=5., contfs='auto', cmap='RdBu_r',
+                      clim=25., cincr=5., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6232,7 +6208,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_rmse_2 - data_zave_rmse_1
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
-                      clim=10., cincr=1., contfs='auto', cmap='RdBu_r',
+                      clim=10., cincr=1., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6257,7 +6233,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
-                      clim=10., cincr=1., contfs='auto', cmap='RdBu_r',
+                      clim=10., cincr=1., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6275,7 +6251,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_1 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
-                      clim=20., cincr=2., contfs='auto', cmap='RdBu_r',
+                      clim=20., cincr=2., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6293,7 +6269,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_2 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_2, IaV,
-                      clim=20., cincr=2., contfs='auto', cmap='RdBu_r',
+                      clim=20., cincr=2., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6342,7 +6318,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_rmse_2 - data_zave_rmse_1
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
-                      clim=10., cincr=1., contfs='auto', cmap='RdBu_r',
+                      clim=10., cincr=1., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6367,7 +6343,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
-                      clim=2.5, cincr=0.5, contfs='auto', cmap='RdBu_r',
+                      clim=2.5, cincr=0.5, contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6385,7 +6361,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_1 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
-                      clim=10., cincr=2., contfs='auto', cmap='RdBu_r',
+                      clim=10., cincr=2., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6402,7 +6378,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_2 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_2, IaV,
-                      clim=10., cincr=2., contfs='auto', cmap='RdBu_r',
+                      clim=10., cincr=2., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6451,7 +6427,7 @@ for tave_int in tave_ints:
       IaV.data = data_zave_rmse_2 - data_zave_rmse_1
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
-                      clim=5., cincr=0.5, contfs='auto', cmap='RdBu_r',
+                      clim=5., cincr=0.5, contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
@@ -6466,7 +6442,7 @@ for tave_int in tave_ints:
       IaV.data = clw2+cli2 - clw1+cli1
       IaV.lat_sec = lat_sec 
       pyic.vplot_base(IcD_atm3d_1, IaV,
-                      clim=20., cincr=2., contfs='auto', cmap='RdBu_r',
+                      clim=20., cincr=2., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
