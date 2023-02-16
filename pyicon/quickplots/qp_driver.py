@@ -365,7 +365,10 @@ if do_atmosphere_plots:
   fig_names += ['atm_curl_tau', 'atm_wek']
   fig_names += ['atm_surf_shfl', 'atm_surf_shfl_bias', 'atm_surf_lhfl', 'atm_surf_lhfl_bias']
   fig_names += ['sec:TOA fluxes']
-  fig_names += ['atm_toa_sob', 'atm_toa_sob_bias', 'atm_toa_thb', 'atm_toa_thb_bias']
+  fig_names += ['atm_toa_netrad', 'atm_toa_netrad_bias', 'atm_toa_sob', 'atm_toa_sob_bias']
+  #fig_names += ['atm_toa_sod', 'atm_toa_sod_bias']
+  fig_names += ['atm_toa_sou', 'atm_toa_sou_bias']
+  fig_names += ['atm_toa_thb', 'atm_toa_thb_bias']
   fig_names += ['sec:Atmosphere surface']
   fig_names += ['sea_ts', 'seaice_fraction'] # we have these to check what's in the forcing in uncoupled runs
   fig_names += ['atm_psl', 'atm_psl_bias', 'atm_w10m', 'atm_w10m_bias']
@@ -431,6 +434,7 @@ if do_atmosphere_plots:
      vshfl_s  = 'shfl_s'
      vlhfl_s  = 'lhfl_s'
      vsob_t   = 'sob_t'
+     vsou_t   = 'sou_t'
      vthb_t   = 'thb_t'
      vevspsbl = 'qhfl_s'
      vsfcwind = 'sp_10m'
@@ -2480,12 +2484,74 @@ for tave_int in tave_ints:
     # -------------------------------------------------------------------------------- 
 
     # ---
+    fig_name = 'atm_toa_netrad'
+    if fig_name in fig_names and do_conf_dwd:
+      # --- interpolate data
+      var1 = vsob_t
+      var2 = vthb_t
+      data2d1, it_ave = pyic.time_average(IcD_atm2d, var1, t1, t2, iz=0)
+      data2d2, it_ave = pyic.time_average(IcD_atm2d, var2, t1, t2, iz=0)
+      lon, lat, data2di1 = pyic.interp_to_rectgrid(data2d1, fpath_ckdtree_atm, coordinates='clat clon')
+      lon, lat, data2di2 = pyic.interp_to_rectgrid(data2d2, fpath_ckdtree_atm, coordinates='clat clon')
+      # --- calculate incoming short wave
+      datai = data2di2 + data2di1
+      IaV = pyic.IconVariable('data', '$W m^{-2}$', 'TOA net radiation flux')
+      IaV.data = datai
+      pyic.hplot_base(IcD_atm2d, IaV, clim=120., cincr=20., cmap='RdBu_r',
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_toa_netrad_bias'
+    if fig_name in fig_names and do_conf_dwd:
+      var_ref1 = 'tsr' # ERA5 name sw net 
+      var_ref2 = 'ttr' # ERA5 name lw net
+      fpath_ref = fpath_ref_data_atm
+      vfc = 1./86400. # J/m^2 --> W/m^2 (with daily accumulation)
+      if use_ceres:
+        fpath_ref = fpath_ref_data_atm_rad
+        var_ref1 = 'solar_mon'      # CERES name sw in
+        var_ref2 = 'toa_sw_all_mon' # CERES name sw out
+        var_ref3 = 'toa_lw_all_mon' # CERES name lw out
+        vfc = 1. # already in W/m^2
+      # --- reference
+      f = Dataset(fpath_ref, 'r')
+      data_ref1 = f.variables[var_ref1][:,:] * vfc
+      data_ref2 = f.variables[var_ref2][:,:] * vfc
+      if not use_ceres:
+        data_ref = data_ref1+data_ref2
+      else:
+        data_ref3 = f.variables[var_ref3][:,:] * vfc
+        data_ref = data_ref1-data_ref2-data_ref3
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$W m^{-2}$', 'TOA net radiation flux bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=50., cincr=5., cmap='RdBu_r',
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
     fig_name = 'atm_toa_sob'
     if fig_name in fig_names and do_conf_dwd:
       FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vsob_t, it=0,
                                t1=t1, t2=t2,
                                var_fac=1.,
                                units='$W m^{-2}$',
+                               title='TOA short wave net flux',
                                clim=[0.,350.], cincr=25.0, cmap='RdYlBu_r',
                                land_facecolor='none',
                                IcD=IcD_atm2d,
@@ -2495,7 +2561,7 @@ for tave_int in tave_ints:
 
     # ---
     fig_name = 'atm_toa_sob_bias'
-    if fig_name in fig_names:
+    if fig_name in fig_names and do_conf_dwd:
       var = vsob_t
       var_ref = 'tsr' # ERA5 name
       fpath_ref = fpath_ref_data_atm
@@ -2531,12 +2597,117 @@ for tave_int in tave_ints:
       save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
+    fig_name = 'atm_toa_sod'
+    if fig_name in fig_names and do_conf_dwd:
+      # --- interpolate data
+      var1 = vsou_t
+      var2 = vsob_t
+      data2d1, it_ave = pyic.time_average(IcD_atm2d, var1, t1, t2, iz=0)
+      data2d2, it_ave = pyic.time_average(IcD_atm2d, var2, t1, t2, iz=0)
+      lon, lat, data2di1 = pyic.interp_to_rectgrid(data2d1, fpath_ckdtree_atm, coordinates='clat clon')
+      lon, lat, data2di2 = pyic.interp_to_rectgrid(data2d2, fpath_ckdtree_atm, coordinates='clat clon')
+      # --- calculate incoming short wave
+      datai = data2di2 + data2di1
+      IaV = pyic.IconVariable('data', '$W m^{-2}$', 'TOA short wave incoming flux')
+      IaV.data = datai
+      pyic.hplot_base(IcD_atm2d, IaV, clim=[0.,400.], cincr=25., cmap='RdYlBu_r',
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_toa_sod_bias'
+    if fig_name in fig_names and do_conf_dwd:
+      var_ref = 'tisr' # ERA5 name sw in
+      fpath_ref = fpath_ref_data_atm
+      vfc = 1./86400. # J/m^2 --> W/m^2 (with daily accumulation)
+      if use_ceres:
+        fpath_ref = fpath_ref_data_atm_rad
+        var_ref = 'solar_mon' # CERES name sw out
+        vfc = 1. # already in W/m^2
+      # --- reference
+      f = Dataset(fpath_ref, 'r')
+      data_ref = f.variables[var_ref][:,:] * vfc
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$W m^{-2}$', 'TOA short wave incoming flux bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=10., cincr=2.5, cmap='RdBu_r',
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_toa_sou'
+    if fig_name in fig_names and do_conf_dwd:
+      FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vsou_t, it=0,
+                               t1=t1, t2=t2,
+                               var_fac=1.,
+                               title='TOA short wave outgoing flux',
+                               units='$W m^{-2}$',
+                               clim=[0.,200.], cincr=10., cmap='RdYlBu_r',
+                               land_facecolor='none',
+                               IcD=IcD_atm2d,
+                               save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                               **Ddict_global)
+      save_fig('TOA short wave outgoing flux', path_pics, fig_name, FigInf)
+
+    # ---
+    fig_name = 'atm_toa_sou_bias'
+    if fig_name in fig_names and do_conf_dwd:
+      var = vsou_t
+      var_ref = 'tisr' # ERA5 name sw in
+      var_ref2 = 'tsr' # ERA5 name sw net
+      fpath_ref = fpath_ref_data_atm
+      vfc = 1./86400. # J/m^2 --> W/m^2 (with daily accumulation)
+      if use_ceres:
+        fpath_ref = fpath_ref_data_atm_rad
+        var_ref = 'toa_sw_all_mon' # CERES name sw out
+        vfc = 1. # already in W/m^2
+      # --- interpolate data
+      data2d, it_ave = pyic.time_average(IcD_atm2d, var, t1, t2, iz=0)
+      lon, lat, data2di = pyic.interp_to_rectgrid(data2d, fpath_ckdtree_atm, coordinates='clat clon')
+      datai = data2di
+      # --- reference
+      f = Dataset(fpath_ref, 'r')
+      data_ref = f.variables[var_ref][:,:] * vfc
+      if not use_ceres:
+        data_ref2 = f.variables[var_ref2][:,:] * vfc
+        data_ref = data_ref-data_ref2
+      f.close()
+      # --- calculate bias
+      data_bias = datai-data_ref
+      IaV = pyic.IconVariable('data_bias', '$W m^{-2}$', 'TOA short wave outgoing flux bias')
+      IaV.data = data_bias
+      pyic.hplot_base(IcD_atm2d, IaV, clim=80., cincr=10., cmap='RdBu_r',
+                      use_tgrid=False,
+                      projection=projection, xlim=[-180.,180.], ylim=[-90.,90.],
+                      land_facecolor='none', do_write_data_range=True,
+                      asp=0.5,
+                      save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
+                     )
+      FigInf = dict(long_name=IaV.long_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
+
+    # ---
     fig_name = 'atm_toa_thb'
     if fig_name in fig_names and do_conf_dwd:
       FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vthb_t, it=0,
                                t1=t1, t2=t2,
                                var_fac=1.,
                                units='$W m^{-2}$',
+                               title='TOA long wave net flux',
                                clim=[-300.,0.], cincr=25.0, cmap='RdYlBu_r',
                                land_facecolor='none',
                                IcD=IcD_atm2d,
@@ -2546,7 +2717,7 @@ for tave_int in tave_ints:
 
     # ---
     fig_name = 'atm_toa_thb_bias'
-    if fig_name in fig_names:
+    if fig_name in fig_names and do_conf_dwd:
       var = vthb_t
       var_ref = 'ttr' # ERA5 name
       fpath_ref = fpath_ref_data_atm
@@ -2567,7 +2738,7 @@ for tave_int in tave_ints:
       data_bias = datai-data_ref
       IaV = pyic.IconVariable('data_bias', '$W m^{-2}$', 'TOA long wave net flux bias')
       IaV.data = data_bias
-      pyic.hplot_base(IcD_atm2d, IaV, clim=50., cincr=10., cmap='RdBu_r', 
+      pyic.hplot_base(IcD_atm2d, IaV, clim=50., cincr=5., cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       land_facecolor='none', do_write_data_range=True,
@@ -2692,7 +2863,7 @@ for tave_int in tave_ints:
 
     # ---
     fig_name = 'atm_ts'
-    if fig_name in fig_names:
+    if fig_name in fig_names and do_conf_dwd:
       FigInf = pyicqp.qp_hplot(fpath=path_data+fname, var=vts, it=0,
                                t1=t1, t2=t2,
                                var_add=-273.15,
@@ -2706,7 +2877,7 @@ for tave_int in tave_ints:
 
     # ---
     fig_name = 'atm_ts_bias'
-    if fig_name in fig_names:
+    if fig_name in fig_names and do_conf_dwd:
       var = vts
       var_ref = 'skt'
       # --- interpolate data

@@ -655,7 +655,7 @@ def qp_timeseries(IcD, fname, vars_plot,
     # --- finally plotting
     if fpath_ref_data_atm != '':
       hl1, = ax.plot(times_plot, data, color='blue', label=label1)
-      hl2, = ax.plot(times_plot, data_ref, color='red', label=label2)
+      hl2, = ax.plot(times_plot, data_ref, color='black', label=label2)
     else:
       hl, = ax.plot(times_plot, data, label=label)
 
@@ -1058,11 +1058,11 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
     # --- finally plotting
     if fpath_ref_data_atm != '':
       hl1, = ax.plot(times_plot, data1, color='blue', label=label1)
-      hl2, = ax.plot(times_plot, data2, color='green', label=label2)
-      hl3, = ax.plot(times_plot, data_ref, color='red', label=label3)
+      hl2, = ax.plot(times_plot, data2, color='red', label=label2)
+      hl3, = ax.plot(times_plot, data_ref, color='black', label=label3)
     else:
       hl1, = ax.plot(times_plot, data1, color='blue', label=label1)
-      hl2, = ax.plot(times_plot, data2, color='red',  label=label2)
+      hl2, = ax.plot(times_plot, data2, color='black',  label=label2)
 
     if adjust_xylim:
       ax.set_xlim([times_plot.min(), times_plot.max()])
