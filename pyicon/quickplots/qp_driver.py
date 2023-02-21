@@ -3417,7 +3417,7 @@ for tave_int in tave_ints:
       data, it_ave = pyic.time_average(IcD_atm3d, vta, t1, t2, iz='all')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
 
-      IaV = pyic.IconVariable('temp', '$^o$C', 'zon. ave. temperature')
+      IaV = pyic.IconVariable('temp', '$^o$C', 'temperature')
       IaV.data = 1.*data_zave
       IaV.data += -273.15
       IaV.lat_sec = lat_sec
@@ -3425,7 +3425,7 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('temperature', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
     fig_name = 'atm_temp_zave_bias'
@@ -3434,7 +3434,7 @@ for tave_int in tave_ints:
       data_ref_zave = f.variables['t_zm'][:,:]
       f.close()
 
-      IaV = pyic.IconVariable('temp bias', '$^o$C', 'zon. ave. temperature bias')
+      IaV = pyic.IconVariable('temp bias', '$^o$C', 'temperature bias')
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, 
@@ -3442,13 +3442,13 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('temperature bias', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
     fig_name = 'atm_logv_temp_zave'
     if fig_name in fig_names:
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev_log, fac_log, fpath_ckdtree_atm)
-      IaV = pyic.IconVariable('temp', '$^o$C', 'zon. ave. log temperature')
+      IaV = pyic.IconVariable('temp', '$^o$C', 'log temperature')
       IaV.data = 1.*data_zave
       IaV.data += -273.15
       IaV.lat_sec = lat_sec
@@ -3458,14 +3458,14 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('log v-axis: temperature', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # --- zon. vel.
     fig_name = 'atm_u_zave'
     if fig_name in fig_names:
       data, it_ave = pyic.time_average(IcD_atm3d, vua, t1, t2, iz='all')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      IaV = pyic.IconVariable('u', 'm/s', 'zon. ave. u-comp of wind')
+      IaV = pyic.IconVariable('u', 'm/s', 'u-comp of wind')
       IaV.data = 1.*data_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, clim=30., cincr=5., contfs='auto',
@@ -3473,7 +3473,7 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('zon. velocity', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
     fig_name = 'atm_u_zave_bias'
@@ -3481,7 +3481,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables['u_zm'][:,:]
       f.close()
-      IaV = pyic.IconVariable('u', 'm/s', 'zon. ave. u-comp of wind bias')
+      IaV = pyic.IconVariable('u', 'm/s', 'u-comp of wind bias')
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, 
@@ -3489,13 +3489,13 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('u-comp of wind bias', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
     fig_name = 'atm_logv_u_zave'
     if fig_name in fig_names:
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev_log, fac_log, fpath_ckdtree_atm)
-      IaV = pyic.IconVariable('u', 'm/s', 'zon. ave. log u-comp of wind')
+      IaV = pyic.IconVariable('u', 'm/s', 'log u-comp of wind')
       IaV.data = 1.*data_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, clim=30., cincr=5, contfs='auto',
@@ -3504,14 +3504,14 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('log v-axis: zon. velocity', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # --- mer. vel.
     fig_name = 'atm_v_zave'
     if fig_name in fig_names:
       data, it_ave = pyic.time_average(IcD_atm3d, vva, t1, t2, iz='all')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      IaV = pyic.IconVariable('v', 'm/s', 'zon. ave. v-comp of wind')
+      IaV = pyic.IconVariable('v', 'm/s', 'v-comp of wind')
       IaV.data = 1.*data_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, clim=3, cincr=0.5, contfs='auto',
@@ -3519,7 +3519,7 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('mer. velocity', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
     fig_name = 'atm_v_zave_bias'
@@ -3527,7 +3527,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables['v_zm'][:,:]
       f.close()
-      IaV = pyic.IconVariable('v', 'm/s', 'zon. ave. v-comp of wind bias')
+      IaV = pyic.IconVariable('v', 'm/s', 'v-comp of wind bias')
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, 
@@ -3535,13 +3535,13 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('mer. velocity bias', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
     fig_name = 'atm_logv_v_zave'
     if fig_name in fig_names:
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev_log, fac_log, fpath_ckdtree_atm)
-      IaV = pyic.IconVariable('v', 'm/s', 'zon. ave. log v-comp of wind')
+      IaV = pyic.IconVariable('v', 'm/s', 'log v-comp of wind')
       IaV.data = 1.*data_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, clim=3., cincr=0.5, contfs='auto',
@@ -3550,21 +3550,21 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('log v-axis: mer. velocity', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
     fig_name = 'atm_spechum_zave'
     if fig_name in fig_names:
       data, it_ave = pyic.time_average(IcD_atm3d, vhus, t1, t2, iz='all')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      IaV = pyic.IconVariable('hus', 'g/kg', 'zon. ave. specific humidity')
+      IaV = pyic.IconVariable('hus', 'g/kg', 'specific humidity')
       IaV.data = data_zave * 1000.
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, clim=0.5, contfs=[0.005,0.01,0.03,0.05,0.1,0.3,0.5,1.,2.,5.,8.], cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('specific humidity', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
     fig_name = 'atm_spechum_bias'
@@ -3572,7 +3572,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables['q_zm'][:,:]
       f.close()
-      IaV = pyic.IconVariable('hus', 'g/kg', 'zon. ave. specific humidity bias')
+      IaV = pyic.IconVariable('hus', 'g/kg', 'specific humidity bias')
       IaV.data = data_zave - data_ref_zave * 1000
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, 
@@ -3580,14 +3580,14 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('specific humidity bias', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
   
     # ---
     fig_name = 'atm_relhum_zave'
     if fig_name in fig_names:
       data, it_ave = pyic.time_average(IcD_atm3d, vhur, t1, t2, iz='all')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      IaV = pyic.IconVariable('hur', '%', 'zon. ave. relative humidity')
+      IaV = pyic.IconVariable('hur', '%', 'relative humidity')
       if do_conf_dwd:
          IaV.data = data_zave
       else:
@@ -3597,7 +3597,7 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('relative humidity', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
     fig_name = 'atm_relhum_zave_bias'
@@ -3605,7 +3605,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables['r_zm'][:,:]
       f.close()
-      IaV = pyic.IconVariable('hur', '%', 'zon. ave. relative humidity bias')
+      IaV = pyic.IconVariable('hur', '%', 'relative humidity bias')
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, 
@@ -3613,14 +3613,14 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('relative humidity bias', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
   
     # ---
     fig_name = 'atm_cc_zave'
     if fig_name in fig_names:
       data, it_ave = pyic.time_average(IcD_atm3d, vcl, t1, t2, iz='all')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
-      IaV = pyic.IconVariable('cc', '%', 'zon. ave. cloud cover')
+      IaV = pyic.IconVariable('cc', '%', 'cloud cover')
       if do_conf_dwd:
          IaV.data = data_zave
       else:
@@ -3630,7 +3630,7 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('cloud cover', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
     fig_name = 'atm_cc_zave_bias'
@@ -3638,7 +3638,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables['cc_zm'][:,:] * 100.
       f.close()
-      IaV = pyic.IconVariable('cc', '%', 'zon. ave. cloud cover bias')
+      IaV = pyic.IconVariable('cc', '%', 'cloud cover bias')
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, 
@@ -3646,13 +3646,13 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('cloud cover bias', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
   
     # ---
     fig_name = 'atm_clw_zave'
     if fig_name in fig_names:
       data, it_ave = pyic.time_average(IcD_atm3d, vclw, t1, t2, iz='all')
-      IaV = pyic.IconVariable('clw', 'mg/kg', 'zon. ave. cloud water')
+      IaV = pyic.IconVariable('clw', 'mg/kg', 'cloud water')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
       data_zave *= 1e6
       IaV.data = data_zave
@@ -3662,7 +3662,7 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('cloud water', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
     fig_name = 'atm_clw_zave_bias'
@@ -3670,7 +3670,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables['clwc_zm'][:,:] * 1e6
       f.close()
-      IaV = pyic.IconVariable('clw', 'mg/kg', 'zon. ave. cloud water bias')
+      IaV = pyic.IconVariable('clw', 'mg/kg', 'cloud water bias')
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, 
@@ -3678,13 +3678,13 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('cloud water bias', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
   
     # ---
     fig_name = 'atm_cli_zave'
     if fig_name in fig_names:
       data, it_ave = pyic.time_average(IcD_atm3d, vcli, t1, t2, iz='all')
-      IaV = pyic.IconVariable('cli', 'mg/kg', 'zon. ave. cloud ice')
+      IaV = pyic.IconVariable('cli', 'mg/kg', 'cloud ice')
       lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
       data_zave *= 1e6
       IaV.data = data_zave
@@ -3694,7 +3694,7 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('cloud ice', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
 
     # ---
     fig_name = 'atm_cli_zave_bias'
@@ -3702,7 +3702,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables['ciwc_zm'][:,:] * 1e6
       f.close()
-      IaV = pyic.IconVariable('cli', 'mg/kg', 'zon. ave. cloud ice bias')
+      IaV = pyic.IconVariable('cli', 'mg/kg', 'cloud ice bias')
       IaV.data = data_zave - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d, IaV, 
@@ -3710,26 +3710,26 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('cloud ice bias', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
   
     # ---
     fig_name = 'atm_clwi_zave'
     if fig_name in fig_names:
       lat_sec = IaV.lat_sec
-      IaV = pyic.IconVariable('clwi', 'mg/kg', 'zon. ave. cloud water+ice')
+      IaV = pyic.IconVariable('clwi', 'mg/kg', 'cloud water+ice')
       IaV.data = clw+cli
       IaV.lat_sec = lat_sec 
       pyic.vplot_base(IcD_atm3d, IaV, clim=[0,25.], cincr=2., contfs='auto', cmap='BrBG',
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('cloud water+ice', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
   
     # ---
     fig_name = 'atm_psi'
     if fig_name in fig_names:
       data, it_ave = pyic.time_average(IcD_atm3d, vva, t1, t2, iz='all')
-      IaV = pyic.IconVariable('psi', '10$^9$kg/s', 'Psi')
+      IaV = pyic.IconVariable('psi', '10$^9$kg/s', 'meridional stream function')
       IaV.lat_sec, data_zave = pyic.zonal_average_atmosphere(data, ind_lev, fac, fpath_ckdtree_atm)
       plevi = np.concatenate(([107500],0.5*(IcD_atm3d.plevc[1:]+IcD_atm3d.plevc[:-1]),[0.]))
       dp = np.diff(plevi)
@@ -3738,7 +3738,7 @@ for tave_int in tave_ints:
                       asp=0.5, do_write_data_range=True,
                       save_data=save_data, fpath_nc=path_nc+fig_name+'.nc',
                      )
-      save_fig('Psi', path_pics, fig_name)
+      save_fig(IaV.long_name, path_pics, fig_name, FigInf)
   
     # --- North Pole
   

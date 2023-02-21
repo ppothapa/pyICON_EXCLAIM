@@ -5904,7 +5904,7 @@ for tave_int in tave_ints:
       lat_sec, data_zave_2 = pyic.zonal_average_atmosphere(data_2, ind_lev_2, fac_2, fpath_ckdtree_atm)
       # --- calculate difference
       data_zave_diff = data_zave_2-data_zave_1
-      IaV = pyic.IconVariable('temp', 'deg $^o$C', 'zon. ave. temperature diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('temp', 'deg $^o$C', 'temperature diff ('+run2+'-'+run1+')')
       IaV.data = 1.*data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, clim=4., cincr=0.5, contfs='auto', cmap='RdBu_r',
@@ -5921,7 +5921,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('temp bias', 'deg $^o$C', 'zon. ave. temperature bias ('+run1+')')
+      IaV = pyic.IconVariable('temp bias', 'deg $^o$C', 'temperature bias ('+run1+')')
       IaV.data = data_zave_1 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -5939,7 +5939,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('temp bias', 'deg $^o$C', 'zon. ave. temperature bias ('+run2+')')
+      IaV = pyic.IconVariable('temp bias', 'deg $^o$C', 'temperature bias ('+run2+')')
       IaV.data = data_zave_2 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -5957,7 +5957,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('temp rmse', 'deg $^o$C', 'zon. ave. temperature rmse ('+run1+')')
+      IaV = pyic.IconVariable('temp rmse', 'deg $^o$C', 'temperature rmse ('+run1+')')
       data_zave_rmse_1 = np.sqrt(np.square(data_zave_1 - data_ref_zave))
       IaV.data = data_zave_rmse_1
       IaV.lat_sec = lat_sec
@@ -5976,7 +5976,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('temp rmse', 'deg $^o$C', 'zon. ave. temperature rmse ('+run2+')')
+      IaV = pyic.IconVariable('temp rmse', 'deg $^o$C', 'temperature rmse ('+run2+')')
       data_zave_rmse_2 = np.sqrt(np.square(data_zave_2 - data_ref_zave))
       IaV.data = data_zave_rmse_2
       IaV.lat_sec = lat_sec
@@ -5991,7 +5991,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_temp_zave_rmse_diff'
     if fig_name in fig_names:
-      IaV = pyic.IconVariable('temp rmse', 'deg $^o$C', 'zon. ave. temperature rmse diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('temp rmse', 'deg $^o$C', 'temperature rmse diff ('+run2+'-'+run1+')')
       IaV.data = data_zave_rmse_2 - data_zave_rmse_1
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6008,7 +6008,7 @@ for tave_int in tave_ints:
       lat_sec, data_zave_2 = pyic.zonal_average_atmosphere(data_2, ind_lev_log_2, fac_log_2, fpath_ckdtree_atm)
       # --- calculate difference
       data_zave_diff = data_zave_2-data_zave_1
-      IaV = pyic.IconVariable('temp', 'deg $^o$C', 'zon. ave. log temperature diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('temp', 'deg $^o$C', 'log temperature diff ('+run2+'-'+run1+')')
       IaV.data = 1.*data_zave_diff
       #IaV.data += -273.15
       IaV.lat_sec = lat_sec
@@ -6032,7 +6032,7 @@ for tave_int in tave_ints:
       lat_sec, data_zave_2 = pyic.zonal_average_atmosphere(data_2, ind_lev_2, fac_2, fpath_ckdtree_atm)
       # --- calculate difference
       data_zave_diff = data_zave_2-data_zave_1
-      IaV = pyic.IconVariable('u diff', 'm/s', 'zon. ave. u-comp of wind diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('u diff', 'm/s', 'u-comp of wind diff ('+run2+'-'+run1+')')
       IaV.data = 1.*data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6050,7 +6050,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('u bias', 'm/s', 'zon. ave. u-comp of wind bias ('+run1+')')
+      IaV = pyic.IconVariable('u bias', 'm/s', 'u-comp of wind bias ('+run1+')')
       IaV.data = data_zave_1 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6068,7 +6068,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('u bias', 'm/s', 'zon. ave. u-comp of wind bias ('+run2+')')
+      IaV = pyic.IconVariable('u bias', 'm/s', 'u-comp of wind bias ('+run2+')')
       IaV.data = data_zave_2 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6086,7 +6086,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('u rmse', 'm/s', 'zon. ave. u-comp of wind rmse ('+run1+')')
+      IaV = pyic.IconVariable('u rmse', 'm/s', 'u-comp of wind rmse ('+run1+')')
       data_zave_rmse_1 = np.sqrt(np.square(data_zave_1 - data_ref_zave))
       IaV.data = data_zave_rmse_1
       IaV.lat_sec = lat_sec
@@ -6105,7 +6105,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('u rmse', 'm/s', 'zon. ave. u-comp of wind rmse ('+run2+')')
+      IaV = pyic.IconVariable('u rmse', 'm/s', 'u-comp of wind rmse ('+run2+')')
       data_zave_rmse_2 = np.sqrt(np.square(data_zave_2 - data_ref_zave))
       IaV.data = data_zave_rmse_2
       IaV.lat_sec = lat_sec
@@ -6120,7 +6120,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_u_zave_rmse_diff'
     if fig_name in fig_names:
-      IaV = pyic.IconVariable('u rmse diff', 'm/s', 'zon. ave. u-comp of wind rmse diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('u rmse diff', 'm/s', 'u-comp of wind rmse diff ('+run2+'-'+run1+')')
       IaV.data = data_zave_rmse_2 - data_zave_rmse_1
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6137,7 +6137,7 @@ for tave_int in tave_ints:
       lat_sec, data_zave_2 = pyic.zonal_average_atmosphere(data_2, ind_lev_log_2, fac_log_2, fpath_ckdtree_atm)
       # --- calculate difference
       data_zave_diff = data_zave_2-data_zave_1
-      IaV = pyic.IconVariable('u diff', 'm/s', 'zon. ave. log u-comp of wind diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('u diff', 'm/s', 'log u-comp of wind diff ('+run2+'-'+run1+')')
       IaV.data = 1.*data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6160,7 +6160,7 @@ for tave_int in tave_ints:
       lat_sec, data_zave_2 = pyic.zonal_average_atmosphere(data_2, ind_lev_2, fac_2, fpath_ckdtree_atm)
       # --- calculate difference
       data_zave_diff = data_zave_2-data_zave_1
-      IaV = pyic.IconVariable('v diff', 'm/s', 'zon. ave. v-comp of wind diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('v diff', 'm/s', 'v-comp of wind diff ('+run2+'-'+run1+')')
       IaV.data = 1.*data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6178,7 +6178,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('v bias', 'm/s', 'zon. ave. v-comp of wind bias ('+run1+')')
+      IaV = pyic.IconVariable('v bias', 'm/s', 'v-comp of wind bias ('+run1+')')
       IaV.data = data_zave_1 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6196,7 +6196,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('v bias', 'm/s', 'zon. ave. v-comp of wind bias ('+run2+')')
+      IaV = pyic.IconVariable('v bias', 'm/s', 'v-comp of wind bias ('+run2+')')
       IaV.data = data_zave_2 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6214,7 +6214,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('v rmse', 'm/s', 'zon. ave. v-comp of wind rmse ('+run1+')')
+      IaV = pyic.IconVariable('v rmse', 'm/s', 'v-comp of wind rmse ('+run1+')')
       data_zave_rmse_1 = np.sqrt(np.square(data_zave_1 - data_ref_zave))
       IaV.data = data_zave_rmse_1
       IaV.lat_sec = lat_sec
@@ -6233,7 +6233,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('v rmse', 'm/s', 'zon. ave. v-comp of wind rmse ('+run2+')')
+      IaV = pyic.IconVariable('v rmse', 'm/s', 'v-comp of wind rmse ('+run2+')')
       data_zave_rmse_2 = np.sqrt(np.square(data_zave_2 - data_ref_zave))
       IaV.data = data_zave_rmse_2
       IaV.lat_sec = lat_sec
@@ -6248,7 +6248,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_v_zave_rmse_diff'
     if fig_name in fig_names:
-      IaV = pyic.IconVariable('v rmse diff', 'm/s', 'zon. ave. v-comp of wind rmse diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('v rmse diff', 'm/s', 'v-comp of wind rmse diff ('+run2+'-'+run1+')')
       IaV.data = data_zave_rmse_2 - data_zave_rmse_1
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6266,7 +6266,7 @@ for tave_int in tave_ints:
       lat_sec, data_zave_2 = pyic.zonal_average_atmosphere(data_2, ind_lev_log_2, fac_log_2, fpath_ckdtree_atm)
       # --- calculate difference
       data_zave_diff = data_zave_2-data_zave_1
-      IaV = pyic.IconVariable('v diff', 'm/s', 'zon. ave. log v-comp of wind diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('v diff', 'm/s', 'log v-comp of wind diff ('+run2+'-'+run1+')')
       IaV.data = 1.*data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6290,7 +6290,7 @@ for tave_int in tave_ints:
       data_zave_2 = data_zave_2*1000.
       # --- calculate difference
       data_zave_diff = data_zave_2-data_zave_1
-      IaV = pyic.IconVariable('hus diff', 'g/kg', 'Spechum. zon. ave. diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('hus diff', 'g/kg', 'specific humidity diff ('+run2+'-'+run1+')')
       IaV.data = data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6308,7 +6308,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('hus bias', 'g/kg', 'Spechum. zon. ave. bias ('+run1+')')
+      IaV = pyic.IconVariable('hus bias', 'g/kg', 'specific humiditybias ('+run1+')')
       IaV.data = data_zave_1 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6326,7 +6326,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('hus bias', 'g/kg', 'Spechum. zon. ave. bias ('+run2+')')
+      IaV = pyic.IconVariable('hus bias', 'g/kg', 'specific humidity bias ('+run2+')')
       IaV.data = data_zave_2 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6344,7 +6344,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('hus rmse', 'g/kg', 'Spechum. zon. ave. rmse ('+run1+')')
+      IaV = pyic.IconVariable('hus rmse', 'g/kg', 'specific humidity rmse ('+run1+')')
       data_zave_rmse_1 = np.sqrt(np.square(data_zave_1 - data_ref_zave))
       IaV.data = data_zave_rmse_1
       IaV.lat_sec = lat_sec
@@ -6363,7 +6363,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('hus rmse', 'g/kg', 'Spechum. zon. ave. rmse ('+run2+')')
+      IaV = pyic.IconVariable('hus rmse', 'g/kg', 'specific humidity rmse ('+run2+')')
       data_zave_rmse_2 = np.sqrt(np.square(data_zave_2 - data_ref_zave))
       IaV.data = data_zave_rmse_2
       IaV.lat_sec = lat_sec
@@ -6378,7 +6378,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_spechum_zave_rmse_diff'
     if fig_name in fig_names:
-      IaV = pyic.IconVariable('hus rmse diff', 'g/kg', 'Spechum. zon. ave. rmse diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('hus rmse diff', 'g/kg', 'specific humidity rmse diff ('+run2+'-'+run1+')')
       IaV.data = data_zave_rmse_2 - data_zave_rmse_1
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6399,7 +6399,7 @@ for tave_int in tave_ints:
       lat_sec, data_zave_2 = pyic.zonal_average_atmosphere(data_2, ind_lev_2, fac_2, fpath_ckdtree_atm)
       # --- calculate difference
       data_zave_diff = data_zave_2-data_zave_1
-      IaV = pyic.IconVariable('hur diff', '%', 'zon. ave. relative humidity diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('hur diff', '%', 'relative humidity diff ('+run2+'-'+run1+')')
       IaV.data = data_zave_diff
       if not do_conf_dwd:
         IaV.data = 100.*data_zave_diff
@@ -6419,7 +6419,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('hur', '%', 'zon. ave. relative humidity bias ('+run1+')')
+      IaV = pyic.IconVariable('hur', '%', 'relative humidity bias ('+run1+')')
       IaV.data = data_zave_1 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
@@ -6436,7 +6436,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('hur', '%', 'zon. ave. relative humidity bias ('+run2+')')
+      IaV = pyic.IconVariable('hur', '%', 'relative humidity bias ('+run2+')')
       IaV.data = data_zave_2 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_2, IaV,
@@ -6453,7 +6453,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('hur', '%', 'zon. ave. relative humidity rmse ('+run1+')')
+      IaV = pyic.IconVariable('hur', '%', 'relative humidity rmse ('+run1+')')
       data_zave_rmse_1 = np.sqrt(np.square(data_zave_1 - data_ref_zave))
       IaV.data = data_zave_rmse_1
       IaV.lat_sec = lat_sec
@@ -6471,7 +6471,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('hur', '%', 'zon. ave. relative humidity rmse ('+run2+')')
+      IaV = pyic.IconVariable('hur', '%', 'relative humidity rmse ('+run2+')')
       data_zave_rmse_2 = np.sqrt(np.square(data_zave_2 - data_ref_zave))
       IaV.data = data_zave_rmse_2
       IaV.lat_sec = lat_sec
@@ -6485,7 +6485,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_relhum_zave_rmse_diff'
     if fig_name in fig_names:
-      IaV = pyic.IconVariable('hur', '%', 'zon. ave. relative humidity rmse diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('hur', '%', 'relative humidity rmse diff ('+run2+'-'+run1+')')
       IaV.data = data_zave_rmse_2 - data_zave_rmse_1
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
@@ -6506,7 +6506,7 @@ for tave_int in tave_ints:
       lat_sec, data_zave_2 = pyic.zonal_average_atmosphere(data_2, ind_lev_2, fac_2, fpath_ckdtree_atm)
       # --- calculate difference
       data_zave_diff = data_zave_2-data_zave_1
-      IaV = pyic.IconVariable('cc diff', '%', 'zon. ave. cloud cover diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('cc diff', '%', 'cloud cover diff ('+run2+'-'+run1+')')
       IaV.data = data_zave_diff
       if not do_conf_dwd:
         IaV.data = 100.*data_zave_diff
@@ -6526,7 +6526,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:] * 100.
       f.close()
-      IaV = pyic.IconVariable('cc', '%', 'zon. ave. cloud cover bias ('+run1+')')
+      IaV = pyic.IconVariable('cc', '%', 'cloud cover bias ('+run1+')')
       IaV.data = data_zave_1 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
@@ -6543,7 +6543,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:] * 100.
       f.close()
-      IaV = pyic.IconVariable('cc', '%', 'zon. ave. cloud cover bias ('+run2+')')
+      IaV = pyic.IconVariable('cc', '%', 'cloud cover bias ('+run2+')')
       IaV.data = data_zave_2 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_2, IaV,
@@ -6560,7 +6560,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('cc', '%', 'zon. ave. cloud cover rmse ('+run1+')')
+      IaV = pyic.IconVariable('cc', '%', 'cloud cover rmse ('+run1+')')
       data_zave_rmse_1 = np.sqrt(np.square(data_zave_1 - data_ref_zave))
       IaV.data = data_zave_rmse_1
       IaV.lat_sec = lat_sec
@@ -6578,7 +6578,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:]
       f.close()
-      IaV = pyic.IconVariable('cc', '%', 'zon. ave. cloud cover rmse ('+run2+')')
+      IaV = pyic.IconVariable('cc', '%', 'cloud cover rmse ('+run2+')')
       data_zave_rmse_2 = np.sqrt(np.square(data_zave_2 - data_ref_zave))
       IaV.data = data_zave_rmse_2
       IaV.lat_sec = lat_sec
@@ -6592,7 +6592,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_cc_zave_rmse_diff'
     if fig_name in fig_names:
-      IaV = pyic.IconVariable('cc', '%', 'zon. ave. cloud cover rmse diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('cc', '%', 'cloud cover rmse diff ('+run2+'-'+run1+')')
       IaV.data = data_zave_rmse_2 - data_zave_rmse_1
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
@@ -6617,7 +6617,7 @@ for tave_int in tave_ints:
       clw2 = data_zave_2
       # --- calculate difference
       data_zave_diff = data_zave_2-data_zave_1
-      IaV = pyic.IconVariable('clw diff', 'mg/kg', 'zon. ave. cloud water diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('clw diff', 'mg/kg', 'cloud water diff ('+run2+'-'+run1+')')
       IaV.data = data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6635,7 +6635,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:] * 1e6
       f.close()
-      IaV = pyic.IconVariable('clw', 'mg/kg', 'zon. ave. cloud water bias ('+run1+')')
+      IaV = pyic.IconVariable('clw', 'mg/kg', 'cloud water bias ('+run1+')')
       IaV.data = data_zave_1 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
@@ -6653,7 +6653,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:] * 1e6
       f.close()
-      IaV = pyic.IconVariable('clw', 'mg/kg', 'zon. ave. cloud water bias ('+run2+')')
+      IaV = pyic.IconVariable('clw', 'mg/kg', 'cloud water bias ('+run2+')')
       IaV.data = data_zave_2 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_2, IaV,
@@ -6670,7 +6670,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:] * 1e6
       f.close()
-      IaV = pyic.IconVariable('clw', 'mg/kg', 'zon. ave. cloud water rmse ('+run1+')')
+      IaV = pyic.IconVariable('clw', 'mg/kg', 'cloud water rmse ('+run1+')')
       data_zave_rmse_1 = np.sqrt(np.square(data_zave_1 - data_ref_zave))
       IaV.data = data_zave_rmse_1
       IaV.lat_sec = lat_sec
@@ -6688,7 +6688,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:] * 1e6
       f.close()
-      IaV = pyic.IconVariable('clw', 'mg/kg', 'zon. ave. cloud water rmse ('+run2+')')
+      IaV = pyic.IconVariable('clw', 'mg/kg', 'cloud water rmse ('+run2+')')
       data_zave_rmse_2 = np.sqrt(np.square(data_zave_2 - data_ref_zave))
       IaV.data = data_zave_rmse_2
       IaV.lat_sec = lat_sec
@@ -6702,7 +6702,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_clw_zave_rmse_diff'
     if fig_name in fig_names:
-      IaV = pyic.IconVariable('clw', 'mg/kg', 'zon. ave. cloud water rmse diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('clw', 'mg/kg', 'cloud water rmse diff ('+run2+'-'+run1+')')
       IaV.data = data_zave_rmse_2 - data_zave_rmse_1
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
@@ -6727,7 +6727,7 @@ for tave_int in tave_ints:
       cli2 = data_zave_2
       # --- calculate difference
       data_zave_diff = data_zave_2-data_zave_1
-      IaV = pyic.IconVariable('clw diff', 'mg/kg', 'zon. ave. cloud ice diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('clw diff', 'mg/kg', 'cloud ice diff ('+run2+'-'+run1+')')
       IaV.data = data_zave_diff
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV, 
@@ -6745,7 +6745,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:] * 1e6
       f.close()
-      IaV = pyic.IconVariable('cli', 'mg/kg', 'zon. ave. cloud ice bias ('+run1+')')
+      IaV = pyic.IconVariable('cli', 'mg/kg', 'cloud ice bias ('+run1+')')
       IaV.data = data_zave_1 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
@@ -6762,7 +6762,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:] * 1e6
       f.close()
-      IaV = pyic.IconVariable('cli', 'mg/kg', 'zon. ave. cloud ice bias ('+run2+')')
+      IaV = pyic.IconVariable('cli', 'mg/kg', 'cloud ice bias ('+run2+')')
       IaV.data = data_zave_2 - data_ref_zave
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_2, IaV,
@@ -6779,7 +6779,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:] * 1e6
       f.close()
-      IaV = pyic.IconVariable('cli', 'mg/kg', 'zon. ave. cloud ice rmse '+run1+')')
+      IaV = pyic.IconVariable('cli', 'mg/kg', 'cloud ice rmse '+run1+')')
       data_zave_rmse_1 = np.sqrt(np.square(data_zave_1 - data_ref_zave))
       IaV.data = data_zave_rmse_1
       IaV.lat_sec = lat_sec
@@ -6797,7 +6797,7 @@ for tave_int in tave_ints:
       f = Dataset(fpath_ref_data_atm, 'r')
       data_ref_zave = f.variables[var_ref][:,:] * 1e6
       f.close()
-      IaV = pyic.IconVariable('cli', 'mg/kg', 'zon. ave. cloud ice rmse '+run2+')')
+      IaV = pyic.IconVariable('cli', 'mg/kg', 'cloud ice rmse '+run2+')')
       data_zave_rmse_2 = np.sqrt(np.square(data_zave_2 - data_ref_zave))
       IaV.data = data_zave_rmse_2
       IaV.lat_sec = lat_sec
@@ -6811,7 +6811,7 @@ for tave_int in tave_ints:
     # ---
     fig_name = 'atm_cli_zave_rmse_diff'
     if fig_name in fig_names:
-      IaV = pyic.IconVariable('cli', 'mg/kg', 'zon. ave. cloud ice rmse diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('cli', 'mg/kg', 'cloud ice rmse diff ('+run2+'-'+run1+')')
       IaV.data = data_zave_rmse_2 - data_zave_rmse_1
       IaV.lat_sec = lat_sec
       pyic.vplot_base(IcD_atm3d_1, IaV,
@@ -6826,7 +6826,7 @@ for tave_int in tave_ints:
     fig_name = 'atm_clwi_zave_diff'
     if fig_name in fig_names:
       lat_sec = IaV.lat_sec
-      IaV = pyic.IconVariable('clw cli diff', 'mg/kg', 'zon. ave. cloud water+ice diff ('+run2+'-'+run1+')')
+      IaV = pyic.IconVariable('clw cli diff', 'mg/kg', 'cloud water+ice diff ('+run2+'-'+run1+')')
       IaV.data = clw2+cli2 - clw1+cli1
       IaV.lat_sec = lat_sec 
       pyic.vplot_base(IcD_atm3d_1, IaV,
