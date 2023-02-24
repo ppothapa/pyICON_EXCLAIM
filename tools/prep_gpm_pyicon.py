@@ -25,10 +25,14 @@ pathOut = './'
 
 # start and end year for the time mean
 yearStart = 2001
-yearEnd   = 2003
+yearEnd   = 2010
 
 # prefix
 prefix = 'gpm'
+
+# do we need means over djf / jja?
+do_djf = False
+do_jja = False
 
 # output resolution (deg)
 res = 1.5 # can be chosen arbitrarily but GPM' resolution 
@@ -98,6 +102,12 @@ def prep2d():
 
   # select time period 
   dsIn = dsIn.sel(time=slice(dateStart, dateEnd))
+
+  # optionally select djf/jja months
+  if do_djf:
+    dsIn = dsIn.sel(time=is_djf(dsIn['time.month']))
+  if do_jja:
+    dsIn = dsIn.sel(time=is_jja(dsIn['time.month']))
 
   # calculate time-mean
   dsIn = dsIn.mean(dim='time')
@@ -202,10 +212,28 @@ def calc_cell_area (lon, lat):
 
   return area
 
+def is_djf(month):
+  return (month == 12) | (month == 1) | (month == 2)
+
+def is_jja(month):
+  return (month == 6) | (month == 7) | (month == 8)
+
 #---------------------------- Start ----------------------------
 
-print('')
-print('Preparing GPM data for pyicon for the period:', yearStart,'-', yearEnd)
+if do_djf and do_jja:
+  print('')
+  print('do_djf and do_jja should not be True at the same time!')
+  sys.exit()
+
+if do_djf:
+  print('')
+  print('Preparing GPM data for pyicon for the period:', yearStart,'-', yearEnd, ' DJF')
+elif do_jja:
+  print('')
+  print('Preparing GPM data for pyicon for the period:', yearStart,'-', yearEnd, ' JJA')
+else:
+  print('')
+  print('Preparing GPM data for pyicon for the period:', yearStart,'-', yearEnd)
 
 # dates corresponding to yearStart, yearEnd
 dateStart = np.datetime64(str(yearStart)+'-01-01')
@@ -220,7 +248,12 @@ mylat = np.arange(-90,90+res,res)
 dataIn = f'{pathIn}GPM-3B_*.nc'
 
 # define output file
-dataOut = f'{pathOut}{prefix}_pyicon_{yearStart}-{yearEnd}_{res}x{res}deg.nc'
+if do_djf:
+  dataOut = f'{pathOut}{prefix}_pyicon_{yearStart}-{yearEnd}_djf_{res}x{res}deg.nc'
+elif do_jja:
+  dataOut = f'{pathOut}{prefix}_pyicon_{yearStart}-{yearEnd}_jja_{res}x{res}deg.nc'
+else:
+  dataOut = f'{pathOut}{prefix}_pyicon_{yearStart}-{yearEnd}_{res}x{res}deg.nc'
 
 # prepare dims & coords
 prepcoords()

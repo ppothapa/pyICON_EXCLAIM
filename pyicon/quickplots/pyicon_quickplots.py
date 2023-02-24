@@ -383,6 +383,8 @@ def qp_timeseries(IcD, fname, vars_plot,
                   omit_last_file=True,
                   use_tave_int_for_ts=False,
                   fpath_ref_data_atm='',
+                  do_djf=False,
+                  do_jja=False,
                   mode_ave=['mean'],
                   labels=None,
                   do_write_data_range=True,
@@ -495,6 +497,22 @@ def qp_timeseries(IcD, fname, vars_plot,
         data = data[:-nskip]
       data = np.reshape(data, (nresh, ave_freq)).transpose()
       dt   = np.reshape(dt  , (nresh, ave_freq)).transpose()
+      if do_djf:
+        if ave_freq != 12:
+          print('if do_djf=True or do_jja=True, only ave_freq=12 is accepted!')
+          sys.exit()
+        # set march-nov to zero
+        data[2:10,:] = 0.
+        dt[2:10,:] = 0.
+      if do_jja:
+        if ave_freq != 12:
+          print('if do_djf=True or do_jja=True, only ave_freq=12 is accepted!')
+          sys.exit()
+        # set jan-may and sep-dec to zero
+        data[0:4,:] = 0.
+        data[8:11,:] = 0.
+        dt[0:4,:] = 0.
+        dt[8:11,:] = 0.
       if mode_ave[mm]=='mean':
         data = (data*dt).sum(axis=0)/dt.sum(axis=0)
         dtsum = dt.sum(axis=0)
@@ -534,7 +552,7 @@ def qp_timeseries(IcD, fname, vars_plot,
           else:
             print('Specify ERA5 as reference data instead (1959-2021)!')
             print('You can do this by setting fpath_ref_data_atm_rad, fpath_ref_data_atm_prec pointing to ERA5 in tools/run_qp*...')
-            print('Or you can plot times-series without reference curves by setting fpath_ref_data_atm='' in tools/run_qp*...')
+            print('Or you can plot times-series without reference curves by setting fpath_ref_data_atm=\'\' in tools/run_qp*...')
           sys.exit()
       else:
         if times_exp[0] < times_ref_tot[0] or times_exp[len(times_exp)-1] > times_ref_tot[len(times_ref_tot)-1]:
@@ -547,7 +565,7 @@ def qp_timeseries(IcD, fname, vars_plot,
           else:
             print('Specify ERA5 as reference data instead (1959-2021)!')
             print('You can do this by setting fpath_ref_data_atm_rad, fpath_ref_data_atm_prec pointing to ERA5 in tools/run_qp*...')
-            print('Or you can plot times-series without reference curves by setting fpath_ref_data_atm='' in tools/run_qp*...')
+            print('Or you can plot times-series without reference curves by setting fpath_ref_data_atm=\'\' in tools/run_qp*...')
           sys.exit()
       # check whether experiment has monthly outputs
       if times_exp[1]-times_exp[0] > 2678400: # 31 days (in seconds)
@@ -617,6 +635,19 @@ def qp_timeseries(IcD, fname, vars_plot,
       # --- time averaging
       if ave_freq>0:
         data_ref = np.reshape(data_ref, (nresh, ave_freq)).transpose()
+        if do_djf:
+          if ave_freq != 12:
+            print('if do_djf=True or do_jja=True, only ave_freq=12 is accepted!')
+            sys.exit()
+          # set march-nov to zero
+          data_ref[2:10,:] = 0.
+        if do_jja:
+          if ave_freq != 12:
+            print('if do_djf=True or do_jja=True, only ave_freq=12 is accepted!')
+            sys.exit()
+          # set jan-may and sep-dec to zero
+          data_ref[0:4,:] = 0.
+          data_ref[8:11,:] = 0.
         if mode_ave[mm]=='mean':
           data_ref = (data_ref*dt).sum(axis=0)/dt.sum(axis=0)
         elif mode_ave[mm]=='min':
@@ -744,6 +775,8 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
                        omit_last_file=True,
                        use_tave_int_for_ts=False,
                        fpath_ref_data_atm='',
+                       do_djf=False,
+                       do_jja=False,
                        mode_ave=['mean'],
                        labels=None,
                        do_write_data_range=True,
@@ -884,6 +917,25 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
       data1 = np.reshape(data1, (nresh, ave_freq)).transpose()
       data2 = np.reshape(data2, (nresh, ave_freq)).transpose()
       dt   = np.reshape(dt  , (nresh, ave_freq)).transpose()
+      if do_djf:
+        if ave_freq != 12:
+          print('if do_djf=True or do_jja=True, only ave_freq=12 is accepted!')
+          sys.exit()
+        # set march-nov to zero
+        data1[2:10,:] = 0.
+        data2[2:10,:] = 0.
+        dt[2:10,:] = 0.
+      if do_jja:
+        if ave_freq != 12:
+          print('if do_djf=True or do_jja=True, only ave_freq=12 is accepted!')
+          sys.exit()
+        # set jan-may and sep-dec to zero
+        data1[0:4,:] = 0.
+        data1[8:11,:] = 0.
+        data2[0:4,:] = 0.
+        data2[8:11,:] = 0.
+        dt[0:4,:] = 0.
+        dt[8:11,:] = 0.
       if mode_ave[mm]=='mean':
         data1 = (data1*dt).sum(axis=0)/dt.sum(axis=0)
         data2 = (data2*dt).sum(axis=0)/dt.sum(axis=0)
@@ -926,7 +978,7 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
           else:
             print('Specify ERA5 as reference data instead (1959-2021)!')
             print('You can do this by setting fpath_ref_data_atm_rad, fpath_ref_data_atm_prec pointing to ERA5 in tools/run_qp*...')
-            print('Or you can plot times-series without reference curves by setting fpath_ref_data_atm='' in tools/run_qp*...')
+            print('Or you can plot times-series without reference curves by setting fpath_ref_data_atm=\'\' in tools/run_qp*...')
           sys.exit()
       else:
         if times_exp[0] < times_ref_tot[0] or times_exp[len(times_exp)-1] > times_ref_tot[len(times_ref_tot)-1]:
@@ -939,7 +991,7 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
           else:
             print('Specify ERA5 as reference data instead (1959-2021)!')
             print('You can do this by setting fpath_ref_data_atm_rad, fpath_ref_data_atm_prec pointing to ERA5 in tools/run_qp*...')
-            print('Or you can plot times-series without reference curves by setting fpath_ref_data_atm='' in tools/run_qp*...')
+            print('Or you can plot times-series without reference curves by setting fpath_ref_data_atm=\'\' in tools/run_qp*...')
           sys.exit()
       # check whether experiment has monthly outputs
       if times_exp[1]-times_exp[0] > 2678400: # 31 days (in seconds)
@@ -1009,6 +1061,19 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
       # --- time averaging
       if ave_freq>0:
         data_ref = np.reshape(data_ref, (nresh, ave_freq)).transpose()
+        if do_djf:
+          if ave_freq != 12:
+            print('if do_djf=True or do_jja=True, only ave_freq=12 is accepted!')
+            sys.exit()
+          # set march-nov to zero
+          data_ref[2:10,:] = 0.
+        if do_jja:
+          if ave_freq != 12:
+            print('if do_djf=True or do_jja=True, only ave_freq=12 is accepted!')
+            sys.exit()
+          # set jan-may and sep-dec to zero
+          data_ref[0:4,:] = 0.
+          data_ref[8:11,:] = 0.
         if mode_ave[mm]=='mean':
           data_ref = (data_ref*dt).sum(axis=0)/dt.sum(axis=0)
         elif mode_ave[mm]=='min':
@@ -1062,7 +1127,7 @@ def qp_timeseries_comp(IcD1, IcD2, fname1, fname2, vars_plot,
       hl3, = ax.plot(times_plot, data_ref, color='black', label=label3)
     else:
       hl1, = ax.plot(times_plot, data1, color='blue', label=label1)
-      hl2, = ax.plot(times_plot, data2, color='black',  label=label2)
+      hl2, = ax.plot(times_plot, data2, color='red',  label=label2)
 
     if adjust_xylim:
       ax.set_xlim([times_plot.min(), times_plot.max()])

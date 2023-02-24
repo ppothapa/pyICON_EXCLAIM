@@ -27,6 +27,8 @@ omit_last_file = False
 # --- do ocean and/or atmosphere plots
 do_atmosphere_plots = True
 do_conf_dwd         = True
+do_djf              = False
+do_jja              = False
 do_ocean_plots      = False
 
 # --- grid information
@@ -44,13 +46,19 @@ path_ckdtree_atm = path_grid_atm+'/ckdtree/'
 # --- grid files and reference data
 path_pool_oce       = '/hpc/uwork/icon-sml/pyICON/grids/'
 gnameu = gname.split('_')[0].upper()
-fpath_tgrid             = path_grid + gname+'_tgrid.nc'
-fpath_tgrid_atm         = path_grid_atm + gname_atm+'_tgrid.nc'
-fpath_ref_data_oce      = path_grid + 'ts_phc3.0_annual_icon_grid_0043_R02B04_G_L40.nc'
-fpath_ref_data_atm      = path_grid_atm + 'era5_pyicon_2001-2010_1.5x1.5deg.nc'
-fpath_ref_data_atm_rad  = path_grid_atm + 'ceres_pyicon_2001-2010_1.5x1.5deg.nc'
-fpath_ref_data_atm_prec = path_grid_atm + 'gpm_pyicon_2001-2010_1.5x1.5deg.nc'
-fpath_fx                = path_grid + 'oce_fx.19600102T000000Z.nc'
+fpath_tgrid                 = path_grid + gname+'_tgrid.nc'
+fpath_tgrid_atm             = path_grid_atm + gname_atm+'_tgrid.nc'
+fpath_ref_data_oce          = path_grid + 'ts_phc3.0_annual_icon_grid_0043_R02B04_G_L40.nc'
+fpath_ref_data_atm          = path_grid_atm + 'era5_pyicon_2001-2010_1.5x1.5deg.nc'
+fpath_ref_data_atm_djf      = path_grid_atm + 'era5_pyicon_2001-2010_djf_1.5x1.5deg.nc'
+fpath_ref_data_atm_jja      = path_grid_atm + 'era5_pyicon_2001-2010_jja_1.5x1.5deg.nc'
+fpath_ref_data_atm_rad      = path_grid_atm + 'ceres_pyicon_2001-2010_1.5x1.5deg.nc'
+fpath_ref_data_atm_rad_djf  = path_grid_atm + 'ceres_pyicon_2001-2010_djf_1.5x1.5deg.nc'
+fpath_ref_data_atm_rad_jja  = path_grid_atm + 'ceres_pyicon_2001-2010_jja_1.5x1.5deg.nc'
+fpath_ref_data_atm_prec     = path_grid_atm + 'gpm_pyicon_2001-2010_1.5x1.5deg.nc'
+fpath_ref_data_atm_prec_djf = path_grid_atm + 'gpm_pyicon_2001-2010_djf_1.5x1.5deg.nc'
+fpath_ref_data_atm_prec_jja = path_grid_atm + 'gpm_pyicon_2001-2010_jja_1.5x1.5deg.nc'
+fpath_fx                    = path_grid + 'oce_fx.19600102T000000Z.nc'
 
 # --- nc file prefixes ocean
 oce_def     = '_oce_def'
