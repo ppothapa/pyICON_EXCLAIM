@@ -6964,7 +6964,7 @@ for tave_int in tave_ints:
     if fig_name in fig_names:
       lat_sec = IaV.lat_sec
       IaV = pyic.IconVariable('clw cli diff', 'mg/kg', 'cloud water+ice diff ('+run2+'-'+run1+')')
-      IaV.data = clw2+cli2 - clw1+cli1
+      IaV.data = clw2+cli2 - (clw1+cli1)
       IaV.lat_sec = lat_sec 
       pyic.vplot_base(IcD_atm3d_1, IaV,
                       clim=20., cincr=2., contfs='auto', cmap='BrBG',
