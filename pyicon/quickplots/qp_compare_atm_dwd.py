@@ -3960,10 +3960,10 @@ for tave_int in tave_ints:
       lon, lat, data2di_1 = pyic.interp_to_rectgrid(data2d_1, fpath_ckdtree_atm, coordinates='clat clon')
       lon, lat, data2di_2 = pyic.interp_to_rectgrid(data2d_2, fpath_ckdtree_atm, coordinates='clat clon')
       # --- calculate diff
-      data_diff = data2di_2-data2di_1
+      data_diff = (data2di_2-data2di_1)/100.
       IaV = pyic.IconVariable('data_diff', 'hPa', 'sea level pressure diff ('+run2+'-'+run1+')')
       IaV.data = data_diff
-      pyic.hplot_base(IcD_atm2d_1, IaV, clim=1000., cincr=100., cmap='RdBu_r', 
+      pyic.hplot_base(IcD_atm2d_1, IaV, clim=10., cincr=1., cmap='RdBu_r', 
                       use_tgrid=False,
                       projection=projection, xlim=[-180.,180.], ylim=[-90.,90.], 
                       land_facecolor='none', do_write_data_range=True,
