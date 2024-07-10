@@ -76,12 +76,13 @@ atm_mon     = ''
 time_mode_atm = 'num2date'  # 'num2date' is the new default previously, 'float2date' was regularly used
 
 # --- time average information (can be overwritten by qp_driver call)
-tave_ints = [['1950-02-01', '1952-01-01']]
+#tave_ints = [['2004-03-01', '2004-05-01']]
+tave_ints = [['2004-03-01', '2005-02-01']]
 # --- decide which data files to take for time series plots
 tstep     = '????????????????'
 tstep_ts  = '????????????????'
 # --- set this to 12 for yearly averages in timeseries plots, set to 0 for no averaging
-ave_freq = 12
+ave_freq = 365
 
 time_at_end_of_interval = True
 
@@ -98,13 +99,14 @@ path_nc = './'
 # --- information for re-gridding
 sec_name_30w   = '30W_300pts'
 rgrid_name     = 'global_0.3'
-rgrid_name_atm = 'global_1.5_era5'
+#rgrid_name_atm = 'global_1.5_era5'
+rgrid_name_atm = 'global_1.0_era'
 
 verbose = False
 do_write_final_config = False
 
 # --- list containing figures which should not be plotted
-red_list = []
+red_list = ['tas_gmean','rsdt_gmean','rsut_gmean','rlut_gmean','radtop_gmean','prec_gmean','evap_gmean','pme_gmean']
 # --- list containing figures which should be plotted 
 # (if empty all figures will be plotted)
 green_list = []

@@ -2,7 +2,7 @@
 
 # --- conda env settings
 # script to working conda environment
-path_conda_bin="/hpc/uhome/gboeloen/miniconda3/bin/"
+path_conda_bin="/project/d121/ppothapa/envs"
 # name of working conda environment
 #conda_env="pyicon_env"
 #conda_env="pyicon_env2"
@@ -12,6 +12,9 @@ path_conda_bin="/hpc/uhome/gboeloen/miniconda3/bin/"
 #conda_env="pyicon_py38"
 conda_env="pyicon_py39"
 #conda_env="myenv_py3"
+
+## FOR DAINR
+
 
 # --- add pyicon to PYTHONPATH
 PYICON_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"  #problem: takes directory of source script as base

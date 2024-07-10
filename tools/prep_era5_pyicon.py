@@ -19,14 +19,23 @@ import xarray as xr
 #----------------------- User settings -------------------------
 
 # input path (ERA5 data 1959-2021)
-pathIn = '/hpc/uwork/icon-sml/pyICON/ERA5/'
+#pathIn = '/hpc/uwork/icon-sml/pyICON/ERA5/'
+#pathIn = '/project/d121/ppothapa/data_for_pyicon/era5_observations/'
+pathIn = '/scratch/snx3000/ppothapa/era5_observations/'
+
 
 # output path
-pathOut = './'
+#pathOut = './'
+#pathOut = '/project/d121/ppothapa/data_for_pyicon/Era5_python_output/'
+pathOut = '/scratch/snx3000/ppothapa/Era5_python_output/'
+
 
 # start and end year for the time mean
-yearStart = 2001
-yearEnd   = 2010
+yearStart = 1979
+yearEnd   = 1982
+
+#dateStart = 2004-04-01
+#dateEnd   = 2006-02-01
 
 # prefix
 prefix = 'era5'
@@ -39,7 +48,7 @@ do_djf = False
 do_jja = False
 
 # output resolution (deg)
-res = 1.5 # can be chosen arbitrarily but ERA5's resolution 
+res = 1.0 # can be chosen arbitrarily but ERA5's resolution 
           # is 0.25x0.25 i.e. a higher resolution than that 
           # will add only noise
 
@@ -84,8 +93,8 @@ varFnameList2D = [
 
 # define list of 3D variables
 varFnameList3D = [
-'u_component_of_wind',
-'v_component_of_wind',
+#'u_component_of_wind',
+#'v_component_of_wind',
 'temperature',
 'geopotential',
 'relative_humidity',
@@ -151,7 +160,7 @@ def prepcoords():
                                      'plev2': {'dtype': 'int32'},
                                      'lon':   {'dtype': 'float32'},
                                      'lat':   {'dtype': 'float32'},
-                                     'time':  {'dtype': 'int32'}}
+                                     'time':  {'dtype': 'int64'}}
                  )
 
   # close xarray.Datasets
@@ -258,7 +267,8 @@ def prep3dmaps():
     dsIn = dsIn.rename_vars({'level': 'plev2', 'longitude': 'lon', 'latitude': 'lat'})
 
     # select time period 
-    dsIn = dsIn.sel(time=slice(dateStart, dateEnd), plev2=plev1)
+    dsIn = dsIn.sel(time=slice(dateStart, dateEnd))
+    dsIn = dsIn.sel(plev2=plev1)
 
     # optionally select djf/jja months
     if do_djf:
@@ -489,7 +499,8 @@ dateEnd   = np.datetime64(str(yearEnd)+'-12-01')
 
 # lon, lat at output resolution
 mylon = np.arange(0,360,res)
-mylat = np.arange(-90,90+res,res)
+#mylat = np.arange(-90,90+res,res)
+mylat = np.arange(-90,90,res)
 
 # define output file
 if do_djf:

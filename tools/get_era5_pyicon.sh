@@ -13,6 +13,8 @@
 # conda install -c conda-forge era5cli
 #---------------------------------------------------------------
 
+era5cli = "/project/d121/ppothapa/miniconda3/bin/era5cli"
+
 years_sta=1979
 years_end=2021
 
@@ -72,7 +74,7 @@ echo '... getting 2D variables ...'
 for var in ${vars2d}
 do
   echo '...' ${var}
-  era5cli monthly --startyear ${years_sta} --endyear ${years_end} --merge --variables ${var} 1>>log.2d 2>&1
+  /project/d121/ppothapa/miniconda3/bin/era5cli monthly --startyear ${years_sta} --endyear ${years_end} --merge --variables ${var} 1>>log.2d 2>&1
 done
 
 echo ''
@@ -80,7 +82,7 @@ echo '... getting 3D variables ...'
 for var in ${vars3d}
 do
   echo '...' ${var}
-  era5cli monthly --startyear ${years_sta} --endyear ${years_end} --merge --variables ${var} 1>>log.3d 2>&1
+  /project/d121/ppothapa/miniconda3/bin/era5cli monthly --startyear ${years_sta} --endyear ${years_end} --merge --variables ${var} 1>>log.3d 2>&1
 done
 
 exit

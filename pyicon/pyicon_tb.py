@@ -851,6 +851,7 @@ def get_averaging_interval(times, output_freq, end_of_interval=True):
       t1 = np.datetime64(f'{y1:04d}-01-01').astype(dt64type)
       t2 = np.datetime64(f'{y2:04d}-01-01').astype(dt64type)
       dt[nn] = t2-t1
+      print(dt)
   elif output_freq=='monthly':
     for nn in range(times.size):
       yy, mm, dd = datetime64_to_float(times[nn])
@@ -875,6 +876,9 @@ def get_averaging_interval(times, output_freq, end_of_interval=True):
     dt += 86400.
   elif output_freq=='hourly':
     dt += 3600.
+  elif output_freq=='6hourly':
+    dt += 21600.
+
   else:
     raise ValueError(f'::: Error: Unsupported output_freq = {output_freq}!:::')
   return dt
