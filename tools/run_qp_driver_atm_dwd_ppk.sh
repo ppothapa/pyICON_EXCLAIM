@@ -17,7 +17,7 @@ rand=$(cat /dev/urandom | tr -dc 'A-Z' | fold -w 3 | head -n 1)
 
 path_pyicon=`(cd .. && pwd)`"/"
 config_file="./config_qp_${rand}.py"
-qp_driver="${path_pyicon}pyicon/quickplots/ppk_qp_driver.py"
+qp_driver="${path_pyicon}pyicon/quickplots/qp_driver.py"
 
 cat > ${config_file} << %eof%
 # --- path to quickplots
@@ -98,10 +98,10 @@ path_nc = '/scratch/m/m300602/tmp/test_pyicon_output/'
 # --- time average information (can be overwritten by qp_driver call)
 tave_ints = [
 #['1630-02-01', '1640-01-01'],
-['2004-04-15', '2006-02-15'],
+['1979-01-01', '1982-01-01'],
 ]
 
-ave_freq = 12
+ave_freq = 0
 
 #output_freq = 'daily'
 
@@ -109,7 +109,7 @@ ave_freq = 12
 # --- decide if time-series (ts) plots are plotted for all the 
 #     available data or only for the intervall defined by tave_int
 
-use_tave_int_for_ts = False
+use_tave_int_for_ts = True
 
 # --- what to plot and what not?
 # --- not to plot:
@@ -124,7 +124,8 @@ startdate=`date +%Y-%m-%d\ %H:%M:%S`
 
 run="exclaim_uncoupled_R02B04L90_test"
 #path_data="/hpc/uwork/gboeloen/ICON-Seamless/chain/scratch/${run}/output/icon/"
-path_data="/scratch/snx3000/ppothapa/icon-dsl_v0.3.0-rc/experiments/exclaim_uncoupled_R02B04L90_test/"
+#path_data="/scratch/snx3000/ppothapa/icon-dsl_v0.3.0-rc/experiments/exclaim_uncoupled_R02B04L90_test/"
+path_data="/scratch/snx3000/ppothapa/dsl_0.3_bugfix_gmean/v0.3.0-rc/experiments/exclaim_uncoupled_R02B04L90_test/"
 #python -W ignore -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='2004-02-15,2004-05-15'
 
 python -W ignore -u ${qp_driver} --batch=True ${config_file} --path_data=$path_data --run=$run --tave_int='1979-01-01,1982-01-01' 

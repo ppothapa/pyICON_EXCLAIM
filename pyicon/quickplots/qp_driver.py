@@ -77,7 +77,7 @@ time_mode_atm = 'num2date'  # 'num2date' is the new default previously, 'float2d
 
 # --- time average information (can be overwritten by qp_driver call)
 #tave_ints = [['2004-03-01', '2004-05-01']]
-tave_ints = [['2004-03-01', '2005-02-01']]
+tave_ints = [['1979-01-01', '1982-01-01']]
 # --- decide which data files to take for time series plots
 tstep     = '????????????????'
 tstep_ts  = '????????????????'

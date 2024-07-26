@@ -1,0 +1,147 @@
+* {
+    /*border-style: solid;*/
+  }
+
+div#header, header
+    {
+    /* Put border on bottom. Separates it from TOC or body that comes after it. */
+    background-color: #FFFFFF;
+    position: fixed;
+    width: 100%;
+    border-bottom: 1px solid #aaa;
+    /*border-style: solid;*/
+    height: 150px;
+    margin-top: -222px;
+    margin-left: -50px;
+    padding-left: 50px;
+    z-index: 5;
+    }
+
+.title /* Pandoc title header (h1.title) */
+    {
+    /*text-align: center;*/
+    }
+
+.author, .date /* Pandoc author(s) and date headers (h2.author and h3.date) */
+    {
+    text-align: left;
+    }
+
+body {
+    font-family: Georgia, serif;
+    font-size: 17px;
+    background-color: #ffffff;
+    color: #000;
+    padding-left: 50px;
+    margin-left: 350px;
+    margin-top: 200px;
+    /*border-style: solid;*/
+}
+
+/*
+#content {
+  margin-top: 100px;
+}
+*/
+
+#ctn {
+  position: relative;
+  /*border: solid 1px green;*/
+  height: 40px;
+}
+
+#ctn a {
+  position: absolute;
+  left: 0px;
+  top: -130px;
+  /*border: solid 1px red;*/
+}
+
+#ctn .target-label {
+  position: absolute;
+  left: 0px;
+  /* anchor offset + header height + header padding + header margins */
+  top: 0px;
+  margin: 0;
+}
+
+div#TOC {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 350px;
+    height: 100%;
+    overflow:auto;
+    background-color: #ffffff;
+    /*border-style: solid;*/
+}
+
+div#TOC ul {
+  list-style-type: none;
+  padding-left: 20px;
+  padding-top: 0px;
+  overflow: auto;
+   }
+
+/*
+ul {
+  list-style-type: none;
+  margin: 0;
+  background-color: #f1f1f1;
+  height: 100%;
+  overflow: auto;
+  padding-left: 20px;
+  padding-top: 20px;
+}
+*/
+
+div#asdf {
+  background-color: #555;
+}
+
+div#TOC ul li a {
+  display: block;
+  color: #000;
+  padding: 8px 16px;
+  text-decoration: none;
+}
+
+div#TOC ul li a:hover:not(.active) {
+  background-color: #555;
+  color: white;
+}
+
+div#TOC ul li a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+a:active {
+  color: #faa700;
+}
+
+a:focus {
+  outline: thin dotted;
+}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+} 
+  
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+} 
+    
+tr:nth-child(even) {
+  background-color: #dddddd;
+} 
+
+.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+

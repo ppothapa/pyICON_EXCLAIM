@@ -106,7 +106,8 @@ verbose = False
 do_write_final_config = False
 
 # --- list containing figures which should not be plotted
-red_list = ['tas_gmean','rsdt_gmean','rsut_gmean','rlut_gmean','radtop_gmean','prec_gmean','evap_gmean','pme_gmean']
+#red_list = ['tas_gmean','rsdt_gmean','rsut_gmean','rlut_gmean','radtop_gmean','prec_gmean','evap_gmean','pme_gmean']
+red_list = []
 # --- list containing figures which should be plotted 
 # (if empty all figures will be plotted)
 green_list = []
@@ -486,9 +487,9 @@ if do_atmosphere_plots:
   fig_names += ['atm_clw_zave', 'atm_clw_zave_bias']
   fig_names += ['atm_cli_zave', 'atm_cli_zave_bias']
   fig_names += ['atm_clwi_zave', 'atm_psi']
-#  fig_names += ['sec:Time series']
-#  fig_names += ['ts_t2m_gmean', 'ts_radtop_gmean']
-#  fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_pme_gmean', 'ts_fwfoce_gmean']
+  fig_names += ['sec:Time series']
+  fig_names += ['ts_t2m_gmean', 'ts_radtop_gmean']
+  fig_names += ['ts_rsdt_gmean', 'ts_rsut_gmean', 'ts_rlut_gmean', 'ts_prec_gmean', 'ts_evap_gmean', 'ts_pme_gmean', 'ts_fwfoce_gmean']
   # --- variable names
   if not do_conf_dwd:
      vpfull   = 'pfull'

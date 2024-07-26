@@ -1,0 +1,188 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pyicon" />
+  <meta name="author" content="ppothapa" />
+  <title>exclaim_uncoupled_R02B04L90_test</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="./qp_css.css" type="text/css" />
+</head>
+
+<body>
+
+<div id="header">
+<h1 class="title">exclaim_uncoupled_R02B04L90_test</h1>
+<p> ppothapa | 2024-07-26 09:19:20 | /scratch/snx3000/ppothapa/dsl_0.3_bugfix_gmean/v0.3.0-rc/experiments/exclaim_uncoupled_R02B04L90_test/ </p>
+<p> time average from 1979-01-01 to 1982-01-01 
+
+&emsp; <a href="../qp_index.html">list time averages</a>
+&emsp; <a href="../../index.html">list simulations</a>
+&emsp; <a href="../add_info/add_info.html">additional information</a>
+
+</p>
+</div>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#Overview">Overview</a><ul>
+<li><a href="#Tab:-Overview">Tab: Overview</a></li>
+</ul></li> 
+<li><a href="#Surface-fluxes">Surface fluxes</a><ul>
+<li><a href="#zonal-wind-stress">zonal wind stress</a></li>
+<li><a href="#zonal-wind-stress-bias">zonal wind stress bias</a></li>
+<li><a href="#meridional-wind-stress">meridional wind stress</a></li>
+<li><a href="#meridional-wind-stress-bias">meridional wind stress bias</a></li>
+<li><a href="#wind-stress-curl">wind stress curl</a></li>
+<li><a href="#Ekman-pumping">Ekman pumping</a></li>
+<li><a href="#surface-sensible-heat-flux">surface sensible heat flux</a></li>
+<li><a href="#surface-sensible-heat-flux-bias">surface sensible heat flux bias</a></li>
+<li><a href="#surface-latent-heat-flux">surface latent heat flux</a></li>
+<li><a href="#surface-latent-heat-flux-bias">surface latent heat flux bias</a></li>
+</ul></li> 
+<li><a href="#TOA-fluxes">TOA fluxes</a><ul>
+<li><a href="#TOA-net-radiation-flux">TOA net radiation flux</a></li>
+<li><a href="#TOA-net-radiation-flux-bias">TOA net radiation flux bias</a></li>
+<li><a href="#TOA-short-wave-net-flux">TOA short wave net flux</a></li>
+<li><a href="#TOA-short-wave-net-flux-bias">TOA short wave net flux bias</a></li>
+<li><a href="#TOA-short-wave-outgoing-flux">TOA short wave outgoing flux</a></li>
+<li><a href="#TOA-short-wave-outgoing-flux-bias">TOA short wave outgoing flux bias</a></li>
+<li><a href="#TOA-long-wave-net-flux">TOA long wave net flux</a></li>
+<li><a href="#TOA-long-wave-net-flux-bias">TOA long wave net flux bias</a></li>
+</ul></li> 
+<li><a href="#Atmosphere-surface">Atmosphere surface</a><ul>
+<li><a href="#sea-surface-temperature">sea surface temperature</a></li>
+<li><a href="#sea-ice-fraction">sea ice fraction</a></li>
+<li><a href="#sea-level-pressure">sea level pressure</a></li>
+<li><a href="#sea-level-pressure-bias">sea level pressure bias</a></li>
+<li><a href="#10m-wind-speed">10m wind speed</a></li>
+<li><a href="#10m-wind-speed-bias">10m wind speed bias</a></li>
+<li><a href="#surface-temperature">surface temperature</a></li>
+<li><a href="#surface-temperature-bias">surface temperature bias</a></li>
+<li><a href="#2m-temperature">2m temperature</a></li>
+<li><a href="#2m-temperature-bias">2m temperature bias</a></li>
+<li><a href="#column-water-vapour">column water vapour</a></li>
+<li><a href="#column-water-vapour-bias">column water vapour bias</a></li>
+<li><a href="#total-cloud-cover">total cloud cover</a></li>
+<li><a href="#total-cloud-cover-bias">total cloud cover bias</a></li>
+<li><a href="#total-precipitation">total precipitation</a></li>
+<li><a href="#total-precipitation-bias">total precipitation bias</a></li>
+<li><a href="#P-E">P-E</a></li>
+<li><a href="#P-E-bias">P-E bias</a></li>
+</ul></li> 
+<li><a href="#Atmosphere-pressure-levels">Atmosphere pressure levels</a><ul>
+<li><a href="#u-comp-of-wind-@-250-hPa">u-comp of wind @ 250 hPa</a></li>
+<li><a href="#v-comp-of-wind-@-250-hPa">v-comp of wind @ 250 hPa</a></li>
+<li><a href="#geopotential-height-@-500-hPa">geopotential height @ 500 hPa</a></li>
+<li><a href="#geopotential-@-500-hPa-bias">geopotential @ 500 hPa bias</a></li>
+<li><a href="#relative-humidity-@-700-hPa">relative humidity @ 700 hPa</a></li>
+<li><a href="#relative-humidity-@-700-hPa-bias">relative humidity @ 700 hPa bias</a></li>
+<li><a href="#temperature-@-850-hPa">temperature @ 850 hPa</a></li>
+<li><a href="#temperature-@-850-hPa-bias">temperature @ 850 hPa bias</a></li>
+</ul></li> 
+<li><a href="#Atmosphere-zonal-averages">Atmosphere zonal averages</a><ul>
+<li><a href="#temperature">temperature</a></li>
+<li><a href="#temperature-bias">temperature bias</a></li>
+<li><a href="#log-temperature">log temperature</a></li>
+<li><a href="#u-comp-of-wind">u-comp of wind</a></li>
+<li><a href="#log-u-comp-of-wind">log u-comp of wind</a></li>
+<li><a href="#v-comp-of-wind">v-comp of wind</a></li>
+<li><a href="#log-v-comp-of-wind">log v-comp of wind</a></li>
+<li><a href="#relative-humidity">relative humidity</a></li>
+<li><a href="#relative-humidity-bias">relative humidity bias</a></li>
+<li><a href="#cloud-cover">cloud cover</a></li>
+<li><a href="#cloud-cover-bias">cloud cover bias</a></li>
+<li><a href="#cloud-water">cloud water</a></li>
+<li><a href="#cloud-water-bias">cloud water bias</a></li>
+<li><a href="#cloud-ice">cloud ice</a></li>
+<li><a href="#cloud-ice-bias">cloud ice bias</a></li>
+<li><a href="#cloud-water+ice">cloud water+ice</a></li>
+<li><a href="#meridional-stream-function">meridional stream function</a></li>
+</ul></li> 
+<li><a href="#More-plots">More plots</a><ul>
+</ul></li>
+</ul>
+</div>
+
+
+  <div id="ctn">    <a name="Overview">&nbsp;</a>    <h1 class="target-label">Overview</h2>  </div>  <div id="ctn">    <a name="Tab:-Overview">&nbsp;</a>    <h2 class="target-label">Tab: Overview</h2>  </div><p></p>
+<table style="width:100%">
+  <tr>    <th></th>    <th>global mean temperature at 2m [$^o$C]</th>    <th>global mean toa total radiation [W m-2]</th>    <th>global mean toa incident shortwave radiation [W m-2]</th>    <th>global mean toa outgoing shortwave radiation [W m-2]</th>    <th>global mean toa outgoing longwave radiation [W m-2]</th>    <th>global mean precipitation flux [kg m-2 s-1]</th>    <th>global mean evaporation flux [kg m-2 s-1]</th>    <th>global mean P-E [kg m-2 s-1]</th>  </tr>
+  <tr>    <th>exclaim_uncoupled_R02B04L90_test</th>    <td>16.511</td>    <td>-9.9528</td>    <td>315.18</td>    <td>100.22</td>    <td>-236.28</td>    <td>2.5929e-05</td>    <td>-2.9205e-05</td>    <td>-3.2758e-06</td>  </tr>
+</table>
+<p></p>
+
+
+  <div id="ctn">    <a name="Surface-fluxes">&nbsp;</a>    <h1 class="target-label">Surface fluxes</h2>  </div>  <div id="ctn">    <a name="zonal-wind-stress">&nbsp;</a>    <h2 class="target-label">zonal wind stress</h2>  </div>    <div class="figure"> <img src="pics/atm_tauu.png" width="1000" /> </div>
+  <div id="ctn">    <a name="zonal-wind-stress-bias">&nbsp;</a>    <h2 class="target-label">zonal wind stress bias</h2>  </div>    <div class="figure"> <img src="pics/atm_tauu_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="meridional-wind-stress">&nbsp;</a>    <h2 class="target-label">meridional wind stress</h2>  </div>    <div class="figure"> <img src="pics/atm_tauv.png" width="1000" /> </div>
+  <div id="ctn">    <a name="meridional-wind-stress-bias">&nbsp;</a>    <h2 class="target-label">meridional wind stress bias</h2>  </div>    <div class="figure"> <img src="pics/atm_tauv_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="wind-stress-curl">&nbsp;</a>    <h2 class="target-label">wind stress curl</h2>  </div>    <div class="figure"> <img src="pics/atm_curl_tau.png" width="1000" /> </div>
+  <div id="ctn">    <a name="Ekman-pumping">&nbsp;</a>    <h2 class="target-label">Ekman pumping</h2>  </div>    <div class="figure"> <img src="pics/atm_wek.png" width="1000" /> </div>
+  <div id="ctn">    <a name="surface-sensible-heat-flux">&nbsp;</a>    <h2 class="target-label">surface sensible heat flux</h2>  </div>    <div class="figure"> <img src="pics/atm_surf_shfl.png" width="1000" /> </div>
+  <div id="ctn">    <a name="surface-sensible-heat-flux-bias">&nbsp;</a>    <h2 class="target-label">surface sensible heat flux bias</h2>  </div>    <div class="figure"> <img src="pics/atm_surf_shfl_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="surface-latent-heat-flux">&nbsp;</a>    <h2 class="target-label">surface latent heat flux</h2>  </div>    <div class="figure"> <img src="pics/atm_surf_lhfl.png" width="1000" /> </div>
+  <div id="ctn">    <a name="surface-latent-heat-flux-bias">&nbsp;</a>    <h2 class="target-label">surface latent heat flux bias</h2>  </div>    <div class="figure"> <img src="pics/atm_surf_lhfl_bias.png" width="1000" /> </div>
+
+  <div id="ctn">    <a name="TOA-fluxes">&nbsp;</a>    <h1 class="target-label">TOA fluxes</h2>  </div>  <div id="ctn">    <a name="TOA-net-radiation-flux">&nbsp;</a>    <h2 class="target-label">TOA net radiation flux</h2>  </div>    <div class="figure"> <img src="pics/atm_toa_netrad.png" width="1000" /> </div>
+  <div id="ctn">    <a name="TOA-net-radiation-flux-bias">&nbsp;</a>    <h2 class="target-label">TOA net radiation flux bias</h2>  </div>    <div class="figure"> <img src="pics/atm_toa_netrad_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="TOA-short-wave-net-flux">&nbsp;</a>    <h2 class="target-label">TOA short wave net flux</h2>  </div>    <div class="figure"> <img src="pics/atm_toa_sob.png" width="1000" /> </div>
+  <div id="ctn">    <a name="TOA-short-wave-net-flux-bias">&nbsp;</a>    <h2 class="target-label">TOA short wave net flux bias</h2>  </div>    <div class="figure"> <img src="pics/atm_toa_sob_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="TOA-short-wave-outgoing-flux">&nbsp;</a>    <h2 class="target-label">TOA short wave outgoing flux</h2>  </div>    <div class="figure"> <img src="pics/atm_toa_sou.png" width="1000" /> </div>
+  <div id="ctn">    <a name="TOA-short-wave-outgoing-flux-bias">&nbsp;</a>    <h2 class="target-label">TOA short wave outgoing flux bias</h2>  </div>    <div class="figure"> <img src="pics/atm_toa_sou_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="TOA-long-wave-net-flux">&nbsp;</a>    <h2 class="target-label">TOA long wave net flux</h2>  </div>    <div class="figure"> <img src="pics/atm_toa_thb.png" width="1000" /> </div>
+  <div id="ctn">    <a name="TOA-long-wave-net-flux-bias">&nbsp;</a>    <h2 class="target-label">TOA long wave net flux bias</h2>  </div>    <div class="figure"> <img src="pics/atm_toa_thb_bias.png" width="1000" /> </div>
+
+  <div id="ctn">    <a name="Atmosphere-surface">&nbsp;</a>    <h1 class="target-label">Atmosphere surface</h2>  </div>  <div id="ctn">    <a name="sea-surface-temperature">&nbsp;</a>    <h2 class="target-label">sea surface temperature</h2>  </div>    <div class="figure"> <img src="pics/sea_ts.png" width="1000" /> </div>
+  <div id="ctn">    <a name="sea-ice-fraction">&nbsp;</a>    <h2 class="target-label">sea ice fraction</h2>  </div>    <div class="figure"> <img src="pics/seaice_fraction.png" width="1000" /> </div>
+  <div id="ctn">    <a name="sea-level-pressure">&nbsp;</a>    <h2 class="target-label">sea level pressure</h2>  </div>    <div class="figure"> <img src="pics/atm_psl.png" width="1000" /> </div>
+  <div id="ctn">    <a name="sea-level-pressure-bias">&nbsp;</a>    <h2 class="target-label">sea level pressure bias</h2>  </div>    <div class="figure"> <img src="pics/atm_psl_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="10m-wind-speed">&nbsp;</a>    <h2 class="target-label">10m wind speed</h2>  </div>    <div class="figure"> <img src="pics/atm_w10m.png" width="1000" /> </div>
+  <div id="ctn">    <a name="10m-wind-speed-bias">&nbsp;</a>    <h2 class="target-label">10m wind speed bias</h2>  </div>    <div class="figure"> <img src="pics/atm_w10m_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="surface-temperature">&nbsp;</a>    <h2 class="target-label">surface temperature</h2>  </div>    <div class="figure"> <img src="pics/atm_ts.png" width="1000" /> </div>
+  <div id="ctn">    <a name="surface-temperature-bias">&nbsp;</a>    <h2 class="target-label">surface temperature bias</h2>  </div>    <div class="figure"> <img src="pics/atm_ts_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="2m-temperature">&nbsp;</a>    <h2 class="target-label">2m temperature</h2>  </div>    <div class="figure"> <img src="pics/atm_t2m.png" width="1000" /> </div>
+  <div id="ctn">    <a name="2m-temperature-bias">&nbsp;</a>    <h2 class="target-label">2m temperature bias</h2>  </div>    <div class="figure"> <img src="pics/atm_t2m_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="column-water-vapour">&nbsp;</a>    <h2 class="target-label">column water vapour</h2>  </div>    <div class="figure"> <img src="pics/atm_cwv.png" width="1000" /> </div>
+  <div id="ctn">    <a name="column-water-vapour-bias">&nbsp;</a>    <h2 class="target-label">column water vapour bias</h2>  </div>    <div class="figure"> <img src="pics/atm_cwv_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="total-cloud-cover">&nbsp;</a>    <h2 class="target-label">total cloud cover</h2>  </div>    <div class="figure"> <img src="pics/atm_tcc.png" width="1000" /> </div>
+  <div id="ctn">    <a name="total-cloud-cover-bias">&nbsp;</a>    <h2 class="target-label">total cloud cover bias</h2>  </div>    <div class="figure"> <img src="pics/atm_tcc_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="total-precipitation">&nbsp;</a>    <h2 class="target-label">total precipitation</h2>  </div>    <div class="figure"> <img src="pics/atm_tp.png" width="1000" /> </div>
+  <div id="ctn">    <a name="total-precipitation-bias">&nbsp;</a>    <h2 class="target-label">total precipitation bias</h2>  </div>    <div class="figure"> <img src="pics/atm_tp_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="P-E">&nbsp;</a>    <h2 class="target-label">P-E</h2>  </div>    <div class="figure"> <img src="pics/atm_pme.png" width="1000" /> </div>
+  <div id="ctn">    <a name="P-E-bias">&nbsp;</a>    <h2 class="target-label">P-E bias</h2>  </div>    <div class="figure"> <img src="pics/atm_pme_bias.png" width="1000" /> </div>
+
+  <div id="ctn">    <a name="Atmosphere-pressure-levels">&nbsp;</a>    <h1 class="target-label">Atmosphere pressure levels</h2>  </div>  <div id="ctn">    <a name="u-comp-of-wind-@-250-hPa">&nbsp;</a>    <h2 class="target-label">u-comp of wind @ 250 hPa</h2>  </div>    <div class="figure"> <img src="pics/atm_u_250.png" width="1000" /> </div>
+  <div id="ctn">    <a name="v-comp-of-wind-@-250-hPa">&nbsp;</a>    <h2 class="target-label">v-comp of wind @ 250 hPa</h2>  </div>    <div class="figure"> <img src="pics/atm_v_250.png" width="1000" /> </div>
+  <div id="ctn">    <a name="geopotential-height-@-500-hPa">&nbsp;</a>    <h2 class="target-label">geopotential height @ 500 hPa</h2>  </div>    <div class="figure"> <img src="pics/atm_geop_500.png" width="1000" /> </div>
+  <div id="ctn">    <a name="geopotential-@-500-hPa-bias">&nbsp;</a>    <h2 class="target-label">geopotential @ 500 hPa bias</h2>  </div>    <div class="figure"> <img src="pics/atm_geop_500_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="relative-humidity-@-700-hPa">&nbsp;</a>    <h2 class="target-label">relative humidity @ 700 hPa</h2>  </div>    <div class="figure"> <img src="pics/atm_relhum_700.png" width="1000" /> </div>
+  <div id="ctn">    <a name="relative-humidity-@-700-hPa-bias">&nbsp;</a>    <h2 class="target-label">relative humidity @ 700 hPa bias</h2>  </div>    <div class="figure"> <img src="pics/atm_relhum_700_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="temperature-@-850-hPa">&nbsp;</a>    <h2 class="target-label">temperature @ 850 hPa</h2>  </div>    <div class="figure"> <img src="pics/atm_temp_850.png" width="1000" /> </div>
+  <div id="ctn">    <a name="temperature-@-850-hPa-bias">&nbsp;</a>    <h2 class="target-label">temperature @ 850 hPa bias</h2>  </div>    <div class="figure"> <img src="pics/atm_temp_850_bias.png" width="1000" /> </div>
+
+  <div id="ctn">    <a name="Atmosphere-zonal-averages">&nbsp;</a>    <h1 class="target-label">Atmosphere zonal averages</h2>  </div>  <div id="ctn">    <a name="temperature">&nbsp;</a>    <h2 class="target-label">temperature</h2>  </div>    <div class="figure"> <img src="pics/atm_temp_zave.png" width="1000" /> </div>
+  <div id="ctn">    <a name="temperature-bias">&nbsp;</a>    <h2 class="target-label">temperature bias</h2>  </div>    <div class="figure"> <img src="pics/atm_temp_zave_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="log-temperature">&nbsp;</a>    <h2 class="target-label">log temperature</h2>  </div>    <div class="figure"> <img src="pics/atm_logv_temp_zave.png" width="1000" /> </div>
+  <div id="ctn">    <a name="u-comp-of-wind">&nbsp;</a>    <h2 class="target-label">u-comp of wind</h2>  </div>    <div class="figure"> <img src="pics/atm_u_zave.png" width="1000" /> </div>
+  <div id="ctn">    <a name="log-u-comp-of-wind">&nbsp;</a>    <h2 class="target-label">log u-comp of wind</h2>  </div>    <div class="figure"> <img src="pics/atm_logv_u_zave.png" width="1000" /> </div>
+  <div id="ctn">    <a name="v-comp-of-wind">&nbsp;</a>    <h2 class="target-label">v-comp of wind</h2>  </div>    <div class="figure"> <img src="pics/atm_v_zave.png" width="1000" /> </div>
+  <div id="ctn">    <a name="log-v-comp-of-wind">&nbsp;</a>    <h2 class="target-label">log v-comp of wind</h2>  </div>    <div class="figure"> <img src="pics/atm_logv_v_zave.png" width="1000" /> </div>
+  <div id="ctn">    <a name="relative-humidity">&nbsp;</a>    <h2 class="target-label">relative humidity</h2>  </div>    <div class="figure"> <img src="pics/atm_relhum_zave.png" width="1000" /> </div>
+  <div id="ctn">    <a name="relative-humidity-bias">&nbsp;</a>    <h2 class="target-label">relative humidity bias</h2>  </div>    <div class="figure"> <img src="pics/atm_relhum_zave_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="cloud-cover">&nbsp;</a>    <h2 class="target-label">cloud cover</h2>  </div>    <div class="figure"> <img src="pics/atm_cc_zave.png" width="1000" /> </div>
+  <div id="ctn">    <a name="cloud-cover-bias">&nbsp;</a>    <h2 class="target-label">cloud cover bias</h2>  </div>    <div class="figure"> <img src="pics/atm_cc_zave_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="cloud-water">&nbsp;</a>    <h2 class="target-label">cloud water</h2>  </div>    <div class="figure"> <img src="pics/atm_clw_zave.png" width="1000" /> </div>
+  <div id="ctn">    <a name="cloud-water-bias">&nbsp;</a>    <h2 class="target-label">cloud water bias</h2>  </div>    <div class="figure"> <img src="pics/atm_clw_zave_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="cloud-ice">&nbsp;</a>    <h2 class="target-label">cloud ice</h2>  </div>    <div class="figure"> <img src="pics/atm_cli_zave.png" width="1000" /> </div>
+  <div id="ctn">    <a name="cloud-ice-bias">&nbsp;</a>    <h2 class="target-label">cloud ice bias</h2>  </div>    <div class="figure"> <img src="pics/atm_cli_zave_bias.png" width="1000" /> </div>
+  <div id="ctn">    <a name="cloud-water+ice">&nbsp;</a>    <h2 class="target-label">cloud water+ice</h2>  </div>    <div class="figure"> <img src="pics/atm_clwi_zave.png" width="1000" /> </div>
+  <div id="ctn">    <a name="meridional-stream-function">&nbsp;</a>    <h2 class="target-label">meridional stream function</h2>  </div>    <div class="figure"> <img src="pics/atm_psi.png" width="1000" /> </div>
+
+  <div id="ctn">    <a name="More-plots">&nbsp;</a>    <h1 class="target-label">More plots</h2>  </div>
+</body>
+</html>
